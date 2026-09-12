@@ -147,6 +147,63 @@ class CourseContractV2Tests(unittest.TestCase):
         with self.assertRaises(ValueError):
             contract.validate_course(invalid)
 
+    def test_v2_rejects_multiple_current_topics(self):
+        plan = valid_v2_course()
+        second_chapter = copy.deepcopy(plan["chapters"][0])
+        second_chapter["id"] = "next-change"
+        second_chapter["topics"][0]["id"] = "global-change"
+        second_chapter["topics"][0]["state"] = "current"
+        second_chapter["topics"][0]["concepts"] = ["math.gradient"]
+        second_chapter["topics"][0]["exercise_ids"] = ["predict-global-change"]
+        second_chapter["topics"][0]["prerequisites"] = ["local-change"]
+        plan["chapters"].append(second_chapter)
+        with self.assertRaises(ValueError):
+            contract.validate_course(plan)
+
+    def test_v2_rejects_current_topic_in_noncurrent_chapter(self):
+        plan = valid_v2_course()
+        plan["chapters"][0]["state"] = "planned"
+        with self.assertRaises(ValueError):
+            contract.validate_course(plan)
+
+    def test_v2_requires_https_source_urls(self):
+        plan = valid_v2_course()
+        plan["sources"]["openstax-calculus-1"]["url"] = (
+            "http://openstax.org/details/books/calculus-volume-1"
+        )
+        with self.assertRaises(ValueError):
+            contract.validate_course(plan)
+
+    def test_v2_rejects_absolute_and_traversing_source_paths(self):
+        for local_path in ("/etc/passwd", "../skills/subject/references/resources.json"):
+            plan = valid_v2_course()
+            source = plan["sources"]["openstax-calculus-1"]
+            del source["url"]
+            source["local_path"] = local_path
+            with self.assertRaises(ValueError):
+                contract.validate_course(plan)
+
+    def test_v2_accepts_safe_repository_relative_source_path(self):
+        plan = valid_v2_course()
+        source = plan["sources"]["openstax-calculus-1"]
+        del source["url"]
+        source["local_path"] = "skills/subject/references/resources.json"
+        self.assertEqual(contract.validate_course(plan), plan)
+
+    def test_v1_upgrade_uses_exact_legacy_revision_sentinel(self):
+        upgraded = contract.upgrade_v1_course(valid_v1_course())
+        self.assertEqual(upgraded["revision_notes"][0]["date"], "1970-01-01")
+        self.assertEqual(
+            upgraded["revision_notes"][0]["reason"],
+            "Original revision date unavailable; deterministically upgraded from schema version 1.",
+        )
+
+    def test_v2_rejects_non_iso_revision_note_date(self):
+        plan = valid_v2_course()
+        plan["revision_notes"][0]["date"] = "2026-02-30"
+        with self.assertRaises(ValueError):
+            contract.validate_course(plan)
+
 
 if __name__ == "__main__":
     unittest.main()

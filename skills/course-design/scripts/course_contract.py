@@ -1,10 +1,12 @@
 """Course contracts and source catalog lookup; no third-party dependencies."""
 
 import copy
+from datetime import date
 import hashlib
 import json
 from pathlib import Path
 import re
+from urllib.parse import urlparse
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -97,6 +99,18 @@ def _validate_source_registry(source_data, known_resource_ids):
         location_fields = [field for field in ("url", "local_path") if source.get(field)]
         if len(location_fields) != 1:
             raise ValueError(f"{source_id}: source requires exactly one nonempty url or local_path")
+        if source.get("url"):
+            parsed = urlparse(source["url"])
+            if parsed.scheme != "https" or not parsed.netloc:
+                raise ValueError(f"{source_id}: source URL must use HTTPS")
+        if source.get("local_path"):
+            local_path = Path(source["local_path"])
+            if local_path.is_absolute() or ".." in local_path.parts or "\\" in source["local_path"]:
+                raise ValueError(f"{source_id}: local_path must be repository-relative and safe")
+            resolved = (ROOT / local_path).resolve()
+            root = ROOT.resolve()
+            if not resolved.is_file() or root not in resolved.parents:
+                raise ValueError(f"{source_id}: local_path must name a repository file")
         nonempty(source.get("type"), f"{source_id}.type")
         nonempty(source.get("checked_on"), f"{source_id}.checked_on")
         strings(source.get("sections"), f"{source_id}.sections")
@@ -114,7 +128,14 @@ def _validate_revision_notes(notes):
         revision = note.get("revision")
         if type(revision) is not int or revision < 1:
             raise ValueError("revision_notes.revision must be a positive integer")
-        nonempty(note.get("date"), "revision_notes.date")
+        revision_date = note.get("date")
+        nonempty(revision_date, "revision_notes.date")
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", revision_date):
+            raise ValueError("revision_notes.date must be an ISO YYYY-MM-DD date")
+        try:
+            date.fromisoformat(revision_date)
+        except ValueError as exc:
+            raise ValueError("revision_notes.date must be a real ISO YYYY-MM-DD date") from exc
         nonempty(note.get("reason"), "revision_notes.reason")
 
 
@@ -236,10 +257,15 @@ def _validate_v2(data):
     nonempty(current_chapter, "current.chapter_id")
     nonempty(current_topic, "current.topic_id")
     nonempty(current.get("next_step"), "current.next_step")
+    current_topics = [topic for topic in course_topics(data) if topic["state"] == "current"]
+    if len(current_topics) != 1:
+        raise ValueError("Course must have exactly one current topic")
     chapter_by_id = {chapter["id"]: chapter for chapter in chapters}
     topic_by_id = {topic["id"]: topic for topic in course_topics(data)}
     if current_chapter not in chapter_by_id:
         raise ValueError("current.chapter_id must refer to a chapter")
+    if chapter_by_id[current_chapter]["state"] != "current":
+        raise ValueError("current.chapter_id must identify a current chapter")
     if current_topic not in topic_by_id:
         raise ValueError("current.topic_id must refer to a topic")
     if current_topic not in {topic["id"] for topic in chapter_by_id[current_chapter]["topics"]}:
@@ -371,8 +397,8 @@ def upgrade_v1_course(data):
         "schema_version": COURSE_SCHEMA_VERSION,
         "revision_notes": [{
             "revision": data["revision"],
-            "date": "unknown",
-            "reason": "Deterministic upgrade from schema version 1.",
+            "date": "1970-01-01",
+            "reason": "Original revision date unavailable; deterministically upgraded from schema version 1.",
         }],
         "starting_evidence": [],
         "sources": sources,
