@@ -220,5 +220,42 @@
     "format": "Lectures, notes, assignments, solutions",
     "verification": "Official course overview and resource types inspected",
     "checked": "2026-09-12"
+  },
+  {
+    "id": "mit-multivariable",
+    "title": "MIT 18.02SC: Partial Derivatives",
+    "url": "https://ocw.mit.edu/courses/18-02sc-multivariable-calculus-fall-2010/pages/2.-partial-derivatives/",
+    "subjects": [
+      "math"
+    ],
+    "topics": [
+      "partial derivatives",
+      "gradient",
+      "directional derivatives"
+    ],
+    "level": "Undergraduate",
+    "use": "Gradient and directional-change prerequisites",
+    "format": "Course sessions and notes",
+    "checked": "2026-09-12",
+    "verification": "Official unit content and sequence inspected"
+  },
+  {
+    "id": "mit-gradient-descent",
+    "title": "MIT 6.390: Chapter 3, Gradient Descent",
+    "url": "https://introml.mit.edu/notes/gradient_descent.html",
+    "subjects": [
+      "computer-science",
+      "math"
+    ],
+    "topics": [
+      "gradient descent",
+      "learning rate",
+      "optimization"
+    ],
+    "level": "Undergraduate",
+    "use": "One- and multi-dimensional update rules and step-size behavior",
+    "format": "Official web notes",
+    "checked": "2026-09-12",
+    "verification": "Sections 3.1 and 3.2 inspected"
   }
 ]
