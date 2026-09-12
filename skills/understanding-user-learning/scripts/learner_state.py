@@ -10,8 +10,25 @@ import re
 import sys
 import tempfile
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / 'scripts'))
-from gnos_core import ROOT, nonempty, slug, strings
+ROOT = Path(__file__).resolve().parents[3]
+
+
+def slug(value):
+    if not isinstance(value, str) or not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', value) or len(value) > 80:
+        raise ValueError('Expected a lowercase slug of at most 80 characters')
+    return value
+
+
+def nonempty(value, label):
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f'{label} must be nonempty text')
+
+
+def strings(value, label):
+    if not isinstance(value, list):
+        raise ValueError(f'{label} must be a list')
+    for item in value:
+        nonempty(item, label)
 
 
 def validate_event(event):
