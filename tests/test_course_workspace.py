@@ -266,6 +266,17 @@ class CourseWorkspaceTests(unittest.TestCase):
         self.assertTrue((path / "lessons" / lesson["id"] / "lesson.json").is_file())
         self.assertEqual(read_plan(path)["chapters"][0]["topics"][0]["lesson_ids"], [lesson["id"]])
 
+    def test_lesson_fingerprint_failure_precedes_lesson_and_plan_writes(self):
+        path = create_workspace(self.root, "alex", valid_v2_course())
+        before_plan = (path / "course.json").read_bytes()
+        lesson = valid_lesson("ready")
+        with mock.patch.object(workspace, "lesson_fingerprint", side_effect=RuntimeError("hash failed")):
+            with self.assertRaises(RuntimeError):
+                publish_lesson(path, lesson)
+        self.assertEqual((path / "course.json").read_bytes(), before_plan)
+        self.assertFalse((path / "lessons" / lesson["id"] / "lesson.json").exists())
+        self.assertFalse((path / ".course.lock").exists())
+
     def test_plan_mutation_lock_is_cleaned_after_success_and_failure(self):
         path = create_workspace(self.root, "alex", valid_v2_course())
         self.assertFalse((path / ".course.lock").exists())

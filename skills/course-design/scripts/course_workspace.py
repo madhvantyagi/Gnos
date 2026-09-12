@@ -282,6 +282,7 @@ def publish_lesson(path: Path, lesson: dict) -> str:
         plan_fingerprint = course_fingerprint(plan)
         original_plan = copy.deepcopy(plan)
         checked = validate_lesson(lesson, plan)
+        lesson_fingerprint_value = lesson_fingerprint(checked)
         lesson_dir = path / "lessons" / checked["id"]
         lesson_file = lesson_dir / "lesson.json"
         _reject_symlink(lesson_dir)
@@ -316,4 +317,4 @@ def publish_lesson(path: Path, lesson: dict) -> str:
                 except OSError:
                     pass
             raise
-        return lesson_fingerprint(checked)
+        return lesson_fingerprint_value
