@@ -1,0 +1,224 @@
+[
+  {
+    "id": "openstax-calculus-1",
+    "title": "Calculus Volume 1",
+    "url": "https://openstax.org/details/books/calculus-volume-1",
+    "subjects": [
+      "math"
+    ],
+    "topics": [
+      "calculus",
+      "derivatives",
+      "limits",
+      "integration"
+    ],
+    "level": "Introductory college",
+    "use": "First calculus sequence",
+    "format": "Publisher landing page; discover current web/PDF edition there",
+    "verification": "Landing page title resolved; chapter content not inspected",
+    "checked": "2026-09-12"
+  },
+  {
+    "id": "mit-linear-algebra",
+    "title": "MIT 18.06 Linear Algebra (2010)",
+    "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/",
+    "subjects": [
+      "math"
+    ],
+    "topics": [
+      "linear algebra",
+      "matrices",
+      "vectors",
+      "transformations"
+    ],
+    "level": "Undergraduate",
+    "use": "Matrix theory and linear algebra",
+    "format": "Course materials and lectures",
+    "verification": "Official course search result verified",
+    "checked": "2026-09-12"
+  },
+  {
+    "id": "openstax-physics-1",
+    "title": "University Physics Volume 1",
+    "url": "https://openstax.org/details/books/university-physics-volume-1",
+    "subjects": [
+      "physics"
+    ],
+    "topics": [
+      "mechanics",
+      "motion",
+      "waves"
+    ],
+    "level": "Introductory college",
+    "use": "Introductory calculus-based physics",
+    "format": "Publisher landing page; discover current web/PDF edition there",
+    "verification": "Landing page title resolved; chapter content not inspected",
+    "checked": "2026-09-12"
+  },
+  {
+    "id": "mit-mechanics",
+    "title": "MIT 8.01SC Classical Mechanics (2016)",
+    "url": "https://ocw.mit.edu/courses/8-01sc-classical-mechanics-fall-2016/",
+    "subjects": [
+      "physics"
+    ],
+    "topics": [
+      "mechanics",
+      "vectors",
+      "motion"
+    ],
+    "level": "Undergraduate",
+    "use": "Mechanics sequence and exercises",
+    "format": "Course materials and lectures",
+    "verification": "Official course search result verified",
+    "checked": "2026-09-12"
+  },
+  {
+    "id": "openstax-biology-2e",
+    "title": "Biology 2e",
+    "url": "https://openstax.org/details/books/biology-2e",
+    "subjects": [
+      "biology"
+    ],
+    "topics": [
+      "cells",
+      "genetics",
+      "evolution",
+      "ecology"
+    ],
+    "level": "Introductory college",
+    "use": "Broad biology sequence",
+    "format": "Publisher landing page; discover current web/PDF edition there",
+    "verification": "Landing page title resolved; chapter content not inspected",
+    "checked": "2026-09-12"
+  },
+  {
+    "id": "openstax-world-history-1",
+    "title": "World History, Volume 1: to 1500",
+    "url": "https://openstax.org/details/books/world-history-volume-1",
+    "subjects": [
+      "history"
+    ],
+    "topics": [
+      "world history",
+      "to 1500",
+      "chronology"
+    ],
+    "level": "Introductory college",
+    "use": "Broad pre-1500 history route",
+    "format": "Publisher landing page; discover current web/PDF edition there",
+    "verification": "Landing page title resolved; chapter content not inspected",
+    "checked": "2026-09-12"
+  },
+  {
+    "id": "loc-source-analysis",
+    "title": "Library of Congress: Teacher Guides and Analysis Tool",
+    "url": "https://www.loc.gov/programs/teachers/getting-started-with-primary-sources/guides/",
+    "subjects": [
+      "history"
+    ],
+    "topics": [
+      "primary sources",
+      "provenance",
+      "source analysis"
+    ],
+    "level": "Adaptable",
+    "use": "Prompts for examining primary evidence",
+    "format": "Web guides and linked PDF tools",
+    "verification": "Official search result verified; direct page access returned 403",
+    "checked": "2026-09-12"
+  },
+  {
+    "id": "openstax-economics",
+    "title": "Principles of Economics 3e",
+    "url": "https://openstax.org/details/books/principles-economics-3e",
+    "subjects": [
+      "economics"
+    ],
+    "topics": [
+      "microeconomics",
+      "macroeconomics",
+      "markets"
+    ],
+    "level": "Introductory college",
+    "use": "Alternative introductory economics sequence",
+    "format": "Publisher landing page; discover current web/PDF edition there",
+    "verification": "Landing page title resolved; chapter content not inspected",
+    "checked": "2026-09-12"
+  },
+  {
+    "id": "core-economy",
+    "title": "CORE Econ: The Economy 2.0 and Doing Economics",
+    "url": "https://www.core-econ.org/",
+    "subjects": [
+      "economics"
+    ],
+    "topics": [
+      "microeconomics",
+      "macroeconomics",
+      "data",
+      "policy"
+    ],
+    "level": "Introductory undergraduate",
+    "use": "Models alongside economic questions and data activities",
+    "format": "Open-access web textbooks and projects",
+    "verification": "Official home page search result verified",
+    "checked": "2026-09-12"
+  },
+  {
+    "id": "cs50",
+    "title": "Harvard CS50x",
+    "url": "https://cs50.harvard.edu/x/",
+    "subjects": [
+      "computer-science"
+    ],
+    "topics": [
+      "programming",
+      "algorithms",
+      "memory",
+      "data structures"
+    ],
+    "level": "Beginner",
+    "use": "First programming and CS course",
+    "format": "Lectures and problem sets",
+    "verification": "Official course page content inspected",
+    "checked": "2026-09-12"
+  },
+  {
+    "id": "python-tutorial",
+    "title": "The Python Tutorial",
+    "url": "https://docs.python.org/3/tutorial/",
+    "subjects": [
+      "computer-science"
+    ],
+    "topics": [
+      "python",
+      "programming",
+      "language"
+    ],
+    "level": "Existing programmers new to Python",
+    "use": "Language mechanics and runnable examples",
+    "format": "Official web documentation",
+    "verification": "Official tutorial content inspected; it assumes programming basics",
+    "checked": "2026-09-12"
+  },
+  {
+    "id": "mit-algorithms",
+    "title": "MIT 6.006 Introduction to Algorithms (2020)",
+    "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/",
+    "subjects": [
+      "computer-science",
+      "math"
+    ],
+    "topics": [
+      "algorithms",
+      "data structures",
+      "complexity"
+    ],
+    "level": "Undergraduate",
+    "use": "Algorithms, correctness, and analysis",
+    "format": "Lectures, notes, assignments, solutions",
+    "verification": "Official course overview and resource types inspected",
+    "checked": "2026-09-12"
+  }
+]
