@@ -3,6 +3,24 @@
     "excalidraw": {
       "type": "http",
       "url": "https://mcp.excalidraw.com/mcp"
+    },
+    "pinepaper": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "-p",
+        "@pinepaper.studio/mcp-server@1.6.7",
+        "-p",
+        "puppeteer@25.9.0",
+        "pinepaper-mcp"
+      ],
+      "env": {
+        "PINEPAPER_EXECUTION_MODE": "puppeteer",
+        "PINEPAPER_HEADLESS": "true",
+        "PINEPAPER_TOOLKIT": "agent",
+        "PINEPAPER_VERBOSITY": "compact",
+        "PINEPAPER_SCREENSHOT_MODE": "on_request"
+      }
     }
   }
 }

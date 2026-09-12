@@ -29,6 +29,10 @@ complete taxonomy. For an unlisted specialty, research a suitable primary or
 academic source before designing a deep course. Do not imply that a supplied
 introductory textbook covers every advanced branch.
 
+Subject files stay short. Read a linked subject reference only when the current
+topic needs its deeper prerequisites, examples, sources, or visual patterns.
+Do not preload references for an ordinary explanation.
+
 Use `python3 skills/subject/scripts/resources.py --subject physics` to list
 curated sources. `--query vectors` narrows by topic. Entries include verification
 status and format notes; a landing page is not a downloaded PDF.
@@ -51,11 +55,22 @@ step across the handoff.
 
 ## Choose the representation by the task
 
-A still diagram helps comparison; an animation helps inspect change; runnable
-code helps test behavior; a PDF helps revisit a structured lesson. No subfield
-requires animation by default. Use `skills/manim-voice-animation-skill/SKILL.md`
-for motion and `skills/pdf/SKILL.md` for a handout. A source excerpt may teach
-history better than either.
+A still diagram helps inspect structure; an animation helps inspect change;
+runnable code tests behavior; a PDF supports review. No subject requires media
+by default.
+
+- For an advanced vector diagram, interactive relation, or animated SVG in
+  computer science, mathematics, physics, economics, or political science,
+  read [the Pinepaper workflow](references/pinepaper.md) and the selected
+  subject's linked reference.
+- For a quick inspectable computer-science canvas, read
+  [the Excalidraw workflow](references/excalidraw.md).
+- For a narrated rendered lesson, use
+  `skills/manim-voice-animation-skill/SKILL.md`; for a handout, use
+  `skills/pdf/SKILL.md`.
+
+Choose one primary medium. Do not create the same diagram in multiple tools
+unless comparison or export requirements justify it.
 
 For source selection and downloads, read
 [references/source-use.md](references/source-use.md).

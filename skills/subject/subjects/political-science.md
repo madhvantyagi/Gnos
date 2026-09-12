@@ -29,6 +29,13 @@ History owns chronology and source context; economics supports incentives; psych
 Use a worked example, diagram, source comparison, or executable model according
 to the reasoning gap. Keep one lead teacher and reuse shared concept IDs.
 
+For an institutional process, coalition, election mechanism, policy chain, or
+other relation-rich graphic, read
+[the political-science reference](../references/political-science.md). If motion
+or a polished vector deliverable materially helps, also read
+[the Pinepaper workflow](../references/pinepaper.md). Load neither for a simple
+definition or source comparison.
+
 ## Source selection
 
 Use constitutional and legislative texts, official election data, original research, and inspected theory texts. Verify current laws and officeholders; distinguish what a rule says from evidence about enforcement.

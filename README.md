@@ -14,8 +14,8 @@ a model server or listen to conversations in the background.
 
 ## Install as a Codex plugin
 
-The `codex` branch packages GNOS as a Codex plugin and bundles its Excalidraw
-MCP server. Add the GitHub marketplace and install GNOS:
+The `codex` branch packages GNOS as a Codex plugin and bundles Excalidraw and
+Pinepaper MCP servers. Add the GitHub marketplace and install GNOS:
 
 ```bash
 codex plugin marketplace add madhvantyagi/Gnos --ref codex
@@ -23,9 +23,11 @@ codex plugin add gnos@gnos
 ```
 
 Start a new Codex task after installation so the GNOS skills and bundled MCP
-tools enter the new task's tool inventory. Installing GNOS is sufficient; users
-do not need to add the Excalidraw server separately. The remote diagram server
-is used only when the selected teaching instructions call its tools.
+tools enter the new task's tool inventory. Users do not configure either MCP
+separately. Excalidraw uses its hosted endpoint. Pinepaper is fetched by `npx`
+on first use with its browser runtime and then runs locally in headless mode.
+GNOS loads its detailed visual references only when the lesson needs a diagram
+or animation.
 
 ## Start learning
 
