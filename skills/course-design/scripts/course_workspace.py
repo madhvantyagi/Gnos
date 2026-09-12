@@ -253,6 +253,7 @@ def create_workspace(learners_root: Path, learner_id: str, plan: dict) -> Path:
 
 
 def _write_plan_unlocked(path: Path, checked: dict, expected_fingerprint: str | None) -> str:
+    checked = validate_course(checked)
     course_file = path / "course.json"
     current = read_plan(path) if course_file.exists() else None
     if expected_fingerprint is not None:
@@ -260,8 +261,9 @@ def _write_plan_unlocked(path: Path, checked: dict, expected_fingerprint: str | 
             raise ConflictError("Course changed; refresh before writing")
     if current is not None and current["id"] != checked["id"]:
         raise ValueError("Course ID cannot change within a workspace")
+    fingerprint = course_fingerprint(checked)
     atomic_json(course_file, checked)
-    return course_fingerprint(checked)
+    return fingerprint
 
 
 def write_plan(path: Path, plan: dict, expected_fingerprint: str | None = None) -> str:
@@ -300,26 +302,18 @@ def publish_lesson(path: Path, lesson: dict) -> str:
                 selected = next(topic for topic in topics if topic["id"] == checked["topic_id"])
                 selected["lesson_ids"].append(checked["id"])
             if plan != original_plan:
-                write_plan(path, plan, expected_fingerprint=plan_fingerprint)
+                _write_plan_unlocked(path, plan, expected_fingerprint=plan_fingerprint)
         except Exception:
-            # A plan write may have completed before surfacing an injected
-            # exception. Keep the replacement only if the plan now references
-            # that exact snapshot; otherwise restore/remove it atomically.
-            try:
-                plan_was_replaced = course_fingerprint(read_plan(path)) == course_fingerprint(plan)
-            except (OSError, ValueError):
-                plan_was_replaced = False
-            if not plan_was_replaced:
-                if had_lesson:
-                    _atomic_bytes(lesson_file, previous_bytes)
-                else:
-                    try:
-                        lesson_file.unlink()
-                    except FileNotFoundError:
-                        pass
-                    try:
-                        lesson_dir.rmdir()
-                    except OSError:
-                        pass
+            if had_lesson:
+                _atomic_bytes(lesson_file, previous_bytes)
+            else:
+                try:
+                    lesson_file.unlink()
+                except FileNotFoundError:
+                    pass
+                try:
+                    lesson_dir.rmdir()
+                except OSError:
+                    pass
             raise
         return lesson_fingerprint(checked)

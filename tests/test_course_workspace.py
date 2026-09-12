@@ -235,7 +235,7 @@ class CourseWorkspaceTests(unittest.TestCase):
     def test_stale_publication_does_not_leave_an_orphan_lesson(self):
         path = create_workspace(self.root, "alex", valid_v2_course())
         lesson = valid_lesson("ready")
-        with mock.patch.object(workspace, "write_plan", side_effect=ConflictError("stale")):
+        with mock.patch.object(workspace, "_write_plan_unlocked", side_effect=ConflictError("stale")):
             with self.assertRaises(ConflictError):
                 publish_lesson(path, lesson)
         self.assertFalse((path / "lessons" / lesson["id"] / "lesson.json").exists())
@@ -251,12 +251,20 @@ class CourseWorkspaceTests(unittest.TestCase):
 
         replacement = valid_lesson("ready")
         replacement["title"] = "Replacement"
-        with mock.patch.object(workspace, "write_plan", side_effect=ConflictError("injected")):
+        with mock.patch.object(workspace, "_write_plan_unlocked", side_effect=ConflictError("injected")):
             with self.assertRaises(ConflictError):
                 publish_lesson(path, replacement)
         self.assertEqual(lesson_path.read_bytes(), original_bytes)
         self.assertEqual(read_plan(path)["chapters"][0]["topics"][0]["lesson_ids"], [])
         self.assertFalse((path / ".course.lock").exists())
+
+    def test_public_plan_writer_is_not_used_inside_publication_lock(self):
+        path = create_workspace(self.root, "alex", valid_v2_course())
+        lesson = valid_lesson("ready")
+        with mock.patch.object(workspace, "write_plan", side_effect=AssertionError("public writer called")):
+            publish_lesson(path, lesson)
+        self.assertTrue((path / "lessons" / lesson["id"] / "lesson.json").is_file())
+        self.assertEqual(read_plan(path)["chapters"][0]["topics"][0]["lesson_ids"], [lesson["id"]])
 
     def test_plan_mutation_lock_is_cleaned_after_success_and_failure(self):
         path = create_workspace(self.root, "alex", valid_v2_course())
