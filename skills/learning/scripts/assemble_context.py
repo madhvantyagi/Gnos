@@ -47,6 +47,7 @@ def main():
                           + json.dumps(course, indent=2, ensure_ascii=False))
         if args.learner:
             path = ROOT / 'skills/understanding-user-learning/scripts/learner_state.py'
+            sys.path.insert(0, str(path.parent))
             spec = importlib.util.spec_from_file_location('learner_state', path)
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
