@@ -1,6 +1,7 @@
 """Validation and public projections for composed GNOS lessons."""
 import copy
 from datetime import datetime
+import math
 import hashlib
 import json
 import re
@@ -62,7 +63,9 @@ def _validate_evaluation(evaluation, response_type, label):
         if mode != "choice":
             raise ValueError(f"{label}: multiple-choice requires choice evaluation")
         options = evaluation.get("options")
-        if not isinstance(options, list) or not options or len(options) != len(set(options)):
+        if (not isinstance(options, list) or not options or
+                any(not isinstance(option, str) or not option.strip() for option in options) or
+                len(options) != len(set(options))):
             raise ValueError(f"{label}: choice evaluation requires unique nonempty options")
         if "answer" not in evaluation or evaluation["answer"] not in options:
             raise ValueError(f"{label}: choice answer must be one of the options")
@@ -73,9 +76,11 @@ def _validate_evaluation(evaluation, response_type, label):
     if mode == "numeric":
         answer = evaluation.get("answer")
         tolerance = evaluation.get("tolerance")
-        if isinstance(answer, bool) or not isinstance(answer, (int, float)):
+        if (isinstance(answer, bool) or not isinstance(answer, (int, float)) or
+                not math.isfinite(float(answer))):
             raise ValueError(f"{label}: numeric answer must be numeric")
-        if isinstance(tolerance, bool) or not isinstance(tolerance, (int, float)) or tolerance < 0:
+        if (isinstance(tolerance, bool) or not isinstance(tolerance, (int, float)) or
+                not math.isfinite(float(tolerance)) or tolerance < 0):
             raise ValueError(f"{label}: numeric tolerance must be nonnegative numeric")
     if mode == "manual" and any(key in evaluation for key in ("answer", "accepted", "tolerance", "solution")):
         raise ValueError(f"{label}: manual evaluation cannot include private answer fields")

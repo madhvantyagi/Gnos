@@ -128,5 +128,25 @@ class LessonContractTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_lesson(lesson, valid_v2_course())
 
+    def test_choice_options_must_be_nonempty_unique_strings(self):
+        lesson = valid_lesson()
+        exercise = lesson["exercises"][0]
+        exercise.update({"response_type": "multiple-choice", "evaluation": {
+            "mode": "choice", "options": ["yes", "no"], "answer": "yes"}})
+        for options in ([[] , "no"], [{"value": "yes"}, "no"], ["", "no"], ["yes", "yes"]):
+            invalid = copy.deepcopy(lesson)
+            invalid["exercises"][0]["evaluation"]["options"] = options
+            with self.assertRaises(ValueError):
+                validate_lesson(invalid, valid_v2_course())
+
+    def test_numeric_evaluation_rejects_nonfinite_answer_and_tolerance(self):
+        import math
+        for field, value in (("answer", math.nan), ("answer", math.inf), ("answer", -math.inf),
+                             ("tolerance", math.nan), ("tolerance", math.inf), ("tolerance", -math.inf)):
+            lesson = valid_lesson()
+            lesson["exercises"][0]["evaluation"][field] = value
+            with self.assertRaises(ValueError):
+                validate_lesson(lesson, valid_v2_course())
+
 
 if __name__ == "__main__": unittest.main()
