@@ -24,6 +24,14 @@ Use `--root <directory>` before the subcommand for isolated tests or another
 storage location. The default is this repository's ignored `learners/`.
 For schema and update rules, read [references/evidence.md](references/evidence.md).
 
+Enrollment writes the validated current plan to
+`learners/<id>/courses/<course-id>/course.json`. Learner state stores its
+relative reference, revision, and fingerprint rather than a second editable
+copy. A mismatch blocks ordinary updates; reconcile the plan instead of choosing
+one version silently. For an older record containing embedded plans, run
+`migrate-courses <id>` once. The migration is idempotent and preserves events
+and completion history.
+
 ## Course and memory categories
 
 Read [references/memory-categories.md](references/memory-categories.md) when
@@ -37,6 +45,11 @@ teaching-observation, and next-step memories. Update at meaningful evidence
 changes during the conversation, not only at the end of a course. On resumption,
 use earlier taught topics as explicit bridges into the next topic. Read the
 same learner ID; do not assume unrelated chats have shared memory.
+
+Resolve every enrolled plan before changing learner state. If a referenced plan
+is missing, stale, or invalid, fail before recording a new attempt or profile
+change. Derived Markdown views may be rebuilt from valid state; they never
+override it.
 
 ## Separate the kinds of knowledge
 

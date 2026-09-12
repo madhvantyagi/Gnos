@@ -37,15 +37,19 @@ classify arbitrary prose or call a model. `AGENTS.md` is the in-repository entry
 
 ## Records and artifacts
 
-`learners/<id>/state.json` contains the profile and ordered session events.
-It is private local data, ignored by Git. Updates take a lock and atomically
-replace the file. An event ID makes retries idempotent; conflicting reuse is an
-error. Each event separates coverage, attempts, interpretation, and next step.
-A summary is derived from evidence, never from lesson counts alone.
+`learners/<id>/state.json` contains the profile, enrollment references, and
+ordered session events. It is private local data, ignored by Git. Updates take a
+lock and atomically replace the file. An event ID makes retries idempotent;
+conflicting reuse is an error. Each event separates coverage, attempts,
+interpretation, and next step. A summary is derived from evidence, never from
+lesson counts alone.
 
-`courses/<id>/course.json` describes a course; `COURSE.md` can supply narrative
-detail. Examples live under `examples/` and are explicitly fictional.
-Outputs live under `output/`. Media sources remain editable.
+The canonical living plan is
+`learners/<id>/courses/<course-id>/course.json`. State records its relative
+reference, revision, and fingerprint so a stale or missing plan fails before a
+learner mutation. Chapters contain topics; topics gain detailed lesson files
+gradually. Examples under `examples/` are explicitly fictional. Outputs live
+under the learner course workspace or `output/`; media sources remain editable.
 
 ## Media choices
 
