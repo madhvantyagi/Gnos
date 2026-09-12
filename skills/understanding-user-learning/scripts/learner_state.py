@@ -148,23 +148,43 @@ def summarize(data):
                 history.setdefault(concept, []).append(event['date'])
             entry.update(status=status, last_date=event['date'], latest=attempt)
     latest_event = events[-1] if events else None
+    courses = {id_: dict(title=c['plan']['title'], status=c['status'], revision=c['plan']['revision'])
+               for id_, c in data.get('courses', {}).items()}
+    next_step = latest_event['next_step'] if latest_event else None
+    if latest_event and courses.get(latest_event['course_id'], {}).get('status') == 'completed':
+        next_step = 'Course completed. Use its curriculum to choose a review target or agree the next goal.'
     return dict(learner_id=data['learner_id'], profile=data['profile'],
-                session_count=len(events), concepts=concepts,
+                session_count=len(events), concepts=concepts, courses=courses,
                 latest_event=latest_event,
-                next_step=latest_event['next_step'] if latest_event else None)
+                next_step=next_step)
 
 
 def mutate(root, learner, command, payload=None):
     path = state_path(root, learner)
     with locked(root, learner):
         data = read_state(root, learner) if path.exists() else dict(
-            schema_version=1, learner_id=learner, profile={}, events=[])
-        if command == 'record':
+            schema_version=1, learner_id=learner, profile={}, courses={}, events=[])
+        if command == 'enroll':
+            sys.path.insert(0, str(ROOT / 'skills/course-design/scripts'))
+            from course_contract import validate_course
+            plan = validate_course(payload)
+            previous = data.setdefault('courses', {}).get(plan['id'])
+            if previous and previous['plan'] != plan and plan['revision'] <= previous['plan']['revision']:
+                raise ValueError('A changed course plan requires a higher revision')
+            data['courses'][plan['id']] = dict(plan=plan, status=previous['status'] if previous else 'active')
+        elif command == 'complete-course':
+            if payload not in data.get('courses', {}):
+                raise ValueError('Enroll the course before completing it')
+            data['courses'][payload]['status'] = 'completed'
+            data['courses'][payload]['completed_at'] = date.today().isoformat()
+        elif command == 'record':
             validate_event(payload)
             previous = next((e for e in data['events'] if e['id'] == payload['id']), None)
             if previous is not None:
                 if previous != payload:
                     raise ValueError('Event ID already exists with different content')
+                from memory_views import write_views
+                write_views(path, data, summarize(data))
                 return 'Already recorded; unchanged'
             data['events'].append(payload)
         elif command == 'profile':
@@ -180,6 +200,8 @@ def mutate(root, learner, command, payload=None):
         elif command == 'delete':
             if not path.exists():
                 raise ValueError('No learner record to delete')
+            from memory_views import delete_views
+            delete_views(path, data)
             path.unlink()
             try:
                 path.parent.rmdir()
@@ -189,6 +211,8 @@ def mutate(root, learner, command, payload=None):
         elif command == 'init' and path.exists():
             return 'Already initialized; unchanged'
         save_state(path, data)
+        from memory_views import write_views
+        write_views(path, data, summarize(data))
         return f'Saved {path}'
 
 
@@ -196,13 +220,17 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, default=ROOT / 'learners')
     commands = parser.add_subparsers(dest='command', required=True)
-    for command in ('init', 'summary', 'record', 'profile', 'retract', 'delete'):
+    for command in ('init', 'summary', 'record', 'profile', 'retract', 'delete', 'enroll', 'complete-course'):
         sub = commands.add_parser(command)
         sub.add_argument('learner')
         if command == 'record':
             sub.add_argument('--event', type=Path, required=True)
         if command == 'profile':
             sub.add_argument('--file', type=Path, required=True)
+        if command == 'enroll':
+            sub.add_argument('--course', type=Path, required=True)
+        if command == 'complete-course':
+            sub.add_argument('--course-id', required=True)
         if command == 'retract':
             sub.add_argument('--event-id', required=True)
     args = parser.parse_args()
@@ -214,6 +242,10 @@ def main():
         if args.command in ('record', 'profile'):
             source = args.event if args.command == 'record' else args.file
             payload = json.loads(source.read_text())
+        elif args.command == 'enroll':
+            payload = json.loads(args.course.read_text())
+        elif args.command == 'complete-course':
+            payload = args.course_id
         elif args.command == 'retract':
             payload = args.event_id
         print(mutate(args.root, args.learner, args.command, payload))
