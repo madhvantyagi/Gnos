@@ -1,6 +1,6 @@
 <div align="center">
 
-# Genos
+# Gnos
 
 **A learning harness that designs your course, teaches you in real time, and adapts as you learn.**
 
@@ -14,7 +14,7 @@
 
 ## What it is
 
-Genos is a personal learning harness. You pick a topic, it builds your course, assigns you a teacher, and teaches — fetching the right content, tracking your progress, and explaining ideas with exercises, simulations, video, and imagery. It learns *you* in real time.
+Gnos is a personal learning harness. You pick a topic, it builds your course, assigns you a teacher, and teaches — fetching the right content, tracking your progress, and explaining ideas with exercises, simulations, video, and imagery. It learns *you* in real time.
 
 ## Subjects
 
@@ -25,7 +25,7 @@ Mathematics · Accounting · Computer Science · Artificial Intelligence · Econ
 ## How it works
 
 1. **Design** — shape a course around any subject or topic.
-2. **Understand** — Genos adapts to how you learn, in real time.
+2. **Understand** — Gnos adapts to how you learn, in real time.
 3. **Fetch** — it pulls the right content for where you are.
 4. **Teach** — a teacher is assigned to your course.
 
@@ -43,8 +43,8 @@ Mathematics · Accounting · Computer Science · Artificial Intelligence · Econ
 ## Getting started
 
 ```bash
-git clone https://github.com/<you>/Genos.git
-cd Genos
+git clone https://github.com/<you>/Gnos.git
+cd Gnos
 ```
 
 ## License
