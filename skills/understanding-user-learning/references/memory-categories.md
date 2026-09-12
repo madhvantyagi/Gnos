@@ -1,7 +1,8 @@
 # Memory categories and resumption
 
-The source of truth is `learners/<id>/state.json`. It holds the stated profile,
-enrolled course plans, and observed session events. After every successful
+`learners/<id>/state.json` is authoritative for the stated profile, enrollment,
+and observed session events. Each enrollment points to the canonical current
+plan at `learners/<id>/courses/<course-id>/course.json`. After every successful
 mutation, the script refreshes these separate views under `learners/<id>/memory/`:
 
 | File | What it remembers | When to read |
@@ -26,19 +27,33 @@ python3 skills/understanding-user-learning/scripts/learner_state.py record alex 
 python3 skills/understanding-user-learning/scripts/learner_state.py complete-course alex --course-id calculus
 ```
 
-Enrollment stores the validated plan and creates the chapter curriculum. Each
-learning event updates the topic evidence. A changed plan needs a higher revision;
-old events remain available under stable concept IDs. A changed plan reopens
-the course and preserves prior completion metadata in its completion history. Completing a course marks
-the curriculum completed and refreshes it with actual coverage and attempts.
-Untaught or untested topics remain explicitly marked, even when the learner
-chooses to finish. Completion is not a fabricated mastery certificate.
+Enrollment validates the supplied plan, writes it to the learner's course
+workspace, and stores only its relative reference, revision, and fingerprint in
+learner state. Each learning event updates topic evidence. A changed plan needs a
+higher revision; old events remain available under stable concept IDs. A changed
+plan reopens the course and preserves prior completion metadata in its completion
+history. Completing a course marks the curriculum completed and refreshes it
+with actual coverage and attempts. Untaught or untested topics remain explicitly
+marked, even when the learner chooses to finish. Completion is not a fabricated
+mastery certificate.
 
-Keep meaningful topic names in module `title` and optional `topic_titles`
-(concept ID → readable name). A chapter records its outcome, lead/supporting
-teachers, topics, source sections, assessment prompt, and success criteria.
-The private curriculum contains assessment criteria; do not paste those criteria
-into a live diagnostic before the learner tries, unless they request the answer.
+The curriculum follows the living hierarchy: chapters contain topics, and topics
+contain concepts plus published lesson references. It records the observable
+outcome, planning state, lead/supporting teachers, sources, planned exercises,
+and actual evidence. Private assessment criteria must not be pasted into a live
+diagnostic before the learner tries unless they request the answer.
+
+For a legacy state that still embeds course plans, run:
+
+```bash
+python3 skills/understanding-user-learning/scripts/learner_state.py \
+  migrate-courses alex
+```
+
+The migration is explicit and idempotent. It preserves attempts and completion
+history while moving the editable curriculum into its workspace. A stale plan
+fingerprint blocks resumption until the reference is reconciled; this prevents a
+quietly edited portal plan from diverging from learner state.
 
 ## Update during learning
 
