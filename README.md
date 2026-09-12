@@ -1,0 +1,3 @@
+# Gnos
+
+A learning harness.
