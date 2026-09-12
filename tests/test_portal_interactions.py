@@ -9,6 +9,7 @@ from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "skills/course-design/scripts"))
+sys.path.insert(0, str(ROOT / "skills/understanding-user-learning/scripts"))
 sys.path.insert(0, str(ROOT / "tests"))
 
 from course_workspace import create_workspace, publish_lesson  # noqa: E402
@@ -23,6 +24,8 @@ from portal_interactions import (  # noqa: E402
     save_draft,
     submit_attempt,
 )
+from manage_interaction import record_reviewed_attempt  # noqa: E402
+from learner_state import mutate as mutate_learner_state, read_state  # noqa: E402
 from test_course_workspace import valid_lesson, valid_v2_course  # noqa: E402
 
 
@@ -60,6 +63,7 @@ class PortalInteractionTests(unittest.TestCase):
         ]
         self.workspace = create_workspace(self.root, "alex", plan)
         publish_lesson(self.workspace, open_lesson())
+        mutate_learner_state(self.root, "alex", "enroll", plan)
 
     def tearDown(self):
         self.tempdir.cleanup()
@@ -203,6 +207,71 @@ class PortalInteractionTests(unittest.TestCase):
             candidate[field] = invalid
             with self.assertRaises(ValueError):
                 review_attempt(self.workspace, attempt["attempt_id"], candidate)
+
+    def test_unreviewed_attempt_cannot_become_evidence(self):
+        attempt = submit_attempt(self.workspace, "explain-gradient", {"text": "My reasoning"},
+                                 attempt_id="attempt-unreviewed")
+
+        with self.assertRaises(ValueError):
+            record_reviewed_attempt(self.root, "alex", "gradient-descent",
+                                    attempt["attempt_id"], {})
+        self.assertEqual(read_state(self.root, "alex")["events"], [])
+
+    def test_review_creates_one_linked_evidence_event_from_stored_work(self):
+        attempt = submit_attempt(self.workspace, "explain-gradient", {"text": "My reasoning"},
+                                 attempt_id="attempt-reviewed")
+        review = {
+            "result": "correct",
+            "help": "none",
+            "kind": "application",
+            "interpretation": "The learner connected sign and local change.",
+            "next_step": "Apply the sign rule to a new example.",
+        }
+        review_attempt(self.workspace, attempt["attempt_id"], review)
+
+        event_id = record_reviewed_attempt(
+            self.root, "alex", "gradient-descent", attempt["attempt_id"], review
+        )
+        linked = read_attempt(self.workspace, attempt["attempt_id"])
+        state = read_state(self.root, "alex")
+
+        self.assertEqual(event_id, "portal-attempt-reviewed")
+        self.assertEqual(linked["evidence_event_id"], event_id)
+        self.assertEqual(len(state["events"]), 1)
+        event = state["events"][0]
+        self.assertEqual(event["id"], event_id)
+        self.assertEqual(event["course_id"], "gradient-descent")
+        self.assertEqual(event["covered"], ["math.derivative"])
+        self.assertEqual(event["attempts"][0]["task"],
+                         "Explain why the sign predicts the change.")
+        self.assertEqual(event["attempts"][0]["response"], "My reasoning")
+        self.assertEqual(event["attempts"][0]["result"], "correct")
+
+    def test_link_failure_leaves_event_for_retry_without_duplicate(self):
+        attempt = submit_attempt(self.workspace, "explain-gradient", {"text": "My reasoning"},
+                                 attempt_id="attempt-retry")
+        review = {
+            "result": "correct",
+            "help": "none",
+            "kind": "application",
+            "interpretation": "The response is sound.",
+            "next_step": "Transfer the idea to a new slope.",
+        }
+        review_attempt(self.workspace, attempt["attempt_id"], review)
+
+        with mock.patch("portal_interactions._write_replace", side_effect=OSError("link failed")):
+            with self.assertRaises(OSError):
+                record_reviewed_attempt(self.root, "alex", "gradient-descent",
+                                        attempt["attempt_id"], review)
+        self.assertEqual(len(read_state(self.root, "alex")["events"]), 1)
+        self.assertIsNone(read_attempt(self.workspace, attempt["attempt_id"])["evidence_event_id"])
+
+        repeated = record_reviewed_attempt(
+            self.root, "alex", "gradient-descent", attempt["attempt_id"], review
+        )
+        self.assertEqual(repeated, "portal-attempt-retry")
+        self.assertEqual(len(read_state(self.root, "alex")["events"]), 1)
+        self.assertEqual(read_attempt(self.workspace, attempt["attempt_id"])["evidence_event_id"], repeated)
 
 
 if __name__ == "__main__":

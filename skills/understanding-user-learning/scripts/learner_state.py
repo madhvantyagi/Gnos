@@ -264,6 +264,23 @@ def summarize(data, course_id=None, learners_root=None, learner_id=None, resolve
     return result
 
 
+def record_event(root, learner, event):
+    """Record evidence only for a learner's enrolled, canonical course.
+
+    The ordinary ``mutate(..., 'record', ...)`` command remains useful for
+    importing historical sessions.  Portal evidence is stricter: it must be
+    attached to an enrollment whose canonical plan still matches its saved
+    revision and fingerprint before the event is persisted.
+    """
+    data = read_state(root, learner)
+    course_id = event.get('course_id') if isinstance(event, dict) else None
+    courses = data.get('courses', {})
+    if course_id not in courses:
+        raise ValueError(f'Learner {learner!r} is not enrolled in course {course_id!r}')
+    resolve_enrolled_plan(root, learner, courses[course_id])
+    return mutate(root, learner, 'record', event)
+
+
 def _prepare_views(path, root, learner, data):
     plans = resolve_all_enrolled_plans(root, learner, data)
     summary = summarize(data, learners_root=root, learner_id=learner,

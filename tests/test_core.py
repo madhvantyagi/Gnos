@@ -268,6 +268,28 @@ class LearnerTests(unittest.TestCase):
         self.assertNotEqual(result.returncode,0)
         self.assertEqual((self.root/'alex/state.json').read_bytes(),before)
 
+    def test_portal_evidence_record_requires_enrolled_canonical_course(self):
+        self.enroll()
+        sys.path.insert(0, str(ROOT / 'skills/understanding-user-learning/scripts'))
+        import learner_state
+        event = dict(id='portal-attempt-fixed', date='2026-01-01', course_id='test-course',
+                     covered=['math.derivative'],
+                     attempts=[dict(concept='math.derivative', task='Find slope',
+                                    response='1', result='correct', help='none',
+                                    kind='application')],
+                     interpretation='The learner applied the slope rule.',
+                     next_step='Apply it to a new example.')
+        self.assertTrue(learner_state.record_event(self.root, 'alex', event).startswith('Saved '))
+
+        canonical = self.root / 'alex/courses/test-course/course.json'
+        changed = json.loads(canonical.read_text())
+        changed['title'] = 'Changed canonical plan'
+        canonical.write_text(json.dumps(changed))
+        before = (self.root / 'alex/state.json').read_bytes()
+        with self.assertRaisesRegex(ValueError, 'Stale course plan reference'):
+            learner_state.record_event(self.root, 'alex', dict(event, id='portal-attempt-next'))
+        self.assertEqual((self.root / 'alex/state.json').read_bytes(), before)
+
     def test_isolation_path_validation_and_retraction(self):
         self.assertEqual(self.call('record','alex','--event',self.event()).returncode,0)
         self.assertEqual(self.call('init','bea').returncode,0)
