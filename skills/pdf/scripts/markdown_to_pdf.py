@@ -3,6 +3,7 @@
 import argparse
 from html.parser import HTMLParser
 import json
+import os
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
@@ -55,7 +56,7 @@ def convert(source, output, font_dir=None, remote_images='link'):
         path = (source.parent / unquote(parsed.path)).resolve()
         if not path.is_file():
             raise FileNotFoundError(f'Markdown image not found: {path}')
-        current['blocks'].append(dict(type='image', path=str(path), caption=caption or path.name))
+        current['blocks'].append(dict(type='image', path=os.path.relpath(path, output.parent), caption=caption or path.name))
 
     def inline(token):
         text = []
@@ -103,7 +104,7 @@ def convert(source, output, font_dir=None, remote_images='link'):
                 assets.mkdir(parents=True, exist_ok=True)
                 path = assets / f'equation-{i}.png'
                 render(token.content.strip(), path)
-                current['blocks'].append(dict(type='equation', path=str(path), caption=''))
+                current['blocks'].append(dict(type='equation', path=os.path.relpath(path, output.parent), caption=''))
             else:
                 current['blocks'].append(dict(type='code', text=token.content.rstrip()))
         elif token.type == 'code_block':
