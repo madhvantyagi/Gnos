@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ManimStoryboard",
+  "type": "object",
+  "required": [
+    "title",
+    "scenes"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "The title of the animated explainer video"
+    },
+    "aspect_ratio": {
+      "type": "string",
+      "enum": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "default": "16:9"
+    },
+    "voice": {
+      "type": "string",
+      "default": "explainer-male"
+    },
+    "scenes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "narration_cues"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique scene identifier matching the Scene class name in Python"
+          },
+          "title": {
+            "type": "string"
+          },
+          "concept_target": {
+            "type": "string"
+          },
+          "narration_cues": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "cue_id",
+                "text"
+              ],
+              "properties": {
+                "cue_id": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Exact spoken words for this cue"
+                },
+                "sync_target": {
+                  "type": "string",
+                  "description": "Description of the visual animation synchronized with this cue"
+                },
+                "voice": {
+                  "type": "string"
+                },
+                "duration": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "description": "Authored timing for silent previews; speech duration is measured."
+                },
+                "pause_after": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              }
+            },
+            "minItems": 1
+          }
+        }
+      },
+      "minItems": 1
+    }
+  }
+}
