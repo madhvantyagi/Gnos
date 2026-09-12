@@ -12,10 +12,16 @@ Use headings to mark conceptual changes rather than decorating every paragraph.
 1. Select the lesson's outcome and audience. Read only the necessary teacher and
    subject context. Do not print internal learner records or hidden assessment
    criteria in a handout unless requested.
-2. Read [references/lesson-format.md](references/lesson-format.md). Author a
-   structured lesson JSON next to its local images; keep this editable source.
-3. Generate with `python3 skills/pdf/scripts/build_pdf.py lesson.json -o output/lesson.pdf`.
-   Dependencies: ReportLab and Pillow. The optional equation helper uses Matplotlib.
+2. Write the lesson as Markdown or use an existing README. Place diagrams and
+   image-model outputs beside it and reference them with `![caption](image.png)`.
+   HTML `<img src="..." alt="...">` works too. Keep captions and source credits.
+3. Convert with `python3 skills/pdf/scripts/markdown_to_pdf.py lesson.md -o output/lesson.pdf`.
+   This also writes editable lesson JSON. Dependencies: ReportLab, Pillow,
+   markdown-it-py; Matplotlib supplies fonts and equation rendering. Fenced
+   `math` blocks render as equations. Remote images become explicit source links;
+   save a permitted local image first when the figure must appear in the PDF.
+   For precise block control, use `build_pdf.py lesson.json -o output/lesson.pdf`;
+   see [references/lesson-format.md](references/lesson-format.md).
 4. Render pages with `pdftoppm -scale-to 1400 -png output/lesson.pdf output/lesson`.
    Inspect every page. Check equations, captions, page breaks, text size, and
    source links; extraction alone cannot establish visual quality.
