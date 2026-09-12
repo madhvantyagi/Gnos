@@ -2,11 +2,11 @@
 __pycache__/
 *.py[cod]
 .venv/
-learners/
-courses/
-output/
-media/
-audio_out/
+/learners/
+/courses/
+/output/
+/media/
+/audio_out/
 .env
 .env.*
 !.env.example
