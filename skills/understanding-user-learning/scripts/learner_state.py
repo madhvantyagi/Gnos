@@ -91,6 +91,12 @@ def _course_workspace():
     return create_workspace, read_plan, workspace_path, write_plan
 
 
+def _course_progress():
+    sys.path.insert(0, str(ROOT / 'skills/course-design/scripts'))
+    from course_progress import derive_course_progress
+    return derive_course_progress
+
+
 def _validate_enrollment(course_id, entry):
     if not isinstance(entry, dict) or entry.get('status') not in ('active', 'completed'):
         raise ValueError('Invalid saved course status')
@@ -246,10 +252,16 @@ def summarize(data, course_id=None, learners_root=None, learner_id=None, resolve
     next_step = latest_event['next_step'] if latest_event else None
     if latest_event and courses.get(latest_event['course_id'], {}).get('status') == 'completed':
         next_step = 'Course completed. Use its curriculum to choose a review target or agree the next goal.'
-    return dict(learner_id=data['learner_id'], profile=data['profile'],
-                session_count=len(events), concepts=concepts, courses=courses,
-                latest_event=latest_event,
-                next_step=next_step)
+    result = dict(learner_id=data['learner_id'], profile=data['profile'],
+                  session_count=len(events), concepts=concepts, courses=courses,
+                  latest_event=latest_event,
+                  next_step=next_step)
+    if course_id is not None and course_id in courses:
+        plan = (resolved_plans[course_id] if resolved_plans is not None
+                else resolve_enrolled_plan(learners_root, learner_id,
+                                           data['courses'][course_id]))
+        result['course_progress'] = _course_progress()(plan, events)
+    return result
 
 
 def _prepare_views(path, root, learner, data):

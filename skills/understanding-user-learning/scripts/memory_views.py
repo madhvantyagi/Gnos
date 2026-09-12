@@ -42,6 +42,11 @@ def curriculum(course, events, plan=None):
     def teacher_name(id_):
         return (root/f'teachers/{id_}/SOUL.md').read_text().splitlines()[0].lstrip('# ').split(' · ')[0]
     relevant = [e for e in events if e['course_id'] == plan['id']]
+    course_scripts = Path(__file__).resolve().parents[3] / 'skills/course-design/scripts'
+    if str(course_scripts) not in sys.path:
+        sys.path.insert(0, str(course_scripts))
+    from course_progress import derive_course_progress
+    progress = derive_course_progress(plan, relevant)
     covered = {c for e in relevant for c in e['covered']}
     attempts = [(e['date'], a) for e in relevant for a in e['attempts']]
     covered.update(a['concept'] for _, a in attempts)
@@ -49,9 +54,13 @@ def curriculum(course, events, plan=None):
              f"Goal: {plan['goal']}", f"Plan revision: {plan['revision']}", '',
              'Completion records the course decision. Topic evidence below shows what was actually taught and tested.', '']
     for chapter_index, chapter in enumerate(plan['chapters'], 1):
-        lines += [f"## Chapter {chapter_index}: {chapter['title']} ({chapter['state']})", '']
+        chapter_progress = progress['chapters'][chapter['id']]
+        lines += [f"## Chapter {chapter_index}: {chapter['title']} ({chapter['state']})", '',
+                  f"Evidence: {chapter_progress['evidence']}", '']
         for topic_index, topic in enumerate(chapter['topics'], 1):
+            topic_progress = progress['topics'][topic['id']]
             lines += [f"### Topic {topic_index}: {topic['title']} ({topic['state']})", '',
+                      f"Evidence: {topic_progress['evidence']}", '',
                       f"Outcome: {topic['outcome']}",
                       f"Lead teacher: {teacher_name(topic['teacher'])}",
                       'Supporting teachers: ' + (', '.join(teacher_name(t) for t in topic['supporting_teachers']) or 'None'),
@@ -62,6 +71,10 @@ def curriculum(course, events, plan=None):
                 if evidence:
                     day, attempt = evidence[-1]
                     status = f"latest attempt {day}: {attempt['result']}, help={attempt['help']}, task={attempt['kind']}"
+                concept_progress = progress['concepts'].get(concept)
+                if concept_progress:
+                    display = concept_progress.get('display_status', concept_progress['status'])
+                    status = f"evidence {display}; {status}"
                 lines.append(f'- `{concept}`: {status}.')
             assessment = topic.get('assessment')
             if assessment:
