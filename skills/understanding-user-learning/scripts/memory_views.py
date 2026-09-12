@@ -24,6 +24,10 @@ def atomic_text(path, text):
 
 def curriculum(course, events):
     plan = course['plan']
+    root = Path(__file__).resolve().parents[3]
+    catalog = {r['id']: r for r in json.loads((root/'skills/subject/references/resources.json').read_text())}
+    def teacher_name(id_):
+        return (root/f'teachers/{id_}/SOUL.md').read_text().splitlines()[0].lstrip('# ').split(' · ')[0]
     relevant = [e for e in events if e['course_id'] == plan['id']]
     covered = {c for e in relevant for c in e['covered']}
     attempts = [(e['date'], a) for e in relevant for a in e['attempts']]
@@ -33,8 +37,8 @@ def curriculum(course, events):
              'Completion records the course decision. Topic evidence below shows what was actually taught and tested.', '']
     for index, module in enumerate(plan['modules'], 1):
         lines += [f"## Chapter {index}: {module['title']}", '', f"Outcome: {module['outcome']}",
-                  f"Lead teacher: {module['teacher']}",
-                  'Supporting teachers: ' + (', '.join(module['supporting_teachers']) or 'None'),
+                  f"Lead teacher: {teacher_name(module['teacher'])}",
+                  'Supporting teachers: ' + (', '.join(teacher_name(t) for t in module['supporting_teachers']) or 'None'),
                   f"Planned study time: {module['minutes']} minutes", '', 'Topics:', '']
         for concept in module['concepts']:
             title = module.get('topic_titles', {}).get(concept, concept.split('.', 1)[-1].replace('-', ' ').capitalize())
@@ -46,9 +50,14 @@ def curriculum(course, events):
             lines.append(f'- {title} (`{concept}`): {status}.')
         lines += ['', 'Assessment: ' + module['assessment']['prompt'], '', 'Success criteria:', '']
         lines += ['- ' + criterion for criterion in module['assessment']['success_criteria']]
-        lines += ['', 'Resources: ' + (', '.join(module['resources']) or 'No source selected'), '']
-        if module.get('source_sections'):
-            lines += ['Source sections: ' + json.dumps(module['source_sections'], ensure_ascii=False), '']
+        lines += ['', 'Resources:', '']
+        for id_ in module['resources']:
+            item = catalog[id_]
+            section = module.get('source_sections', {}).get(id_, '')
+            lines.append(f"- [{item['title']}]({item['url']})" + (f': {section}' if section else ''))
+        if not module['resources']:
+            lines.append('No source selected.')
+        lines.append('')
     return '\n'.join(lines)
 
 
