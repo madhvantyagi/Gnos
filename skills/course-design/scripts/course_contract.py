@@ -1,9 +1,9 @@
-"""Shared catalog and course contracts. Core GNOS has no third-party dependencies."""
+"""Course contracts and source catalog lookup; no third-party dependencies."""
 import json
 from pathlib import Path
 import re
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 SUBJECTS = ('math', 'physics', 'history', 'biology', 'economics', 'computer-science')
 
 
