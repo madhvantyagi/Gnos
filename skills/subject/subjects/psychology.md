@@ -1,7 +1,5 @@
 # Psychology
 
-Teacher: `teachers/psychology/SOUL.md` (Sofia Ellis).
-
 ## Route by task
 
 | Area | Inspect first | Teaching decision |

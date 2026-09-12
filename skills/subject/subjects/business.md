@@ -1,7 +1,5 @@
 # Business
 
-Teacher: `teachers/business/SOUL.md` (Marcus Reed).
-
 ## Route by task
 
 | Area | Inspect first | Teaching decision |

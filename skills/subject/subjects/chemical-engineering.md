@@ -1,7 +1,5 @@
 # Chemical engineering
 
-Teacher: `teachers/chemical-engineering/SOUL.md` (Anika Rao).
-
 ## Route by task
 
 | Area | Inspect first | Teaching decision |

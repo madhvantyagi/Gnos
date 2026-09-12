@@ -1,7 +1,5 @@
 # Artificial intelligence
 
-Teacher: `teachers/artificial-intelligence/SOUL.md` (Iris Chen).
-
 ## Route by task
 
 | Area | Inspect first | Teaching decision |

@@ -1,7 +1,5 @@
 # Accounting
 
-Teacher: `teachers/accounting/SOUL.md` (Elena Brooks).
-
 ## Route by task
 
 | Area | Inspect first | Teaching decision |

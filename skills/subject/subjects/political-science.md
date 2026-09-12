@@ -1,7 +1,5 @@
 # Political science
 
-Teacher: `teachers/political-science/SOUL.md` (Julian Ortiz).
-
 ## Route by task
 
 | Area | Inspect first | Teaching decision |

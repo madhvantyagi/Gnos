@@ -17,12 +17,12 @@ gap. Select a lead subject, then add only the bridge that the task requires.
 | biology | [Biology](subjects/biology.md) | `teachers/biology/SOUL.md` |
 | economics | [Economics](subjects/economics.md) | `teachers/economics/SOUL.md` |
 | computer-science | [Computer science](subjects/computer-science.md) | `teachers/computer-science/SOUL.md` |
-| accounting | [Accounting](subjects/accounting.md) | `teachers/accounting/SOUL.md` |
-| artificial-intelligence | [Artificial intelligence](subjects/artificial-intelligence.md) | `teachers/artificial-intelligence/SOUL.md` |
-| business | [Business](subjects/business.md) | `teachers/business/SOUL.md` |
-| psychology | [Psychology](subjects/psychology.md) | `teachers/psychology/SOUL.md` |
-| chemical-engineering | [Chemical engineering](subjects/chemical-engineering.md) | `teachers/chemical-engineering/SOUL.md` |
-| political-science | [Political science](subjects/political-science.md) | `teachers/political-science/SOUL.md` |
+
+The subject-only expansion guides are available for [accounting](subjects/accounting.md),
+[artificial intelligence](subjects/artificial-intelligence.md), [business](subjects/business.md),
+[psychology](subjects/psychology.md), [chemical engineering](subjects/chemical-engineering.md),
+and [political science](subjects/political-science.md). They do not add teacher personas
+or course-contract subjects; use an existing teacher when a lesson needs one.
 
 Read the selected subject file. Its subfield map is a starting structure, not a
 complete taxonomy. For an unlisted specialty, research a suitable primary or

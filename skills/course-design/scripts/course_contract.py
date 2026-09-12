@@ -4,9 +4,7 @@ from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parents[3]
-SUBJECTS = ('math', 'physics', 'history', 'biology', 'economics', 'computer-science',
-            'accounting', 'artificial-intelligence', 'business', 'psychology',
-            'chemical-engineering', 'political-science')
+SUBJECTS = ('math', 'physics', 'history', 'biology', 'economics', 'computer-science')
 
 
 def slug(value):

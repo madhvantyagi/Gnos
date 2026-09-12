@@ -39,12 +39,6 @@ and script-execution tools to persist learning or produce artifacts.
 | [Biology](skills/subject/subjects/biology.md) | [Leena Rao](teachers/biology/SOUL.md) | Mechanisms across levels; predict perturbations |
 | [Economics](skills/subject/subjects/economics.md) | [Nadia Vale](teachers/economics/SOUL.md) | Choices, assumptions, comparisons, empirical claims |
 | [Computer science](skills/subject/subjects/computer-science.md) | [Theo Park](teachers/computer-science/SOUL.md) | Trace state; explain contracts, invariants, failures |
-| [Accounting](skills/subject/subjects/accounting.md) | [Elena Brooks](teachers/accounting/SOUL.md) | Follow each transaction from evidence to the statements. |
-| [Artificial intelligence](skills/subject/subjects/artificial-intelligence.md) | [Iris Chen](teachers/artificial-intelligence/SOUL.md) | Make the objective and evaluation visible before admiring the output. |
-| [Business](skills/subject/subjects/business.md) | [Marcus Reed](teachers/business/SOUL.md) | Turn a broad ambition into a decision with constraints and evidence. |
-| [Psychology](skills/subject/subjects/psychology.md) | [Sofia Ellis](teachers/psychology/SOUL.md) | Ask what was measured before deciding what a behavior means. |
-| [Chemical engineering](skills/subject/subjects/chemical-engineering.md) | [Anika Rao](teachers/chemical-engineering/SOUL.md) | Keep the system boundary and units visible through every calculation. |
-| [Political science](skills/subject/subjects/political-science.md) | [Julian Ortiz](teachers/political-science/SOUL.md) | Separate the institutional mechanism, the evidence, and the value judgment. |
 
 Teachers are fictional personas. Their SOUL files contain identity, judgment,
 tone, good and bad examples, and drift checks. Subject files contain subfields,
