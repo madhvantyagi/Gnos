@@ -28,7 +28,8 @@ python3 skills/understanding-user-learning/scripts/learner_state.py complete-cou
 
 Enrollment stores the validated plan and creates the chapter curriculum. Each
 learning event updates the topic evidence. A changed plan needs a higher revision;
-old events remain available under stable concept IDs. Completing a course marks
+old events remain available under stable concept IDs. A changed plan reopens
+the course and preserves prior completion metadata in its completion history. Completing a course marks
 the curriculum completed and refreshes it with actual coverage and attempts.
 Untaught or untested topics remain explicitly marked, even when the learner
 chooses to finish. Completion is not a fabricated mastery certificate.
