@@ -35,7 +35,7 @@ ordered `topics`. A topic has:
 
 - stable `id`, `title`, and planning `state`;
 - an observable `outcome`;
-- one lead `subject` and `teacher`;
+- one lead `subject` and an optional `teacher`;
 - `supporting_subjects` and `supporting_teachers` only for named bridges;
 - repository-relative `skill_routes` needed to teach the topic;
 - stable `concepts`;
@@ -43,9 +43,13 @@ ordered `topics`. A topic has:
 - a positive `minutes` estimate;
 - `resource_ids`, `exercise_ids`, and `lesson_ids`.
 
-The lead teacher normally matches the lead subject. Supporting teachers do not
-create a panel discussion; the lead teacher owns the lesson and calls on a
-supporting discipline for a specific conceptual bridge.
+Use the matching teacher when that subject has an available SOUL and the persona
+helps the course. Otherwise store `teacher: null`; never invent a persona or
+exclude a supported subject because it has no teacher file. Supporting subjects
+may likewise appear without supporting teachers. Every named supporting teacher
+must exist and correspond to one of the named supporting subjects. Teachers do
+not create a panel discussion: one assigned teacher leads, and another appears
+only for a specific conceptual bridge.
 
 Skill routes must resolve inside this repository's `skills/` tree. Use the
 general subject entrypoint and the selected subject file when needed. Add PDF,
@@ -100,7 +104,7 @@ python3 skills/course-design/scripts/validate_course.py <course.json>
 ```
 
 The validator checks structure, slugs, repository routes, source records,
-teacher and subject availability, unique IDs, ordered dependencies, the current
+optional teacher and subject availability, unique IDs, ordered dependencies, the current
 frontier, and reference integrity. Validation cannot establish that a course is
 well researched or suitable for a particular learner; the course-design skill
 must make those judgments from the current request and evidence.

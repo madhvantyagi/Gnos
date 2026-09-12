@@ -15,9 +15,10 @@ Paths below are relative to the repository root.
 1. For a known learner, read their profile and relevant summary with
    `python3 skills/understanding-user-learning/scripts/learner_state.py summary <id>`.
    If no identity is established, teach without inventing a record.
-2. Read `skills/subject/SKILL.md`, the selected subject reference, and its
-   assigned `teachers/<subject>/SOUL.md`. On resumption, read the active course
-   and last next-step note before asking what the learner wants to study.
+2. Read `skills/subject/SKILL.md`, the selected subject reference, and the
+   assigned teacher SOUL when one exists. Some supplied subjects are deliberately
+   teacher-neutral; do not invent a persona. On resumption, read the active
+   course and last next-step note before asking what the learner wants to study.
 3. For a new goal, first distinguish a local target from sustained or
    prerequisite-rich study. Use `skills/course-design/SKILL.md` only when a
    persistent route is justified. For a local doubt, make the small plan in

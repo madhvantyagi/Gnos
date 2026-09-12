@@ -14,8 +14,9 @@ that generates every lesson before teaching begins.
    inspected and what remains assumed.
 4. Create chapters and topics at the resolution needed to see dependencies.
    Mark uncertain later branches provisional.
-5. Select one current topic. Give it an observable outcome, teacher, subject,
-   skill routes, sources, planned exercise IDs, and a precise next step.
+5. Select one current topic. Give it an observable outcome, subject, the
+   matching teacher when available and useful, skill routes, sources, planned
+   exercise IDs, and a precise next step.
 6. Create the learner course workspace and enroll the validated plan only when
    local tracking is wanted. Without an established learner or consent to local
    tracking, keep the plan in conversation.
@@ -35,8 +36,8 @@ Before continuing a course:
    uncertainty. Do not restart from chapter one because time passed.
 4. Decide whether the current topic still serves the learner's destination.
    Keep it, repair a prerequisite, or revise the future route explicitly.
-5. Load only the lead teacher, subject guidance, and skill routes needed for the
-   current lesson.
+5. Load only the assigned teacher when present, subject guidance, and skill
+   routes needed for the current lesson.
 
 ## Author and teach gradually
 

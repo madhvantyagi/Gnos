@@ -15,7 +15,7 @@ A lesson file uses `schema_version: 1` and contains:
 - `id`, `course_id`, `chapter_id`, and `topic_id`;
 - a readable `title` and observable `purpose`;
 - `concepts` drawn from that topic;
-- the assigned `teacher` and repository-relative `skill_routes`;
+- the assigned `teacher` or `null`, and repository-relative `skill_routes`;
 - `assumptions`, each supported by learner evidence or marked unverified;
 - ordered `blocks`;
 - detailed `exercises`;
@@ -29,6 +29,8 @@ but it cannot silently introduce an unrelated skill.
 
 Stable identifiers preserve links from attempts, artifacts, and questions.
 Changing the title or explanation does not justify changing the lesson ID.
+The lesson inherits the topic's teacher value. A teacher-neutral topic remains
+teacher-neutral; authoring a lesson is not permission to invent a persona.
 
 Only `ready` lessons belong in the ordinary portal sequence. A draft can be
 saved while teaching develops; it must not appear as finished learner material.

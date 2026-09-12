@@ -43,8 +43,10 @@ authoring a detailed lesson.
    diagnostic or bridge where an uncertain prerequisite first matters.
 3. Order chapters and topics by dependency. Mark distant material provisional
    when learner evidence may change it.
-4. Assign one lead subject and teacher per topic. Add supporting subjects,
-   teachers, or skills only for a named bridge or representation.
+4. Assign one lead subject per topic and its matching teacher when an available
+   persona helps. Use `null` for teacher-neutral subjects rather than inventing
+   one. Add supporting subjects, teachers, or skills only for a named bridge or
+   representation.
 5. Map each outcome to an exercise that can expose misunderstanding. Keep private
    criteria out of the learner's view until an attempt or explicit solution
    request.
