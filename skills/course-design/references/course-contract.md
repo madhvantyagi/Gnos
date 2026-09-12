@@ -20,8 +20,10 @@ Each module has:
 - `assessment`: `prompt` plus `success_criteria` (nonempty strings).
 - `resources`: IDs from `skills/subject/references/resources.json`.
 
-Optional fields include scope notes, selected chapters, artifacts, and revision
-notes. The validator tolerates extensions. Preserve their meaning when editing.
+Optional `topic_titles` maps module concept IDs to readable names;
+`source_sections` maps selected resource IDs to inspected chapter/section names.
+Both mappings require nonempty text values. Other optional fields include scope
+notes, artifacts, and revision notes. The validator tolerates extensions. Preserve their meaning when editing.
 
 ## Assessment design
 
