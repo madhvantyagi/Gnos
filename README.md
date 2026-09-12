@@ -2,169 +2,56 @@
   <img src="assets/hero.png" alt="GNOS" width="100%" />
 </p>
 
-# GNOS
+<h1 align="center">GNOS</h1>
 
-A file-based teaching harness. A learning skill chooses a teacher, designs the
-right-sized course, teaches from the learner's current understanding, and keeps
-usable evidence for the next session.
+<p align="center">
+  <strong>A learning harness that designs your course, teaches in real time, and adapts as you learn.</strong>
+</p>
 
-The Markdown files are the operating context for a file-capable LLM. Python
-scripts handle records, course checks, PDFs, and animations. GNOS does not run
-a model server or listen to conversations in the background.
+<p align="center">
+  <a href="#what-it-is">What it is</a> &nbsp;·&nbsp;
+  <a href="#what-you-can-do">What you can do</a> &nbsp;·&nbsp;
+  <a href="#subjects">Subjects</a> &nbsp;·&nbsp;
+  <a href="#how-it-works">How it works</a>
+</p>
 
-## Install as a Codex plugin
+## What it is
 
-The `codex` branch packages GNOS as a Codex plugin and bundles Excalidraw and
-Pinepaper MCP servers. Add the GitHub marketplace and install GNOS:
+GNOS is a file-based teaching harness operated by a capable LLM. A learning skill picks the right teacher, designs a course sized to your question, and teaches from where you actually are — then keeps usable evidence for next time.
 
-```bash
-codex plugin marketplace add madhvantyagi/Gnos --ref codex
-codex plugin add gnos@gnos
-```
+No model server. No background listener. Markdown governs teaching, Python handles records and media.
 
-Start a new Codex task after installation so the GNOS skills and bundled MCP
-tools enter the new task's tool inventory. Users do not configure either MCP
-separately. Excalidraw uses its hosted endpoint. Pinepaper is fetched by `npx`
-on first use with its browser runtime and then runs locally in headless mode.
-GNOS loads its detailed visual references only when the lesson needs a diagram
-or animation.
+## What you can do
 
-## Start learning
+**Design any course** — a single doubt or a full syllabus, shaped around your goal.
 
-Open this repository in your LLM workspace and ask:
+**Learn adaptively** — GNOS follows your understanding in real time and adjusts pace, depth, and style.
 
-> Use GNOS to teach me why gradient descent subtracts the gradient. Begin with
-> my current question; build a course only if we need one.
+**Get the right teacher** — each subject has a dedicated teacher with its own judgment and voice.
 
-The repository's `AGENTS.md` points to [the learning skill](skills/learning/SKILL.md).
-For a host that needs explicitly supplied context:
+**Fetch what matters** — the harness pulls only the content you need for this step.
 
-```bash
-python3 skills/learning/scripts/assemble_context.py --subject math
-```
+**Track progress** — profile, courses, taught topics, and next steps stay separated and dated.
 
-Give that output to the host along with your question. The host needs file-read
-and script-execution tools to persist learning or produce artifacts.
+**Practice properly** — exercises tuned to your level, scored on independent success not exposure.
 
-## Teachers and subjects
+**See it, not just read it** — diagrams, simulations, video, and images when they reveal more than text.
 
-| Subject | Teacher | Teaching emphasis |
-| --- | --- | --- |
-| [Mathematics](skills/subject/subjects/math.md) | [Ben Waston](teachers/math/SOUL.md) | Find the last defensible step; test conditions |
-| [Physics](skills/subject/subjects/physics.md) | [Mira Sen](teachers/physics/SOUL.md) | Predict, model, measure; check units and limits |
-| [History](skills/subject/subjects/history.md) | [Elias Ward](teachers/history/SOUL.md) | Provenance, evidence, chronology, interpretation |
-| [Biology](skills/subject/subjects/biology.md) | [Leena Rao](teachers/biology/SOUL.md) | Mechanisms across levels; predict perturbations |
-| [Economics](skills/subject/subjects/economics.md) | [Nadia Vale](teachers/economics/SOUL.md) | Choices, assumptions, comparisons, empirical claims |
-| [Computer science](skills/subject/subjects/computer-science.md) | [Theo Park](teachers/computer-science/SOUL.md) | Trace state; explain contracts, invariants, failures |
+## Subjects
 
-Teacher SOUL files contain identity, judgment, tone, good and bad examples, and
-drift checks. Subject files contain subfields, prerequisites, resources, and
-connections to the other skills.
+<a href="skills/subject/subjects/math.md">Mathematics</a> · <a href="skills/subject/subjects/accounting.md">Accounting</a> · <a href="skills/subject/subjects/computer-science.md">Computer Science</a> · <a href="skills/subject/subjects/artificial-intelligence.md">Artificial Intelligence</a> · <a href="skills/subject/subjects/economics.md">Economics</a> · <a href="skills/subject/subjects/business.md">Business</a> · <a href="skills/subject/subjects/history.md">History</a> · <a href="skills/subject/subjects/biology.md">Ecology</a> · <a href="skills/subject/subjects/chemical-engineering.md">Chemical Engineering</a> · <a href="skills/subject/subjects/political-science.md">Political Science</a>
 
-## Skill library
+also <a href="skills/subject/subjects/physics.md">Physics</a> · <a href="skills/subject/subjects/biology.md">Biology</a> · <a href="skills/subject/subjects/psychology.md">Psychology</a>
 
-| Skill | Responsibility |
-| --- | --- |
-| [Learning](skills/learning/SKILL.md) | Entry point, pacing, context selection, teaching loop |
-| [Subject](skills/subject/SKILL.md) | Subject routes, bridges, teacher and resource selection |
-| [Course design](skills/course-design/SKILL.md) | Research, prerequisite order, chapters, outcomes, assessments |
-| [Understanding user learning](skills/understanding-user-learning/SKILL.md) | Separate memory categories, observed evidence, resumption, final curriculum |
-| [PDF](skills/pdf/SKILL.md) | Markdown/README to PDF, local images, math, typography, visual review |
-| [Manim](skills/manim-voice-animation-skill/SKILL.md) | Storyboards, narration cues, animations, subtitles, render checks |
+Teachers live in <a href="teachers/">teachers/</a> · subject guides in <a href="skills/subject/subjects/">skills/subject/subjects/</a> · design notes in <a href="docs/design.md">docs/design.md</a>
 
-Every script lives in its owning skill. References are loaded when needed;
-the whole library does not need to enter every lesson's context.
+## How it works
 
-## Learning that carries into the next chat
+1. **Ask** — pose a doubt, request a lesson, or ask for a course.
+2. **Match** — GNOS selects subject and teacher, loads only your active context.
+3. **Teach** — explains the missing connection with the lightest effective medium.
+4. **Remember** — records observed evidence and the concrete next step for resumption.
 
-Pick a stable learner ID when you want local tracking. These commands illustrate
-using `alex`; they do not imply an existing learner profile:
-
-```bash
-python3 skills/understanding-user-learning/scripts/learner_state.py init alex
-python3 skills/understanding-user-learning/scripts/learner_state.py enroll alex \
-  --course examples/courses/gradient-descent/course.json
-python3 skills/understanding-user-learning/scripts/learner_state.py record alex \
-  --event output/session.json
-python3 skills/learning/scripts/assemble_context.py --subject math \
-  --learner alex --course-id gradient-descent
-```
-
-The host writes `session.json` from actual learner work using the
-[evidence contract](skills/understanding-user-learning/references/evidence.md).
-An explanation by the teacher is exposure; it is not evidence that the learner
-can solve a new problem. Independent success and later recall are distinguished.
-
-Each update refreshes separate memories for profile, courses, taught topics,
-teaching observations, and next steps. The enrolled plan becomes a chapter
-curriculum under `learners/alex/memory/courses/gradient-descent/CURRICULUM.md`.
-Complete the course when the learner chooses to finish:
-
-```bash
-python3 skills/understanding-user-learning/scripts/learner_state.py \
-  complete-course alex --course-id gradient-descent
-```
-
-The final curriculum includes topic names, teachers, assessments, sources, and
-actual coverage. Untaught or untested material remains marked. Files under
-`learners/`, personal `courses/`, and `output/` are ignored by Git. Same learner
-ID and filesystem are required for resumption; unrelated chats are not imported.
-
-## PDFs and animations
-
-Core teaching and memory scripts use standard-library Python. Optional media
-setup stays inside a project environment:
-
-```bash
-uv venv .venv --python 3.11
-uv pip install --python .venv/bin/python -r skills/pdf/requirements.txt
-uv pip install --python .venv/bin/python \
-  -r skills/manim-voice-animation-skill/requirements.txt
-```
-
-Manim may also require platform Cairo/Pango dependencies. LaTeX is needed for
-`MathTex` templates; the supplied gradient animation uses text and needs no TeX.
-
-Convert a Markdown lesson, including its local image-model outputs:
-
-```bash
-.venv/bin/python skills/pdf/scripts/markdown_to_pdf.py \
-  examples/lessons/gradient/README.md -o output/pdf/gradient-lesson.pdf
-```
-
-Generate an offline animation preview:
-
-```bash
-.venv/bin/python skills/manim-voice-animation-skill/scripts/voice_synthesizer.py \
-  --storyboard examples/animations/gradient/storyboard.json \
-  --out output/gradient/silent --silent
-GNOS_MANIFEST=output/gradient/silent/timing_manifest.json \
-  .venv/bin/python skills/manim-voice-animation-skill/scripts/render_pipeline.py \
-  render examples/animations/gradient/scene.py GradientStep \
-  -q l -o output/gradient/preview.mp4
-```
-
-Omit `--silent` and write to `output/gradient/audio` to synthesize narration
-through Edge TTS, then render using that manifest. Local MP3 recordings are also
-supported. Provider availability is external to GNOS. Cue playback attaches
-speech to the actual scene timeline and writes subtitles; a silent preview is
-always labeled as such.
-
-## Examples and checks
-
-- [Tiny chain-rule plan](examples/courses/chain-rule/course.json)
-- [Multi-subject gradient-descent course](examples/courses/gradient-descent/course.json)
-- [Course research ledger](examples/courses/gradient-descent/RESEARCH.md)
-- [Illustrated Markdown lesson](examples/lessons/gradient/README.md)
-- [Animation storyboard](examples/animations/gradient/storyboard.json)
-- [Architecture](docs/design.md)
-
-```bash
-python3 skills/learning/scripts/validate_harness.py
-python3 -m unittest discover -s tests -p test_core.py -v
-.venv/bin/python -m unittest discover -s tests -v
-```
-
-The tests cover persistence, course revisions, scoped resumption, PDF content,
-and media operations. They do not certify teaching effectiveness. Teacher quality
-should be evaluated against real learner responses and revised from evidence.
+<p align="center">
+  <sub>Start in any LLM workspace that can read files. See <a href="skills/learning/SKILL.md">skills/learning/SKILL.md</a> for the entry point.</sub>
+</p>
