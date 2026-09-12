@@ -10,6 +10,7 @@ from urllib.parse import unquote, urlparse
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / 'skills/course-design/scripts'))
 from course_contract import SUBJECTS, TEACHERS, validate_course
+from lesson_contract import validate_lesson
 
 
 def validate():
@@ -46,15 +47,27 @@ def validate():
             try: ast.parse(path.read_text(), filename=str(path))
             except SyntaxError as exc: errors.append(f'{path.relative_to(ROOT)}: {exc}')
     for path in (ROOT/'examples/courses').glob('*/course.json'):
-        try: validate_course(json.loads(path.read_text()))
-        except (OSError, ValueError) as exc: errors.append(f'{path.relative_to(ROOT)}: {exc}')
+        try:
+            raw_course = json.loads(path.read_text())
+            plan = validate_course(raw_course)
+            if raw_course.get('schema_version') != 2 or plan['schema_version'] != 2:
+                errors.append(f'{path.relative_to(ROOT)}: example must use schema version 2')
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            errors.append(f'{path.relative_to(ROOT)}: {exc}')
+    for path in (ROOT/'examples/courses').glob('*/lessons/*.json'):
+        try:
+            course_path = path.parents[1] / 'course.json'
+            plan = validate_course(json.loads(course_path.read_text()))
+            validate_lesson(json.loads(path.read_text()), plan)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            errors.append(f'{path.relative_to(ROOT)}: {exc}')
     if (ROOT/'scripts').exists():
         errors.append('Scripts must live inside their owning skill; root scripts/ exists')
     if errors:
         print('\n'.join(errors), file=sys.stderr)
         return 1
     print(f'Validated {len(skills)} skills, {len(SUBJECTS)} subjects, {len(TEACHERS)} teachers, '
-          'links, Python syntax, and example courses.')
+          'links, Python syntax, version-2 courses, and composed lessons.')
     return 0
 
 

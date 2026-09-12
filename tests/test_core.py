@@ -68,6 +68,13 @@ class LearnerTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("12 subjects, 6 teachers", result.stdout)
 
+    def test_harness_validates_version_two_examples_and_composed_lessons(self):
+        harness = ROOT / "skills/learning/scripts/validate_harness.py"
+        result = subprocess.run([sys.executable, str(harness)], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("version-2 courses", result.stdout)
+        self.assertIn("composed lessons", result.stdout)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)

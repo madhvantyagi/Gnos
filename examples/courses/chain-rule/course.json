@@ -1,34 +1,68 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "id": "chain-rule",
   "title": "Why the inner derivative appears",
   "goal": "Explain and apply the two rates in the chain rule.",
   "revision": 1,
+  "revision_notes": [
+    {
+      "revision": 1,
+      "date": "2026-09-12",
+      "reason": "Converted the focused example to the living-course contract."
+    }
+  ],
+  "starting_evidence": [],
   "assumptions": [
     "Can differentiate a square; check this only if working suggests a gap."
   ],
-  "modules": [
+  "sources": {
+    "openstax-calculus-1": {
+      "title": "Calculus Volume 1",
+      "url": "https://openstax.org/details/books/calculus-volume-1",
+      "type": "textbook landing page",
+      "checked_on": "2026-09-12",
+      "sections": ["Derivatives and the chain rule"],
+      "verification_notes": "Publisher landing page and catalog entry checked; exact lesson section should be rechecked before publication."
+    }
+  },
+  "current": {
+    "chapter_id": "two-rates",
+    "topic_id": "two-rates",
+    "next_step": "Differentiate (3x+1)^2 and explain both factors."
+  },
+  "chapters": [
     {
       "id": "two-rates",
       "title": "Two linked rates",
-      "outcome": "Differentiate (3x+1)^2 and explain both factors.",
-      "subject": "math",
-      "teacher": "math",
-      "supporting_teachers": [],
-      "concepts": [
-        "math.chain-rule"
-      ],
-      "prerequisites": [],
-      "minutes": 15,
-      "assessment": {
-        "prompt": "Differentiate (5x-2)^2 and explain the factor 5.",
-        "success_criteria": [
-          "Obtains 10(5x-2).",
-          "Relates the factor 5 to the rate of change of the inner expression."
-        ]
-      },
-      "resources": [
-        "openstax-calculus-1"
+      "state": "current",
+      "topics": [
+        {
+          "id": "two-rates",
+          "title": "Two linked rates",
+          "state": "current",
+          "outcome": "Differentiate (3x+1)^2 and explain both factors.",
+          "subject": "math",
+          "teacher": "math",
+          "supporting_subjects": [],
+          "supporting_teachers": [],
+          "skill_routes": [
+            "skills/subject/SKILL.md",
+            "skills/subject/subjects/math.md"
+          ],
+          "concepts": ["math.chain-rule"],
+          "prerequisites": [],
+          "minutes": 15,
+          "resource_ids": ["openstax-calculus-1"],
+          "exercise_ids": ["differentiate-two-rates"],
+          "lesson_ids": [],
+          "assessment": {
+            "prompt": "Differentiate (5x-2)^2 and explain the factor 5.",
+            "success_criteria": [
+              "Obtains 10(5x-2).",
+              "Relates the factor 5 to the rate of change of the inner expression."
+            ]
+          }
+        }
       ]
     }
   ]

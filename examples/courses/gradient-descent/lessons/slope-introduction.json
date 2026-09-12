@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "id": "slope-introduction",
+  "course_id": "gradient-descent",
+  "chapter_id": "local-change",
+  "topic_id": "local-change",
+  "title": "Slope predicts a nearby change",
+  "purpose": "Connect the derivative at a point to the sign and approximate size of a nearby function change.",
+  "concepts": ["math.derivative"],
+  "teacher": "math",
+  "skill_routes": [
+    "skills/subject/SKILL.md",
+    "skills/subject/subjects/math.md"
+  ],
+  "assumptions": [
+    "The learner can read a graph and evaluate a simple square."
+  ],
+  "blocks": [
+    {
+      "id": "local-change",
+      "type": "explanation",
+      "concepts": ["math.derivative"],
+      "purpose": "Introduce the derivative as a local change predictor.",
+      "text": "At x=2, f(x)=x^2 has slope f'(2)=4. For a small step dx, the change is approximately 4dx: the sign follows the step, and the size is scaled by the slope."
+    },
+    {
+      "id": "linear-approximation",
+      "type": "equation",
+      "concepts": ["math.derivative"],
+      "purpose": "State the local approximation used for prediction.",
+      "equation": "f(x+dx) - f(x) ≈ f'(x)dx"
+    },
+    {
+      "id": "worked-example",
+      "type": "explanation",
+      "concepts": ["math.derivative"],
+      "purpose": "Work one positive and one negative step without hiding the approximation.",
+      "text": "For dx=0.1, the predicted change is +0.4; for dx=-0.1, it is -0.4. These are first-order predictions, not exact values."
+    },
+    {
+      "id": "source-note",
+      "type": "source",
+      "concepts": ["math.derivative"],
+      "purpose": "Identify the calculus source behind the local-change framing.",
+      "source_id": "openstax-calculus-1",
+      "label": "OpenStax Calculus Volume 1"
+    },
+    {
+      "id": "predict-change-check",
+      "type": "exercise",
+      "concepts": ["math.derivative"],
+      "purpose": "Check whether the learner can use the local slope.",
+      "exercise_id": "predict-change"
+    }
+  ],
+  "exercises": [
+    {
+      "id": "predict-change",
+      "concepts": ["math.derivative"],
+      "prompt": "For f(x)=x^2 at x=2, what derivative value predicts the change for a small step?",
+      "response_type": "numeric",
+      "evaluation": {
+        "mode": "numeric",
+        "answer": 4,
+        "tolerance": 0.01
+      },
+      "success_criteria": [
+        "Uses the derivative at x=2.",
+        "Can apply its sign to positive and negative small steps."
+      ],
+      "reference_block_ids": ["local-change", "linear-approximation", "worked-example"]
+    }
+  ],
+  "publication": "ready",
+  "created_at": "2026-09-12T16:00:00Z",
+  "updated_at": "2026-09-12T16:00:00Z"
+}

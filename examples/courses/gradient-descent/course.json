@@ -1,192 +1,248 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "id": "gradient-descent",
   "title": "From slope to a working optimizer",
   "goal": "Explain, implement, and diagnose gradient descent on a small quadratic loss.",
   "revision": 1,
+  "revision_notes": [
+    {
+      "revision": 1,
+      "date": "2026-09-12",
+      "reason": "Converted the researched route to chapters, topics, and a current teaching frontier."
+    }
+  ],
+  "starting_evidence": [],
   "assumptions": [
     "Can rearrange equations and read basic Python.",
     "Single-variable derivative knowledge is unverified; begin with a brief check.",
-    "Suggested modules fit several short sessions; revise timing from learner evidence."
+    "Later chapters are provisional and should be revised from learner evidence."
   ],
-  "modules": [
+  "sources": {
+    "openstax-calculus-1": {
+      "title": "Calculus Volume 1",
+      "url": "https://openstax.org/details/books/calculus-volume-1",
+      "type": "textbook landing page",
+      "checked_on": "2026-09-12",
+      "sections": ["Derivatives and local change"],
+      "verification_notes": "Publisher landing page and catalog entry checked; exact lesson section should be rechecked before publication."
+    },
+    "mit-multivariable": {
+      "title": "MIT 18.02SC: Partial Derivatives",
+      "url": "https://ocw.mit.edu/courses/18-02sc-multivariable-calculus-fall-2010/pages/2.-partial-derivatives/",
+      "type": "course notes",
+      "checked_on": "2026-09-12",
+      "sections": ["Unit 2, Part B: Chain Rule, Gradient and Directional Derivatives"],
+      "verification_notes": "Official unit content and sequence inspected."
+    },
+    "mit-gradient-descent": {
+      "title": "MIT 6.390: Chapter 3, Gradient Descent",
+      "url": "https://introml.mit.edu/notes/gradient_descent.html",
+      "type": "official web notes",
+      "checked_on": "2026-09-12",
+      "sections": ["3.1 Gradient descent in one dimension", "3.2 Multiple dimensions"],
+      "verification_notes": "Official notes sections inspected for update rules and step-size behavior."
+    },
+    "python-tutorial": {
+      "title": "The Python Tutorial",
+      "url": "https://docs.python.org/3/tutorial/",
+      "type": "official web documentation",
+      "checked_on": "2026-09-12",
+      "sections": ["Control flow and defining functions"],
+      "verification_notes": "Official tutorial content inspected; it assumes programming basics."
+    }
+  },
+  "current": {
+    "chapter_id": "local-change",
+    "topic_id": "local-change",
+    "next_step": "Predict the sign and approximate size of a local function change."
+  },
+  "chapters": [
     {
-      "id": "slope",
-      "title": "Slope as local change",
-      "outcome": "Predict the sign and approximate size of a local function change.",
-      "subject": "math",
-      "teacher": "math",
-      "supporting_teachers": [],
-      "concepts": [
-        "math.derivative"
-      ],
-      "prerequisites": [],
-      "minutes": 25,
-      "assessment": {
-        "prompt": "For f(x)=x^2 at x=2, predict the change for a small positive and negative step.",
-        "success_criteria": [
-          "Uses derivative 4.",
-          "Relates sign to step direction and labels approximation."
-        ]
-      },
-      "resources": [
-        "openstax-calculus-1"
+      "id": "local-change",
+      "title": "Local change",
+      "state": "current",
+      "topics": [
+        {
+          "id": "local-change",
+          "title": "Slope as local change",
+          "state": "current",
+          "outcome": "Predict the sign and approximate size of a local function change.",
+          "subject": "math",
+          "teacher": "math",
+          "supporting_subjects": [],
+          "supporting_teachers": [],
+          "skill_routes": [
+            "skills/subject/SKILL.md",
+            "skills/subject/subjects/math.md"
+          ],
+          "concepts": ["math.derivative"],
+          "prerequisites": [],
+          "minutes": 25,
+          "resource_ids": ["openstax-calculus-1"],
+          "exercise_ids": ["predict-change"],
+          "lesson_ids": ["slope-introduction"],
+          "assessment": {
+            "prompt": "For f(x)=x^2 at x=2, predict the change for a small positive and negative step.",
+            "success_criteria": [
+              "Uses derivative 4.",
+              "Relates sign to step direction and labels approximation."
+            ]
+          }
+        }
       ]
     },
     {
-      "id": "directions",
-      "title": "Vectors and directional change",
-      "outcome": "Explain a dot product as the first-order change along a step.",
-      "subject": "math",
-      "teacher": "math",
-      "supporting_teachers": [],
-      "concepts": [
-        "math.vector",
-        "math.directional-derivative"
-      ],
-      "prerequisites": [
-        "slope"
-      ],
-      "minutes": 35,
-      "assessment": {
-        "prompt": "With gradient (2,4), compare unit steps (1,0) and (0,1).",
-        "success_criteria": [
-          "Predicts directional rates 2 and 4.",
-          "Distinguishes direction from step length."
-        ]
-      },
-      "resources": [
-        "mit-multivariable"
-      ],
-      "source_sections": {
-        "mit-multivariable": "Unit 2, Part B: Chain Rule, Gradient and Directional Derivatives"
-      }
+      "id": "multivariable-change",
+      "title": "Direction and the gradient",
+      "state": "provisional",
+      "topics": [
+        {
+          "id": "directional-change",
+          "title": "Vectors and directional change",
+          "state": "provisional",
+          "outcome": "Explain a dot product as the first-order change along a step.",
+          "subject": "math",
+          "teacher": "math",
+          "supporting_subjects": [],
+          "supporting_teachers": [],
+          "skill_routes": [
+            "skills/subject/SKILL.md",
+            "skills/subject/subjects/math.md"
+          ],
+          "concepts": ["math.vector", "math.directional-derivative"],
+          "prerequisites": ["local-change"],
+          "minutes": 35,
+          "resource_ids": ["mit-multivariable"],
+          "exercise_ids": ["compare-directions"],
+          "lesson_ids": [],
+          "assessment": {
+            "prompt": "With gradient (2,4), compare unit steps (1,0) and (0,1).",
+            "success_criteria": [
+              "Predicts directional rates 2 and 4.",
+              "Distinguishes direction from step length."
+            ]
+          }
+        },
+        {
+          "id": "gradient",
+          "title": "What the gradient tells us",
+          "state": "provisional",
+          "outcome": "Compute the gradient of x^2+2y^2 and identify a local descent direction.",
+          "subject": "math",
+          "teacher": "math",
+          "supporting_subjects": [],
+          "supporting_teachers": [],
+          "skill_routes": [
+            "skills/subject/SKILL.md",
+            "skills/subject/subjects/math.md"
+          ],
+          "concepts": ["math.partial-derivative", "math.gradient"],
+          "prerequisites": ["directional-change"],
+          "minutes": 35,
+          "resource_ids": ["mit-multivariable"],
+          "exercise_ids": ["find-descent-direction"],
+          "lesson_ids": [],
+          "assessment": {
+            "prompt": "At (1,1), compute the gradient and a direction with negative directional derivative.",
+            "success_criteria": [
+              "Obtains (2,4).",
+              "Verifies a negative dot product.",
+              "Explains that the local prediction is first-order."
+            ]
+          }
+        }
+      ]
     },
     {
-      "id": "gradient",
-      "title": "What the gradient tells us",
-      "outcome": "Compute the gradient of x^2+2y^2 and identify a local descent direction.",
-      "subject": "math",
-      "teacher": "math",
-      "supporting_teachers": [],
-      "concepts": [
-        "math.partial-derivative",
-        "math.gradient"
-      ],
-      "prerequisites": [
-        "directions"
-      ],
-      "minutes": 35,
-      "assessment": {
-        "prompt": "At (1,1), compute the gradient and a direction with negative directional derivative.",
-        "success_criteria": [
-          "Obtains (2,4).",
-          "Verifies a negative dot product.",
-          "Explains that the local prediction is first-order."
-        ]
-      },
-      "resources": [
-        "mit-multivariable"
-      ],
-      "source_sections": {
-        "mit-multivariable": "Unit 2, Part B: Chain Rule, Gradient and Directional Derivatives"
-      }
-    },
-    {
-      "id": "update",
-      "title": "One update, then another",
-      "outcome": "Implement an update and trace the actual loss change.",
-      "subject": "computer-science",
-      "teacher": "computer-science",
-      "supporting_teachers": [
-        "math"
-      ],
-      "concepts": [
-        "cs.gradient-descent-update"
-      ],
-      "prerequisites": [
-        "gradient"
-      ],
-      "minutes": 35,
-      "assessment": {
-        "prompt": "Write one gradient step for x^2+2y^2 from (1,1) with eta=0.1.",
-        "success_criteria": [
-          "Obtains (0.8,0.6).",
-          "Computes loss 1.36 after the step.",
-          "Updates both coordinates using the old point."
-        ]
-      },
-      "resources": [
-        "mit-gradient-descent",
-        "python-tutorial"
-      ],
-      "source_sections": {
-        "mit-gradient-descent": "3.1 Gradient descent in one dimension; 3.2 Multiple dimensions"
-      }
-    },
-    {
-      "id": "step-size",
-      "title": "When the step goes too far",
-      "outcome": "Show how step size changes convergence for f(x)=x^2.",
-      "subject": "math",
-      "teacher": "math",
-      "supporting_teachers": [
-        "computer-science"
-      ],
-      "concepts": [
-        "math.learning-rate"
-      ],
-      "prerequisites": [
-        "update"
-      ],
-      "minutes": 30,
-      "assessment": {
-        "prompt": "For x_next=(1-2*eta)*x, find the eta interval giving convergence from nonzero x.",
-        "success_criteria": [
-          "Derives 0<eta<1.",
-          "Explains oscillation for 0.5<eta<1.",
-          "Checks the boundary eta=1."
-        ]
-      },
-      "resources": [
-        "mit-gradient-descent",
-        "python-tutorial"
-      ],
-      "source_sections": {
-        "mit-gradient-descent": "3.1 Gradient descent in one dimension; 3.2 Multiple dimensions"
-      }
-    },
-    {
-      "id": "capstone",
-      "title": "Build and diagnose the optimizer",
-      "outcome": "Run a small solver, inspect its trace, and explain a failing step size.",
-      "subject": "computer-science",
-      "teacher": "computer-science",
-      "supporting_teachers": [
-        "math"
-      ],
-      "concepts": [
-        "cs.optimizer-diagnostics"
-      ],
-      "prerequisites": [
-        "step-size"
-      ],
-      "minutes": 45,
-      "assessment": {
-        "prompt": "Implement gradient descent on x^2+2y^2; compare eta=0.1 and eta=0.6 from (1,1).",
-        "success_criteria": [
-          "For eta=0.1, verifies decreasing loss.",
-          "Explains divergence in the y coordinate for eta=0.6.",
-          "Reports stopping criterion and distinguishes tolerance from exact optimum."
-        ]
-      },
-      "resources": [
-        "mit-gradient-descent",
-        "python-tutorial"
-      ],
-      "source_sections": {
-        "mit-gradient-descent": "3.1 Gradient descent in one dimension; 3.2 Multiple dimensions"
-      }
+      "id": "optimizer-loop",
+      "title": "From gradient to optimizer",
+      "state": "provisional",
+      "topics": [
+        {
+          "id": "update-rule",
+          "title": "One update, then another",
+          "state": "provisional",
+          "outcome": "Implement an update and trace the actual loss change.",
+          "subject": "computer-science",
+          "teacher": "computer-science",
+          "supporting_subjects": ["math"],
+          "supporting_teachers": ["math"],
+          "skill_routes": [
+            "skills/subject/SKILL.md",
+            "skills/subject/subjects/computer-science.md"
+          ],
+          "concepts": ["cs.gradient-descent-update"],
+          "prerequisites": ["gradient"],
+          "minutes": 35,
+          "resource_ids": ["mit-gradient-descent", "python-tutorial"],
+          "exercise_ids": ["trace-update"],
+          "lesson_ids": [],
+          "assessment": {
+            "prompt": "Write one gradient step for x^2+2y^2 from (1,1) with eta=0.1.",
+            "success_criteria": [
+              "Obtains (0.8,0.6).",
+              "Computes loss 1.36 after the step.",
+              "Updates both coordinates using the old point."
+            ]
+          }
+        },
+        {
+          "id": "step-size",
+          "title": "When the step goes too far",
+          "state": "provisional",
+          "outcome": "Show how step size changes convergence for f(x)=x^2.",
+          "subject": "math",
+          "teacher": "math",
+          "supporting_subjects": ["computer-science"],
+          "supporting_teachers": ["computer-science"],
+          "skill_routes": [
+            "skills/subject/SKILL.md",
+            "skills/subject/subjects/math.md"
+          ],
+          "concepts": ["math.learning-rate"],
+          "prerequisites": ["update-rule"],
+          "minutes": 30,
+          "resource_ids": ["mit-gradient-descent", "python-tutorial"],
+          "exercise_ids": ["bound-step-size"],
+          "lesson_ids": [],
+          "assessment": {
+            "prompt": "For x_next=(1-2*eta)*x, find the eta interval giving convergence from nonzero x.",
+            "success_criteria": [
+              "Derives 0<eta<1.",
+              "Explains oscillation for 0.5<eta<1.",
+              "Checks the boundary eta=1."
+            ]
+          }
+        },
+        {
+          "id": "optimizer-diagnostics",
+          "title": "Build and diagnose the optimizer",
+          "state": "provisional",
+          "outcome": "Run a small solver, inspect its trace, and explain a failing step size.",
+          "subject": "computer-science",
+          "teacher": "computer-science",
+          "supporting_subjects": ["math"],
+          "supporting_teachers": ["math"],
+          "skill_routes": [
+            "skills/subject/SKILL.md",
+            "skills/subject/subjects/computer-science.md"
+          ],
+          "concepts": ["cs.optimizer-diagnostics"],
+          "prerequisites": ["step-size"],
+          "minutes": 45,
+          "resource_ids": ["mit-gradient-descent", "python-tutorial"],
+          "exercise_ids": ["diagnose-trace"],
+          "lesson_ids": [],
+          "assessment": {
+            "prompt": "Implement gradient descent on x^2+2y^2; compare eta=0.1 and eta=0.6 from (1,1).",
+            "success_criteria": [
+              "For eta=0.1, verifies decreasing loss.",
+              "Explains divergence in the y coordinate for eta=0.6.",
+              "Reports stopping criterion and distinguishes tolerance from exact optimum."
+            ]
+          }
+        }
+      ]
     }
   ]
 }
