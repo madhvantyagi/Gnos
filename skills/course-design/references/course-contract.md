@@ -10,7 +10,9 @@ Each module has:
 
 - `id`: stable lowercase slug, unique in the course.
 - `title`, `outcome`: plain text; outcome describes a performance.
-- `subject`: `math`, `physics`, `history`, `biology`, `economics`, or `computer-science`.
+- `subject`: `math`, `physics`, `history`, `biology`, `economics`, `computer-science`,
+  `accounting`, `artificial-intelligence`, `business`, `psychology`,
+  `chemical-engineering`, or `political-science`.
 - `teacher`: the same subject ID, resolving to `teachers/<id>/SOUL.md`.
 - `supporting_teachers`: other supplied subject IDs, possibly empty.
 - `concepts`: stable IDs such as `math.derivative` or `physics.net-force`.

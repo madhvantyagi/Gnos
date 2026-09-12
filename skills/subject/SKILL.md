@@ -17,6 +17,12 @@ gap. Select a lead subject, then add only the bridge that the task requires.
 | biology | [Biology](subjects/biology.md) | `teachers/biology/SOUL.md` |
 | economics | [Economics](subjects/economics.md) | `teachers/economics/SOUL.md` |
 | computer-science | [Computer science](subjects/computer-science.md) | `teachers/computer-science/SOUL.md` |
+| accounting | [Accounting](subjects/accounting.md) | `teachers/accounting/SOUL.md` |
+| artificial-intelligence | [Artificial intelligence](subjects/artificial-intelligence.md) | `teachers/artificial-intelligence/SOUL.md` |
+| business | [Business](subjects/business.md) | `teachers/business/SOUL.md` |
+| psychology | [Psychology](subjects/psychology.md) | `teachers/psychology/SOUL.md` |
+| chemical-engineering | [Chemical engineering](subjects/chemical-engineering.md) | `teachers/chemical-engineering/SOUL.md` |
+| political-science | [Political science](subjects/political-science.md) | `teachers/political-science/SOUL.md` |
 
 Read the selected subject file. Its subfield map is a starting structure, not a
 complete taxonomy. For an unlisted specialty, research a suitable primary or
@@ -29,7 +35,8 @@ status and format notes; a landing page is not a downloaded PDF.
 
 ## Bridges
 
-- AI / machine learning: computer science leads; math supports linear algebra,
+- AI / machine learning: artificial intelligence leads model and evaluation questions;
+  computer science supports implementation; math supports linear algebra,
   probability, derivatives, and optimization.
 - Biophysics: the learner's question decides the lead; connect mechanisms to
   forces, diffusion, energy, or measurement at the appropriate scale.

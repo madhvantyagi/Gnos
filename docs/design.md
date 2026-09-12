@@ -57,10 +57,12 @@ subtitles from the same cue timings. Keep silent rendering usable offline.
 
 ## Scope decisions
 
-Initial subjects: mathematics, physics, history, biology, economics, computer
-science. AI routes through computer science with mathematics support. The wider
-subject list in the sketches is an expansion path, not a claim of supplied
-specialists. Teachers are fictional; Ben Waston adapts the existing user-owned
+Supplied subjects: mathematics, physics, history, biology, economics, computer
+science, accounting, artificial intelligence, business, psychology, chemical
+engineering, and political science. AI has its own subject route with computer
+science and mathematics support. Subject guides define scope; curated resources
+may require expansion and verification before sustained courses.
+Teachers are fictional; Ben Waston adapts the existing user-owned
 persona. No real person's identity or affiliation is implied.
 
 Skills stay in the existing `skills/` directory. Every skill has references only
