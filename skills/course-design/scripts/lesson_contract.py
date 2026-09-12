@@ -1,10 +1,11 @@
 """Validation and public projections for composed GNOS lessons."""
 import copy
+from datetime import datetime
 import hashlib
 import json
 import re
 
-from course_contract import _validate_skill_route, course_topics, nonempty, slug
+from course_contract import _validate_skill_route, nonempty, slug
 
 LESSON_SCHEMA_VERSION = 1
 BLOCK_TYPES = {
@@ -28,6 +29,10 @@ def _strings(value, label, required=False):
 def _timestamp(value, label):
     if not isinstance(value, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", value):
         raise ValueError(f"{label} must be an ISO UTC timestamp")
+    try:
+        datetime.fromisoformat(value[:-1])
+    except ValueError as exc:
+        raise ValueError(f"{label} must be a real ISO UTC timestamp") from exc
 
 
 def _artifact_ids(data):
@@ -39,7 +44,10 @@ def _artifact_ids(data):
         for artifact in artifacts:
             if not isinstance(artifact, dict):
                 raise ValueError("artifacts must contain objects")
-            ids.add(slug(artifact.get("id")))
+            artifact_id = slug(artifact.get("id"))
+            if artifact_id in ids:
+                raise ValueError(f"Duplicate artifact ID: {artifact_id}")
+            ids.add(artifact_id)
         return ids
     raise ValueError("artifacts must be a list or object")
 
@@ -47,16 +55,30 @@ def _artifact_ids(data):
 def _validate_evaluation(evaluation, response_type, label):
     if not isinstance(evaluation, dict) or evaluation.get("mode") not in EVALUATION_MODES:
         raise ValueError(f"{label}.evaluation has an invalid mode")
-    if any(evaluation.get(key) is True for key in ("execute", "executable", "code_execution", "run_code")):
+    if "execute" in evaluation or any(evaluation.get(key) is True for key in ("executable", "code_execution", "run_code")):
         raise ValueError(f"{label}: executable submitted-code evaluation is forbidden")
     mode = evaluation["mode"]
     if response_type == "multiple-choice":
         if mode != "choice":
             raise ValueError(f"{label}: multiple-choice requires choice evaluation")
+        options = evaluation.get("options")
+        if not isinstance(options, list) or not options or len(options) != len(set(options)):
+            raise ValueError(f"{label}: choice evaluation requires unique nonempty options")
+        if "answer" not in evaluation or evaluation["answer"] not in options:
+            raise ValueError(f"{label}: choice answer must be one of the options")
     elif response_type == "numeric" and mode != "numeric":
         raise ValueError(f"{label}: numeric requires numeric evaluation")
     elif response_type != "multiple-choice" and mode == "choice":
         raise ValueError(f"{label}: choice evaluation requires multiple-choice")
+    if mode == "numeric":
+        answer = evaluation.get("answer")
+        tolerance = evaluation.get("tolerance")
+        if isinstance(answer, bool) or not isinstance(answer, (int, float)):
+            raise ValueError(f"{label}: numeric answer must be numeric")
+        if isinstance(tolerance, bool) or not isinstance(tolerance, (int, float)) or tolerance < 0:
+            raise ValueError(f"{label}: numeric tolerance must be nonnegative numeric")
+    if mode == "manual" and any(key in evaluation for key in ("answer", "accepted", "tolerance", "solution")):
+        raise ValueError(f"{label}: manual evaluation cannot include private answer fields")
 
 
 def validate_lesson(data, course):
@@ -82,14 +104,21 @@ def validate_lesson(data, course):
     lesson_concepts = _strings(data.get("concepts"), "concepts", required=True)
     if any(concept not in topic["concepts"] for concept in lesson_concepts):
         raise ValueError("lesson concepts must belong to the selected topic")
-    for route in data.get("skill_routes", []):
+    routes = _strings(data.get("skill_routes"), "skill_routes", required=True)
+    if len(routes) != len(set(routes)):
+        raise ValueError("skill_routes must be unique")
+    topic_routes = set(topic.get("skill_routes", []))
+    if any(route not in topic_routes for route in routes):
+        raise ValueError("skill_routes must be a subset of the selected topic routes")
+    for route in routes:
         _validate_skill_route(route)
-    _strings(data.get("skill_routes"), "skill_routes", required=True)
     _strings(data.get("assumptions"), "assumptions")
     if data.get("publication") not in {"draft", "ready", "archived"}:
         raise ValueError("publication must be draft, ready, or archived")
     _timestamp(data.get("created_at"), "created_at")
     _timestamp(data.get("updated_at"), "updated_at")
+    if datetime.fromisoformat(data["updated_at"][:-1]) < datetime.fromisoformat(data["created_at"][:-1]):
+        raise ValueError("updated_at must be greater than or equal to created_at")
 
     exercises = data.get("exercises")
     if not isinstance(exercises, list):
@@ -162,7 +191,7 @@ def public_block(block):
 
 def public_exercise(exercise):
     evaluation = {"mode": exercise["evaluation"]["mode"]}
-    if "options" in exercise["evaluation"]:
+    if evaluation["mode"] == "choice":
         evaluation["options"] = copy.deepcopy(exercise["evaluation"]["options"])
     result = {"id": exercise["id"], "concepts": list(exercise["concepts"]), "prompt": exercise["prompt"],
               "response_type": exercise["response_type"], "evaluation": evaluation}

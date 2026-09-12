@@ -71,5 +71,62 @@ class LessonContractTests(unittest.TestCase):
         from lesson_contract import lesson_fingerprint
         self.assertEqual(lesson_fingerprint(valid_lesson()), lesson_fingerprint(copy.deepcopy(valid_lesson())))
 
+    def test_execute_key_is_rejected_for_any_value(self):
+        for value in (True, 1, "yes", False, 0, None):
+            lesson = valid_lesson()
+            lesson["exercises"][0]["evaluation"]["execute"] = value
+            with self.assertRaises(ValueError):
+                validate_lesson(lesson, valid_v2_course())
+
+    def test_choice_evaluation_requires_unique_options_and_private_member_answer(self):
+        lesson = valid_lesson()
+        exercise = lesson["exercises"][0]
+        exercise.update({"response_type": "multiple-choice", "evaluation": {
+            "mode": "choice", "options": ["increase", "decrease"], "answer": "decrease"}})
+        validate_lesson(lesson, validate_course(valid_v2_course()))
+        public = public_lesson(lesson)["exercises"][0]["evaluation"]
+        self.assertEqual(public, {"mode": "choice", "options": ["increase", "decrease"]})
+        for options, answer in (([], "decrease"), (["same", "same"], "same"), (["increase"], "decrease")):
+            invalid = copy.deepcopy(lesson)
+            invalid["exercises"][0]["evaluation"].update(options=options, answer=answer)
+            with self.assertRaises(ValueError):
+                validate_lesson(invalid, valid_v2_course())
+
+    def test_numeric_evaluation_rejects_boolean_answer_or_tolerance(self):
+        for answer, tolerance in ((True, 0.1), (1, True), (1, -0.1)):
+            lesson = valid_lesson()
+            lesson["exercises"][0]["evaluation"].update(answer=answer, tolerance=tolerance)
+            with self.assertRaises(ValueError):
+                validate_lesson(lesson, valid_v2_course())
+
+    def test_manual_evaluation_rejects_private_answer_fields(self):
+        lesson = valid_lesson()
+        exercise = lesson["exercises"][0]
+        exercise["response_type"] = "long-text"
+        exercise["evaluation"] = {"mode": "manual", "solution": "hidden"}
+        with self.assertRaises(ValueError):
+            validate_lesson(lesson, valid_v2_course())
+
+    def test_timestamps_are_real_ordered_utc_times(self):
+        for created, updated in (("2026-02-30T16:00:00Z", "2026-09-12T16:00:00Z"),
+                                 ("2026-09-12T16:00:01Z", "2026-09-12T16:00:00Z"),
+                                 ("2026-09-12T16:00:00+00:00", "2026-09-12T16:00:00Z")):
+            lesson = valid_lesson(); lesson["created_at"] = created; lesson["updated_at"] = updated
+            with self.assertRaises(ValueError):
+                validate_lesson(lesson, valid_v2_course())
+
+    def test_skill_routes_are_unique_and_subset_of_topic_routes(self):
+        for routes in (["skills/subject/SKILL.md", "skills/subject/SKILL.md"],
+                       ["skills/subject/SKILL.md", "skills/subject/subjects/physics.md"]):
+            lesson = valid_lesson(); lesson["skill_routes"] = routes
+            with self.assertRaises(ValueError):
+                validate_lesson(lesson, valid_v2_course())
+
+    def test_duplicate_artifact_ids_are_rejected(self):
+        lesson = valid_lesson()
+        lesson["artifacts"].append({"id": "slope-video"})
+        with self.assertRaises(ValueError):
+            validate_lesson(lesson, valid_v2_course())
+
 
 if __name__ == "__main__": unittest.main()
