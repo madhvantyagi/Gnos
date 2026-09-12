@@ -1,24 +1,23 @@
 # Pedagogical Screenplay & Storyboard Architecture
 
-Every high-quality Manim animation starts with a structured storyboard. Animations
-created without an explicit screenplay suffer from pacing mismatch, visual
-clutter, and cognitive overload. The storyboard is also the handoff between GNOS
+Plan the concept, narration, visible changes, and timing before coding.
+The storyboard is the handoff between GNOS
 teaching context and the renderer: name the subject, concept, lead teacher,
 course notation, learner target, and relevant prerequisite assumption in its
 notes or an adjacent design record. Never infer a learner identity.
 
 The artifact should answer one question: what can the learner do or explain
-after seeing this change? A visual is evidence for that outcome, not evidence
-that the learner mastered it. Leave a small prediction, explanation, or changed
+after seeing this change? The visual supplies an example; the learner
+still needs to demonstrate understanding. Leave a small prediction, explanation, or changed
 case check for the teacher to use after the render.
 
 ---
 
 ## 1. The 4-Element Scene Specification
 
-Define each scene using four synchronized pillars:
+Define four fields for each scene:
 
-| Pillar | Definition | Purpose |
+| Field | Definition | Purpose |
 | :--- | :--- | :--- |
 | **Concept Target** | Single core insight (e.g., "The derivative is the limit of secant slopes") | Prevents split attention |
 | **Spoken Script** | Exact words spoken by the narrator | Drives the timeline |
@@ -29,13 +28,15 @@ Define each scene using four synchronized pillars:
 
 ## 2. Cognitive Load Constraints for STEM Animations
 
-Adhere to cognitive psychology principles (Sweller et al.):
-1. **Modality Principle**: Spoken explanation + animated visual is superior to on-screen written text + animated visual. Avoid displaying paragraphs of text; show only mathematical symbols, diagrams, and labels.
+1. **Readable visuals**: Keep labels short when narration carries the explanation.
+   Supply captions and a transcript; use written explanations when the learner
+   needs them. Do not assume speech suits every learner or setting.
 2. **Temporal Contiguity**: Start the visual action when the narration identifies
    the relevant object or change. A short lead-in can establish context, but do
    not animate an unexplained result several seconds early.
 3. **Signaling (Cueing)**: When mentioning a term or variable, highlight the corresponding visual element (e.g. `Indicate(obj)` or `Circumscribe(obj)`).
-4. **Segmenting**: Break complex derivations into scenes under 45 seconds each.
+4. **Segmenting**: Split where the learner must inspect a result before the next
+   dependency. Leave room to pause or replay; duration follows concept density.
 
 ---
 
@@ -81,8 +82,10 @@ silent preview; measured audio duration is authoritative when audio exists.
 
 ## 4. Narration Pacing Guidelines
 
-- **Speaking Rate**: Aim for 130–150 words per minute. Math explainers require slower pacing than conversational podcasts to allow working memory processing.
-- **Micro-Pauses**: Add 0.5s to 1.0s of silence (`self.wait(0.5)`) after complex visual transformations to let the viewer inspect the resulting state before continuing narration.
+- **Speaking rate**: Read the script aloud while following the objects. Slow
+  down when notation or a new inference needs inspection; measure the recording.
+- **Pauses**: Set `pause_after` on a cue when its final state needs inspection.
+  Review the measured result; do not add the same pause again in scene code.
 - **No Filler**: Avoid setup phrases that consume a cue without advancing the
   learner's question. Begin with the phenomenon, paradox, or central question.
 
