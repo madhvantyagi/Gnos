@@ -1,0 +1,12 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.venv/
+learners/
+courses/
+output/
+media/
+audio_out/
+.env
+.env.*
+!.env.example
