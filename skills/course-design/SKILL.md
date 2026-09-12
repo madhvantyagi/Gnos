@@ -21,6 +21,14 @@ check. Keep this plan in the turn; a course file is unnecessary unless requested
 For sustained study, read [references/course-contract.md](references/course-contract.md)
 and create `courses/<slug>/course.json` plus a readable `COURSE.md` if useful.
 
+## Research the route
+
+Before fixing the chapters of a sustained course, read
+[references/course-research.md](references/course-research.md). Verify topic
+scope, prerequisites, sequence, assessment fit, and source sections. Preserve
+what was checked and what remains assumed in the course's `RESEARCH.md`.
+A familiar course title or generated syllabus is not verification.
+
 ## Build a teachable path
 
 1. Phrase outcomes as observable actions: derive, predict, implement, distinguish,
