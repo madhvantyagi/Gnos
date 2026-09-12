@@ -1,18 +1,25 @@
-<div align="center">
+<p align="center">
+  <img src="assets/hero.png" alt="Gnos" width="100%" />
+</p>
 
-# Gnos
+<p align="center">
+  <a href="#what-it-is">What it is</a> ·
+  <a href="#subjects">Subjects</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#getting-started">Getting started</a>
+</p>
 
-**A learning harness that designs your course, teaches you in real time, and adapts as you learn.**
+<h1 align="center">Gnos</h1>
 
-<img src="assets/hero.png" alt="Gnos" width="100%" />
+<p align="center">
+  <b>A learning harness that designs your course, teaches you in real time, and adapts as you learn.</b>
+</p>
 
-<br/>
-
-[Subjects](#subjects) · [How it works](#how-it-works) · [Features](#features) · [Getting started](#getting-started)
-
-</div>
-
----
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License"></a>
+  <a href="#subjects"><img src="https://img.shields.io/badge/status-active-brightgreen" alt="Status"></a>
+</p>
 
 ## What it is
 
@@ -22,7 +29,18 @@ It's built to teach almost anything — from the sciences to the humanities — 
 
 ## Subjects
 
-Mathematics · Accounting · Computer Science · Artificial Intelligence · Economics · Business · History · Ecology · Chemical Engineering · Political Science
+<p>
+  <img src="https://img.shields.io/badge/Mathematics-1e88e5" alt="Mathematics">
+  <img src="https://img.shields.io/badge/Accounting-43a047" alt="Accounting">
+  <img src="https://img.shields.io/badge/Computer%20Science-8e24aa" alt="Computer Science">
+  <img src="https://img.shields.io/badge/Artificial%20Intelligence-f4511e" alt="Artificial Intelligence">
+  <img src="https://img.shields.io/badge/Economics-fdd835" alt="Economics">
+  <img src="https://img.shields.io/badge/Business-00897b" alt="Business">
+  <img src="https://img.shields.io/badge/History-a1887f" alt="History">
+  <img src="https://img.shields.io/badge/Ecology-7cb342" alt="Ecology">
+  <img src="https://img.shields.io/badge/Chemical%20Engineering-3949ab" alt="Chemical Engineering">
+  <img src="https://img.shields.io/badge/Political%20Science-6d4c41" alt="Political Science">
+</p>
 
 — and more.
 
@@ -47,7 +65,7 @@ Mathematics · Accounting · Computer Science · Artificial Intelligence · Econ
 ## Getting started
 
 ```bash
-git clone https://github.com/<you>/Gnos.git
+git clone https://github.com/madhvantyagi/Gnos.git
 cd Gnos
 ```
 
