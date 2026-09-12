@@ -26,6 +26,11 @@ _CONTEXT_IDS = (
     "artifact_id", "exercise_id", "attempt_id",
 )
 _REVIEW_FIELDS = ("result", "help", "kind", "interpretation", "next_step")
+_REVIEW_ENUMS = {
+    "result": {"correct", "partial", "incorrect"},
+    "help": {"none", "hint", "worked-example"},
+    "kind": {"application", "retrieval", "transfer"},
+}
 _ID_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
@@ -442,7 +447,8 @@ def create_question(workspace: Path, question: dict, question_id: str | None = N
     with course_workspace._workspace_lock(workspace):
         if target.exists() or target.is_symlink():
             existing = _read_record(target)
-            if _json_equal(existing, record):
+            if (existing.get("text") == record["text"] and
+                    _json_equal(existing.get("context"), record["context"])):
                 result = deepcopy(existing)
                 result["question_id"] = question_id
                 return result
@@ -491,7 +497,13 @@ def answer_question(workspace: Path, question_id: str, answer: str | dict) -> di
 def _validate_review(review: dict) -> dict:
     if not isinstance(review, dict) or set(review) != set(_REVIEW_FIELDS):
         raise ValueError(f"review requires exactly: {', '.join(_REVIEW_FIELDS)}")
-    return {field: _nonempty_text(review[field], f"review.{field}", limit=20_000) for field in _REVIEW_FIELDS}
+    checked = {}
+    for field in _REVIEW_FIELDS:
+        value = _nonempty_text(review[field], f"review.{field}", limit=20_000)
+        if field in _REVIEW_ENUMS and value not in _REVIEW_ENUMS[field]:
+            raise ValueError(f"review.{field} is not a supported evidence value")
+        checked[field] = value
+    return checked
 
 
 def review_attempt(workspace: Path, attempt_id: str, review: dict) -> dict:

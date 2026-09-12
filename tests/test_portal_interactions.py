@@ -5,6 +5,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "skills/course-design/scripts"))
@@ -150,20 +151,58 @@ class PortalInteractionTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             answer_question(self.workspace, question["id"], "A different answer")
 
+    def test_explicit_question_retry_is_idempotent_across_new_timestamps(self):
+        request = {
+            "text": "Why does the sign matter?",
+            "context": {"course_id": "gradient-descent", "lesson_id": "slope-introduction"},
+        }
+        with mock.patch("portal_interactions.utc_now", side_effect=[
+            "2026-09-12T16:00:00Z", "2026-09-12T16:01:00Z",
+        ]):
+            first = create_question(self.workspace, request, question_id="question-fixed")
+            second = create_question(self.workspace, request, question_id="question-fixed")
+
+        self.assertEqual(second, first)
+        self.assertEqual(second["created_at"], first["created_at"])
+        with self.assertRaises(ValueError):
+            create_question(self.workspace, {
+                "text": "A different question",
+                "context": request["context"],
+            }, question_id="question-fixed")
+
     def test_review_stores_review_without_linking_learner_evidence(self):
         attempt = submit_attempt(self.workspace, "explain-gradient", {"text": "My reasoning"})
         reviewed = review_attempt(self.workspace, attempt["attempt_id"], {
-            "result": "needs-repair",
+            "result": "incorrect",
             "help": "none",
-            "kind": "independent",
+            "kind": "application",
             "interpretation": "The sign rule is not yet connected to change.",
             "next_step": "Revisit the local-change example.",
         })
 
         self.assertEqual(reviewed["status"], "reviewed")
-        self.assertEqual(reviewed["review"]["result"], "needs-repair")
+        self.assertEqual(reviewed["review"]["result"], "incorrect")
         self.assertIsNone(reviewed["evidence_event_id"])
         self.assertIsNone(read_attempt(self.workspace, attempt["attempt_id"])["evidence_event_id"])
+
+    def test_review_rejects_values_outside_existing_evidence_enums(self):
+        attempt = submit_attempt(self.workspace, "explain-gradient", {"text": "My reasoning"})
+        valid = {
+            "result": "correct",
+            "help": "none",
+            "kind": "retrieval",
+            "interpretation": "The learner recalled the sign rule.",
+            "next_step": "Apply it to a new example.",
+        }
+        for field, invalid in {
+            "result": "needs-repair",
+            "help": "independent",
+            "kind": "transfer-without-evidence",
+        }.items():
+            candidate = dict(valid)
+            candidate[field] = invalid
+            with self.assertRaises(ValueError):
+                review_attempt(self.workspace, attempt["attempt_id"], candidate)
 
 
 if __name__ == "__main__":
