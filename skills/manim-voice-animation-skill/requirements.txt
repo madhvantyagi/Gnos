@@ -1,0 +1,4 @@
+manim==0.21.0
+edge-tts>=7,<8
+imageio-ffmpeg>=0.6,<1
+mutagen>=1.47,<2
