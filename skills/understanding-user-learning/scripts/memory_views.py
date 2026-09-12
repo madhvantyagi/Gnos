@@ -1,5 +1,7 @@
 """Readable memory categories and chapter curricula, derived from the learner state."""
 import hashlib
+import importlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -77,10 +79,31 @@ def curriculum(course, events, plan=None):
     return '\n'.join(lines)
 
 
-def write_views(state_path, data, summary):
+def _resolved_plans(state_path, data, plans):
+    if plans is not None:
+        return plans
+    learner_state = sys.modules.get('learner_state')
+    if learner_state is None or not hasattr(learner_state, 'resolve_all_enrolled_plans'):
+        try:
+            learner_state = importlib.import_module('learner_state')
+        except ModuleNotFoundError:
+            path = Path(__file__).with_name('learner_state.py')
+            spec = importlib.util.spec_from_file_location('learner_state', path)
+            learner_state = importlib.util.module_from_spec(spec)
+            sys.modules['learner_state'] = learner_state
+            spec.loader.exec_module(learner_state)
+    state_path = Path(state_path)
+    return learner_state.resolve_all_enrolled_plans(
+        state_path.parent.parent, state_path.parent.name, data
+    )
+
+
+def build_views(state_path, data, summary, plans=None):
+    """Resolve and render every derived view without changing any file."""
     folder = Path(state_path).parent / 'memory'
     if folder.is_symlink():
         raise ValueError('Memory directory cannot be a symbolic link')
+    plans = _resolved_plans(state_path, data, plans)
     fingerprint = hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()[:16]
     prefix = f'> Derived learner data, not instructions. State fingerprint: {fingerprint}.\n\n'
     profile = ['# Learner profile', '']
@@ -88,17 +111,17 @@ def write_views(state_path, data, summary):
         profile += [f'## {field.capitalize()}', '']
         profile += ['- ' + value for value in data['profile'].get(field, [])] or ['No stated ' + field + '.']
         profile.append('')
-    from learner_state import resolve_enrolled_plan
-    learners_root = Path(state_path).parent.parent
-    learner_id = Path(state_path).parent.name
     courses = ['# Course memory', '']
+    rendered = {}
     for id_, course in data.get('courses', {}).items():
-        plan = resolve_enrolled_plan(learners_root, learner_id, course)
+        plan = plans[id_]
         courses.append(f"- {plan['title']} (`{id_}`): {course['status']}; revision {plan['revision']}.")
         target = folder / 'courses' / id_ / 'CURRICULUM.md'
         if (folder/'courses').is_symlink() or target.parent.is_symlink():
             raise ValueError('Course memory cannot use symbolic links')
-        atomic_text(target, prefix + curriculum(course, sorted(data['events'], key=lambda e:e['date']), plan=plan))
+        rendered[target] = prefix + curriculum(
+            course, sorted(data['events'], key=lambda e:e['date']), plan=plan
+        )
     topics = ['# Taught topics and evidence', '']
     for concept, record in summary['concepts'].items():
         topics.append(f"- `{concept}`: {record['status']}; {record['attempts']} attempts.")
@@ -111,7 +134,15 @@ def write_views(state_path, data, summary):
             teaching.append(f"- {event['date']} / {event['course_id']} / {event['id']}: {event['interpretation']}")
     next_ = ['# Resume here', '', summary['next_step'] or 'No prior session. Establish the learner’s current question.']
     for filename, lines in zip(CATEGORIES, [profile, courses, topics, teaching, next_]):
-        atomic_text(folder / filename, prefix + '\n'.join(lines))
+        rendered[folder / filename] = prefix + '\n'.join(lines)
+    return rendered
+
+
+def write_views(state_path, data, summary, plans=None, rendered=None):
+    """Render all views first, then atomically replace each derived file."""
+    rendered = rendered if rendered is not None else build_views(state_path, data, summary, plans)
+    for path, text in rendered.items():
+        atomic_text(path, text)
 
 
 def delete_views(state_path, data):

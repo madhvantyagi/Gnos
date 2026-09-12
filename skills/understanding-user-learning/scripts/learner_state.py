@@ -94,6 +94,8 @@ def _course_workspace():
 def _validate_enrollment(course_id, entry):
     if not isinstance(entry, dict) or entry.get('status') not in ('active', 'completed'):
         raise ValueError('Invalid saved course status')
+    if not isinstance(entry.get('completion_history', []), list):
+        raise ValueError('completion_history must be a list')
     if 'plan' in entry:
         _, validate_course = _course_contract()
         plan = validate_course(entry.get('plan'))
@@ -110,8 +112,6 @@ def _validate_enrollment(course_id, entry):
     fingerprint = entry.get('plan_fingerprint')
     if not isinstance(fingerprint, str) or not re.fullmatch(r'[0-9a-f]{64}', fingerprint):
         raise ValueError('Invalid saved course plan fingerprint')
-    if not isinstance(entry.get('completion_history', []), list):
-        raise ValueError('completion_history must be a list')
 
 
 def resolve_enrolled_plan(learners_root: Path, learner_id: str, entry: dict) -> dict:
@@ -146,6 +146,19 @@ def resolve_enrolled_plan(learners_root: Path, learner_id: str, entry: dict) -> 
             f"canonical plan is revision {plan['revision']} / {actual}"
         )
     return plan
+
+
+def resolve_all_enrolled_plans(learners_root: Path, learner_id: str, data: dict) -> dict:
+    """Resolve every enrollment before a mutation can be persisted or rendered."""
+    courses = data.get('courses', {})
+    if not isinstance(courses, dict):
+        raise ValueError('courses must be an object')
+    plans = {}
+    for course_id, entry in courses.items():
+        slug(course_id)
+        _validate_enrollment(course_id, entry)
+        plans[course_id] = resolve_enrolled_plan(learners_root, learner_id, entry)
+    return plans
 
 
 def read_state(root, learner):
@@ -206,7 +219,7 @@ def save_state(path, data):
             os.unlink(name)
 
 
-def summarize(data, course_id=None, learners_root=None, learner_id=None):
+def summarize(data, course_id=None, learners_root=None, learner_id=None, resolved_plans=None):
     concepts = {}
     events = sorted([e for e in data['events'] if course_id is None or e['course_id'] == course_id], key=lambda e: e['date'])
     history = {}
@@ -227,7 +240,8 @@ def summarize(data, course_id=None, learners_root=None, learner_id=None):
     latest_event = events[-1] if events else None
     courses = {}
     for id_, entry in data.get('courses', {}).items():
-        plan = resolve_enrolled_plan(learners_root, learner_id, entry)
+        plan = (resolved_plans[id_] if resolved_plans is not None
+                else resolve_enrolled_plan(learners_root, learner_id, entry))
         courses[id_] = dict(title=plan['title'], status=entry['status'], revision=plan['revision'])
     next_step = latest_event['next_step'] if latest_event else None
     if latest_event and courses.get(latest_event['course_id'], {}).get('status') == 'completed':
@@ -238,11 +252,22 @@ def summarize(data, course_id=None, learners_root=None, learner_id=None):
                 next_step=next_step)
 
 
+def _prepare_views(path, root, learner, data):
+    plans = resolve_all_enrolled_plans(root, learner, data)
+    summary = summarize(data, learners_root=root, learner_id=learner,
+                        resolved_plans=plans)
+    from memory_views import build_views
+    rendered = build_views(path, data, summary, plans=plans)
+    return plans, summary, rendered
+
+
 def mutate(root, learner, command, payload=None):
     path = state_path(root, learner)
     with locked(root, learner):
         data = read_state(root, learner) if path.exists() else dict(
             schema_version=1, learner_id=learner, profile={}, courses={}, events=[])
+        if command not in ('delete', 'migrate-courses'):
+            resolve_all_enrolled_plans(root, learner, data)
         if command == 'enroll':
             course_fingerprint, validate_course = _course_contract()
             create_workspace, _, workspace_path, write_plan = _course_workspace()
@@ -317,7 +342,8 @@ def mutate(root, learner, command, payload=None):
                 if previous != payload:
                     raise ValueError('Event ID already exists with different content')
                 from memory_views import write_views
-                write_views(path, data, summarize(data, learners_root=root, learner_id=learner))
+                plans, summary, rendered = _prepare_views(path, root, learner, data)
+                write_views(path, data, summary, plans=plans, rendered=rendered)
                 return 'Already recorded; unchanged'
             data['events'].append(payload)
         elif command == 'profile':
@@ -343,9 +369,10 @@ def mutate(root, learner, command, payload=None):
             return 'Learner state deleted'
         elif command == 'init' and path.exists():
             return 'Already initialized; unchanged'
+        plans, summary, rendered = _prepare_views(path, root, learner, data)
         save_state(path, data)
         from memory_views import write_views
-        write_views(path, data, summarize(data, learners_root=root, learner_id=learner))
+        write_views(path, data, summary, plans=plans, rendered=rendered)
         return f'Saved {path}'
 
 

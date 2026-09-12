@@ -87,6 +87,72 @@ class LearnerTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('Stale course plan reference', result.stderr)
 
+    def test_stale_plan_blocks_record_profile_and_retract_without_state_write(self):
+        self.enroll()
+        self.assertEqual(self.call('record', 'alex', '--event', self.event()).returncode, 0)
+        canonical = self.root / 'alex/courses/test-course/course.json'
+        changed = json.loads(canonical.read_text())
+        changed['title'] = 'Changed title'
+        canonical.write_text(json.dumps(changed))
+        before = (self.root / 'alex/state.json').read_bytes()
+
+        profile = self.root / 'profile.json'
+        profile.write_text(json.dumps({'goals': ['Repair stale state']}))
+        commands = [
+            ('record', 'alex', '--event', self.event(id='second')),
+            ('profile', 'alex', '--file', str(profile)),
+            ('retract', 'alex', '--event-id', 'first'),
+        ]
+        for command in commands:
+            result = self.call(*command)
+            self.assertNotEqual(result.returncode, 0, command[0])
+            self.assertIn('Stale course plan reference', result.stderr)
+            self.assertEqual((self.root / 'alex/state.json').read_bytes(), before, command[0])
+
+    def test_stale_later_course_leaves_all_memory_views_unchanged(self):
+        first = CourseTests().course()
+        second = CourseTests().course()
+        second['id'] = 'second-course'
+        self.enroll(plan=first)
+        self.enroll(plan=second)
+        state_path = self.root / 'alex/state.json'
+        sys.path.insert(0, str(ROOT / 'skills/understanding-user-learning/scripts'))
+        import learner_state
+        changed_state = self.state()
+        changed_state['profile'] = {'goals': ['Would change first view']}
+        summary = learner_state.summarize(changed_state, learners_root=self.root, learner_id='alex')
+        memory_files = sorted((self.root / 'alex/memory').rglob('*'))
+        before = {path: path.read_bytes() for path in memory_files if path.is_file()}
+
+        canonical = self.root / 'alex/courses/second-course/course.json'
+        changed = json.loads(canonical.read_text())
+        changed['title'] = 'Stale second course'
+        canonical.write_text(json.dumps(changed))
+
+        import memory_views
+        with self.assertRaisesRegex(ValueError, 'Stale course plan reference'):
+            memory_views.write_views(state_path, changed_state, summary)
+        after = {path: path.read_bytes() for path in before}
+        self.assertEqual(after, before)
+
+    def test_malformed_legacy_completion_history_is_rejected_without_migration(self):
+        plan = CourseTests().course()
+        legacy = dict(schema_version=1, learner_id='alex', profile={},
+                      courses={'test-course': dict(plan=plan, status='active',
+                                                   completion_history='not-a-list')},
+                      events=[])
+        folder = self.root / 'alex'
+        folder.mkdir()
+        state_path = folder / 'state.json'
+        state_path.write_text(json.dumps(legacy))
+        before = state_path.read_bytes()
+
+        result = self.call('migrate-courses', 'alex')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('completion_history must be a list', result.stderr)
+        self.assertEqual(state_path.read_bytes(), before)
+        self.assertFalse((self.root / 'alex/courses/test-course').exists())
+
     def test_v2_curriculum_renders_chapters_and_topics(self):
         from tests.test_course_workspace import valid_v2_course
         self.enroll(plan=valid_v2_course())
