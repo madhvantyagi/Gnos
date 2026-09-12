@@ -19,6 +19,15 @@ PUBLIC_BLOCK_FIELDS = {"id", "type", "concepts", "purpose", "text", "items", "eq
                        "artifact_id", "source_id", "exercise_id", "options", "caption", "label"}
 
 
+def _finite_number(value):
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return False
+    try:
+        return math.isfinite(float(value))
+    except (TypeError, ValueError, OverflowError):
+        return False
+
+
 def _strings(value, label, required=False):
     if not isinstance(value, list) or (required and not value):
         raise ValueError(f"{label} must be a {'nonempty ' if required else ''}list")
@@ -76,11 +85,9 @@ def _validate_evaluation(evaluation, response_type, label):
     if mode == "numeric":
         answer = evaluation.get("answer")
         tolerance = evaluation.get("tolerance")
-        if (isinstance(answer, bool) or not isinstance(answer, (int, float)) or
-                not math.isfinite(float(answer))):
+        if not _finite_number(answer):
             raise ValueError(f"{label}: numeric answer must be numeric")
-        if (isinstance(tolerance, bool) or not isinstance(tolerance, (int, float)) or
-                not math.isfinite(float(tolerance)) or tolerance < 0):
+        if not _finite_number(tolerance) or tolerance < 0:
             raise ValueError(f"{label}: numeric tolerance must be nonnegative numeric")
     if mode == "manual" and any(key in evaluation for key in ("answer", "accepted", "tolerance", "solution")):
         raise ValueError(f"{label}: manual evaluation cannot include private answer fields")

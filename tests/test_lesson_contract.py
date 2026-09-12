@@ -148,5 +148,12 @@ class LessonContractTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 validate_lesson(lesson, valid_v2_course())
 
+    def test_numeric_evaluation_rejects_huge_integer_answer_and_tolerance(self):
+        for field in ("answer", "tolerance"):
+            lesson = valid_lesson()
+            lesson["exercises"][0]["evaluation"][field] = 10 ** 400
+            with self.assertRaises(ValueError):
+                validate_lesson(lesson, valid_v2_course())
+
 
 if __name__ == "__main__": unittest.main()
