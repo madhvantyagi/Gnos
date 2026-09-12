@@ -252,12 +252,51 @@ class LearnerTests(unittest.TestCase):
         self.call('record','alex','--event',self.event(course_id='test-course',next_step='Resume slope here'))
         self.call('record','alex','--event',self.event(id='other',date='2026-01-02',course_id='history',next_step='Read a diary'))
         loader=ROOT/'skills/learning/scripts/assemble_context.py'
-        result=subprocess.run([sys.executable,str(loader),'--subject','math','--learner','alex',
+        result=subprocess.run([sys.executable,str(loader),'--subject','math','--mode','course','--learner','alex',
                                '--learners-root',str(self.root),'--course-id','test-course'],capture_output=True,text=True)
         self.assertEqual(result.returncode,0,result.stderr)
         self.assertIn('Resume slope here',result.stdout)
         self.assertIn('Predict motion',result.stdout)
         self.assertNotIn('Read a diary',result.stdout)
+
+    def test_course_mode_loads_adaptive_guidance_and_current_topic_routes(self):
+        from tests.test_course_contract_v2 import valid_v2_course
+
+        course_path = self.root / 'course.json'
+        course_path.write_text(json.dumps(valid_v2_course()))
+        loader = ROOT / 'skills/learning/scripts/assemble_context.py'
+        result = subprocess.run([
+            sys.executable, str(loader), '--subject', 'math', '--mode', 'course',
+            '--course', str(course_path),
+        ], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('skills/course-design/references/adaptive-lifecycle.md', result.stdout)
+        self.assertIn('skills/course-design/references/lesson-contract.md', result.stdout)
+        self.assertIn('skills/subject/subjects/math.md', result.stdout)
+        self.assertIn('teachers/math/SOUL.md', result.stdout)
+        self.assertIn('--- COURSE DATA:', result.stdout)
+
+    def test_course_mode_rejects_subject_mismatch(self):
+        from tests.test_course_contract_v2 import valid_v2_course
+
+        course_path = self.root / 'course.json'
+        course_path.write_text(json.dumps(valid_v2_course()))
+        loader = ROOT / 'skills/learning/scripts/assemble_context.py'
+        result = subprocess.run([
+            sys.executable, str(loader), '--subject', 'physics', '--mode', 'course',
+            '--course', str(course_path),
+        ], capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('does not match the current course topic', result.stderr)
+
+    def test_local_doubt_manifest_does_not_load_course_design(self):
+        loader = ROOT / 'skills/learning/scripts/assemble_context.py'
+        result = subprocess.run([
+            sys.executable, str(loader), '--subject', 'math', '--manifest',
+        ], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotIn('skills/course-design/SKILL.md', result.stdout)
+        self.assertNotIn('skills/course-design/references/', result.stdout)
 
 
 class CourseTests(unittest.TestCase):
