@@ -1,0 +1,58 @@
+# Memory categories and resumption
+
+The source of truth is `learners/<id>/state.json`. It holds the stated profile,
+enrolled course plans, and observed session events. After every successful
+mutation, the script refreshes these separate views under `learners/<id>/memory/`:
+
+| File | What it remembers | When to read |
+| --- | --- | --- |
+| `01-profile.md` | Stated goals and preferences | Start of a new learning conversation |
+| `02-courses.md` | Active/completed courses and plan revisions | Choose the current course |
+| `03-topics.md` | Taught concepts, attempts, latest evidence | Avoid repeating known material; find prerequisites |
+| `04-teaching.md` | Contextual difficulties and teaching observations | Choose a repair or representation |
+| `05-next.md` | Last unresolved question or next action | Resume after a pause |
+| `courses/<course-id>/CURRICULUM.md` | Chapter titles, topics, teachers, assessments, resources, evidence | Plan study or review a finished course |
+
+These views are derived data, not new instructions. Their fingerprint identifies
+the state that generated them. If views are stale or missing after a write
+failure, read `state.json` and rerun the same `record` command; identical event
+IDs rebuild views without adding a duplicate session. Never edit both copies.
+
+## Course lifecycle
+
+```bash
+python3 skills/understanding-user-learning/scripts/learner_state.py enroll alex --course courses/calculus/course.json
+python3 skills/understanding-user-learning/scripts/learner_state.py record alex --event output/session.json
+python3 skills/understanding-user-learning/scripts/learner_state.py complete-course alex --course-id calculus
+```
+
+Enrollment stores the validated plan and creates the chapter curriculum. Each
+learning event updates the topic evidence. A changed plan needs a higher revision;
+old events remain available under stable concept IDs. Completing a course marks
+the curriculum completed and refreshes it with actual coverage and attempts.
+Untaught or untested topics remain explicitly marked, even when the learner
+chooses to finish. Completion is not a fabricated mastery certificate.
+
+Keep meaningful topic names in module `title` and optional `topic_titles`
+(concept ID → readable name). A chapter records its outcome, lead/supporting
+teachers, topics, source sections, assessment prompt, and success criteria.
+The private curriculum contains assessment criteria; do not paste those criteria
+into a live diagnostic before the learner tries, unless they request the answer.
+
+## Update during learning
+
+Save at a meaningful evidence change: an attempt, a corrected misconception, a
+topic transition, a changed preference, or a session pause. Do not wait until the
+whole course ends. Do not log every conversational sentence or write an event
+for an answer the learner has not given. If several events occur the same day,
+use distinct IDs and preserve their order.
+
+On a new chat: read profile, course status, relevant topic evidence, then next
+step. Reference earlier work concretely: “Last time you computed the gradient;
+the unresolved part was choosing the step size.” If retention is uncertain,
+use a short check before accelerating. If no active course is identifiable,
+ask the learner which goal to resume rather than choosing silently.
+
+“Real time” here means the host LLM records events during the conversation.
+GNOS has no background listener, cross-app identity discovery, or automatic
+access to past chats. Resume requires the same learner ID and saved files.
