@@ -12,7 +12,7 @@ from urllib.parse import urlparse
 
 from artifact_manifest import read_manifest, ready_artifacts
 from course_workspace import _read_json, read_plan
-from lesson_contract import public_lesson
+from lesson_contract import public_lesson, validate_lesson
 
 
 _SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
@@ -79,12 +79,17 @@ def _public_metadata(metadata):
                 if dimensions:
                     result[field] = dimensions
             continue
-        if field in {"thumbnail", "filename"}:
-            if isinstance(value, str):
+        if field in {"thumbnail", "captions", "transcript"}:
+            if isinstance(value, bool):
+                result[field] = value
+            elif isinstance(value, str) and _SLUG_RE.fullmatch(value):
+                # A string is an artifact ID, never a path or URL.
                 result[field] = value
             continue
-        if field in {"captions", "transcript"}:
-            if isinstance(value, (str, bool)):
+        if field == "filename":
+            if (isinstance(value, str) and value not in {".", ".."} and
+                    "\x00" not in value and "/" not in value and "\\" not in value and
+                    not urlparse(value).scheme):
                 result[field] = value
             continue
         if isinstance(value, (int, float)) and not isinstance(value, bool):
@@ -226,6 +231,7 @@ def ready_lessons(workspace: Path, plan: dict) -> list[dict]:
     lessons = []
     for path in _lesson_paths(workspace, plan):
         data = _read_json(path)
+        validate_lesson(data, plan)
         if data.get("publication") != "ready":
             continue
         lesson = public_lesson(data)

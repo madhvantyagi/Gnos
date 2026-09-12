@@ -16,6 +16,7 @@ from portal_views import (  # noqa: E402
     build_portal_view,
     public_artifact,
     recent_and_older,
+    ready_lessons,
 )
 from test_course_workspace import valid_lesson, valid_v2_course  # noqa: E402
 
@@ -35,7 +36,7 @@ def ready_artifact(artifact_id="gradient-video", artifact_type="voice-animation"
         "mime_type": "application/octet-stream",
         "metadata": {
             "duration_seconds": 42,
-            "thumbnail": "artifacts/generated/thumb.png",
+            "thumbnail": "thumbnail-artifact",
             "solution": "private metadata must not be public",
             "accepted": ["private answer"],
         },
@@ -122,9 +123,48 @@ class PortalViewTests(unittest.TestCase):
         self.assertEqual(artifact["type"], "diagram")
         self.assertEqual(
             artifact["metadata"],
-            {"duration_seconds": 42, "thumbnail": "artifacts/generated/thumb.png"},
+            {"duration_seconds": 42, "thumbnail": "thumbnail-artifact"},
         )
         self.assertEqual(artifact["location"], {"path": "artifacts/generated/diagram-one.bin"})
+
+    def test_ready_lesson_is_validated_before_public_projection(self):
+        lesson_path = self.workspace / "lessons/slope-introduction/lesson.json"
+        lesson = json.loads(lesson_path.read_text())
+        lesson["topic_id"] = "tampered-topic"
+        lesson_path.write_text(json.dumps(lesson))
+
+        with self.assertRaises(ValueError):
+            ready_lessons(self.workspace, json.loads((self.workspace / "course.json").read_text()))
+
+    def test_artifact_metadata_never_exposes_arbitrary_paths(self):
+        artifact = ready_artifact("unsafe-metadata")
+        artifact["metadata"].update({
+            "thumbnail": "artifacts/generated/thumb.png",
+            "captions": "/private/captions.vtt",
+            "transcript": "file:///private/transcript.txt",
+            "filename": "../secret.txt",
+        })
+
+        public = public_artifact(artifact)
+
+        for field in ("thumbnail", "captions", "transcript", "filename"):
+            self.assertNotIn(field, public["metadata"])
+
+    def test_artifact_metadata_accepts_safe_references_and_availability(self):
+        artifact = ready_artifact("safe-metadata")
+        artifact["metadata"].update({
+            "thumbnail": "thumbnail-artifact",
+            "captions": True,
+            "transcript": "transcript-artifact",
+            "filename": "lesson.pdf",
+        })
+
+        public = public_artifact(artifact)
+
+        self.assertEqual(public["metadata"]["thumbnail"], "thumbnail-artifact")
+        self.assertTrue(public["metadata"]["captions"])
+        self.assertEqual(public["metadata"]["transcript"], "transcript-artifact")
+        self.assertEqual(public["metadata"]["filename"], "lesson.pdf")
 
     def test_artifacts_are_grouped_by_presentation_family(self):
         view = build_portal_view(self.workspace, self.learner_summary)
