@@ -11,8 +11,8 @@ ROOT = Path(__file__).resolve().parents[1]
 PDF = ROOT / 'skills/pdf/scripts/build_pdf.py'
 
 
-@unittest.skipUnless(importlib.util.find_spec('reportlab') and importlib.util.find_spec('pypdf'),
-                     'Optional PDF tests require reportlab and pypdf')
+@unittest.skipUnless(all(importlib.util.find_spec(p) for p in ('reportlab','pypdf','matplotlib','markdown_it')),
+                     'Optional PDF tests require the PDF skill dependencies')
 class PDFTests(unittest.TestCase):
     def test_text_and_local_image_survive_export(self):
         from PIL import Image
@@ -43,6 +43,26 @@ class PDFTests(unittest.TestCase):
             result=subprocess.run([sys.executable,str(PDF),str(source),'-o',str(output)],capture_output=True)
             self.assertNotEqual(result.returncode,0)
             self.assertFalse(output.exists())
+
+    def test_markdown_relative_image_and_math_are_rendered(self):
+        from PIL import Image
+        from pypdf import PdfReader
+        with tempfile.TemporaryDirectory() as tmp:
+            folder=Path(tmp)
+            Image.new('RGB',(100,60),'teal').save(folder/'drawing.png')
+            source=folder/'README.md'
+            source.write_text('# Local lesson\n\n## Compare\n\nA < B.\n\n'
+                              '![A local figure](drawing.png)\n\n```math\nf(x)=x^2\n```\n')
+            output=folder/'export/lesson.pdf'
+            result=subprocess.run([sys.executable,str(ROOT/'skills/pdf/scripts/markdown_to_pdf.py'),
+                                   str(source),'-o',str(output)],capture_output=True,text=True)
+            self.assertEqual(result.returncode,0,result.stderr)
+            reader=PdfReader(output)
+            self.assertIn('A local figure',''.join(p.extract_text() for p in reader.pages))
+            self.assertGreaterEqual(sum(len(p.images) for p in reader.pages),2)
+            intermediate=json.loads(output.with_suffix('.lesson.json').read_text())
+            images=[b for s in intermediate['sections'] for b in s['blocks'] if b['type']=='image']
+            self.assertFalse(Path(images[0]['path']).is_absolute())
 
 
 if __name__ == '__main__':
