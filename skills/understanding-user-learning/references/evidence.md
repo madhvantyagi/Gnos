@@ -61,6 +61,25 @@ and the latest task so the teacher can judge scope. It never issues “mastered.
 Latest failure can move a concept back to practicing; earlier evidence remains.
 Upcoming reviews are teacher/learner decisions captured in `next_step`.
 
+## Portal attempts
+
+A portal submission is not learner evidence merely because it was saved,
+deterministically checked, or marked `awaiting-review`. Open-ended work becomes
+evidence only after GNOS explicitly reviews the stored prompt and the learner's
+actual response during an active teaching interaction.
+
+The reviewed-attempt bridge requires `result`, `help`, `kind`,
+`interpretation`, and `next_step`. It creates the ordinary event and links the
+attempt to deterministic event ID `portal-<attempt-id>`. The event is written
+before the link so an interruption cannot create a linked attempt with missing
+evidence. A retry recognizes an identical existing event and repairs the link;
+a conflicting event or review fails instead of rewriting history.
+
+Deterministic choice or numeric feedback can inform the explicit review, but it
+does not bypass it. A hint or revealed solution must remain represented in the
+event's help level, and submitted code remains text—it is never executed by the
+portal or the evidence bridge.
+
 The learner-state file is the source of truth for observations; summaries are
 computed, not independently edited. Atomic replacement avoids partial JSON. A
 filesystem lock prevents simultaneous writers. A stale lock after a crash must
