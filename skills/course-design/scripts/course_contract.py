@@ -64,6 +64,11 @@ def validate_course(data):
         for concept in module['concepts']:
             if not re.fullmatch(r'[a-z][a-z0-9-]*\.[a-z0-9]+(?:[.-][a-z0-9]+)*', concept):
                 raise ValueError(f'Invalid concept ID: {concept}')
+        topic_titles = module.get('topic_titles', {})
+        if not isinstance(topic_titles, dict) or any(k not in module['concepts'] for k in topic_titles):
+            raise ValueError(f'{id_}: topic_titles must map module concept IDs to text')
+        for value in topic_titles.values():
+            nonempty(value, 'topic_titles value')
         prerequisites = strings(module.get('prerequisites'), 'prerequisites')
         if any(p not in seen for p in prerequisites):
             raise ValueError(f'{id_}: prerequisites must refer to earlier modules; found missing, cyclic, or unordered dependency')
