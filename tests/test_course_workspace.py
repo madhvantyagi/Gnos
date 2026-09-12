@@ -5,6 +5,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "skills/course-design/scripts"))
@@ -20,6 +21,7 @@ from course_workspace import (  # noqa: E402
     workspace_path,
 )
 from lesson_contract import lesson_fingerprint  # noqa: E402
+import course_workspace as workspace  # noqa: E402
 
 
 def valid_v2_course():
@@ -144,11 +146,54 @@ class CourseWorkspaceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             workspace_path(self.root, "../alex", "course")
 
+        for unsafe in (self.root / "other" / "course", self.root / "alex" / "courses" / "../escape"):
+            with self.assertRaises(ValueError):
+                read_plan(unsafe)
+
         (self.root / "alex").mkdir()
         (self.root / "alex" / "courses-target").mkdir()
         (self.root / "alex" / "courses").symlink_to(self.root / "alex" / "courses-target", target_is_directory=True)
         with self.assertRaises(ValueError):
             workspace_path(self.root, "alex", "course")
+
+        workspace_target = self.root / "workspace-target"
+        workspace_target.mkdir()
+        symlink_workspace = self.root / "symlink-user" / "courses"
+        symlink_workspace.mkdir(parents=True)
+        (symlink_workspace / "gradient-descent").symlink_to(workspace_target, target_is_directory=True)
+        with self.assertRaises(ValueError):
+            workspace_path(self.root, "symlink-user", "gradient-descent")
+
+        learner_link = self.root / "linked-learner"
+        learner_link.symlink_to(self.root / "alex", target_is_directory=True)
+        with self.assertRaises(ValueError):
+            read_plan(learner_link / "courses" / "gradient-descent")
+
+        # A managed ancestor and a targeted lesson directory are both unsafe.
+        safe_root = self.root / "safe"
+        safe_root.mkdir()
+        path = create_workspace(safe_root, "alex", valid_v2_course())
+        (path / "lessons").rename(path / "lessons-real")
+        (path / "lessons").symlink_to(path / "lessons-real", target_is_directory=True)
+        with self.assertRaises(ValueError):
+            publish_lesson(path, valid_lesson())
+
+        (path / "lessons").unlink()
+        (path / "lessons-real").rename(path / "lessons")
+        target = path / "lesson-target"
+        target.mkdir()
+        (path / "lessons" / "slope-introduction").symlink_to(target, target_is_directory=True)
+        with self.assertRaises(ValueError):
+            publish_lesson(path, valid_lesson())
+
+        (path / "lessons" / "slope-introduction").unlink()
+        (path / "lessons" / "slope-introduction").mkdir()
+        (path / "lessons" / "slope-introduction" / "lesson-target.json").write_text("{}")
+        (path / "lessons" / "slope-introduction" / "lesson.json").symlink_to(
+            path / "lessons" / "slope-introduction" / "lesson-target.json"
+        )
+        with self.assertRaises(ValueError):
+            publish_lesson(path, valid_lesson())
 
     def test_plan_writes_are_atomic_and_reject_stale_fingerprints(self):
         plan = valid_v2_course()
@@ -186,6 +231,43 @@ class CourseWorkspaceTests(unittest.TestCase):
         archived["updated_at"] = "2026-09-12T16:02:00Z"
         publish_lesson(path, archived)
         self.assertEqual(read_plan(path)["chapters"][0]["topics"][0]["lesson_ids"], [])
+
+    def test_stale_publication_does_not_leave_an_orphan_lesson(self):
+        path = create_workspace(self.root, "alex", valid_v2_course())
+        lesson = valid_lesson("ready")
+        with mock.patch.object(workspace, "write_plan", side_effect=ConflictError("stale")):
+            with self.assertRaises(ConflictError):
+                publish_lesson(path, lesson)
+        self.assertFalse((path / "lessons" / lesson["id"] / "lesson.json").exists())
+        self.assertEqual(read_plan(path)["chapters"][0]["topics"][0]["lesson_ids"], [])
+        self.assertFalse((path / ".course.lock").exists())
+
+    def test_plan_write_failure_restores_existing_lesson_atomically(self):
+        path = create_workspace(self.root, "alex", valid_v2_course())
+        original = valid_lesson("draft")
+        publish_lesson(path, original)
+        lesson_path = path / "lessons" / original["id"] / "lesson.json"
+        original_bytes = lesson_path.read_bytes()
+
+        replacement = valid_lesson("ready")
+        replacement["title"] = "Replacement"
+        with mock.patch.object(workspace, "write_plan", side_effect=ConflictError("injected")):
+            with self.assertRaises(ConflictError):
+                publish_lesson(path, replacement)
+        self.assertEqual(lesson_path.read_bytes(), original_bytes)
+        self.assertEqual(read_plan(path)["chapters"][0]["topics"][0]["lesson_ids"], [])
+        self.assertFalse((path / ".course.lock").exists())
+
+    def test_plan_mutation_lock_is_cleaned_after_success_and_failure(self):
+        path = create_workspace(self.root, "alex", valid_v2_course())
+        self.assertFalse((path / ".course.lock").exists())
+        revised = copy.deepcopy(valid_v2_course())
+        revised["revision"] = 2
+        write_plan(path, revised, expected_fingerprint=course_fingerprint(valid_v2_course()))
+        self.assertFalse((path / ".course.lock").exists())
+        with self.assertRaises(ConflictError):
+            write_plan(path, valid_v2_course(), expected_fingerprint="stale")
+        self.assertFalse((path / ".course.lock").exists())
 
 
 if __name__ == "__main__":

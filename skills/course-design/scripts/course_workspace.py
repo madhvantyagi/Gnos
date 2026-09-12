@@ -1,10 +1,11 @@
 """Safe, atomic storage for learner-specific course plans and lessons."""
 
 import copy
+from contextlib import contextmanager
 import json
 import os
 from pathlib import Path
-import re
+import threading
 import tempfile
 
 from course_contract import course_fingerprint, course_topics, slug, validate_course
@@ -31,6 +32,9 @@ _WORKSPACE_DIRECTORIES = (
 
 class ConflictError(ValueError):
     """Raised when a caller tries to overwrite a changed course snapshot."""
+
+
+_LOCK_STATE = threading.local()
 
 
 def _reject_symlink(path):
@@ -65,15 +69,71 @@ def workspace_path(learners_root: Path, learner_id: str, course_id: str) -> Path
 def _workspace_path_for_operation(path: Path) -> Path:
     """Validate a workspace path supplied by a caller before touching files."""
     path = Path(path)
+    if ".." in path.parts:
+        raise ValueError("Workspace path cannot contain traversal components")
+    if len(path.parts) < 3 or path.parts[-2] != "courses":
+        raise ValueError("Workspace path must end in <learner-id>/courses/<course-id>")
+    try:
+        slug(path.parts[-3])
+        slug(path.parts[-1])
+    except ValueError as exc:
+        raise ValueError("Workspace path must use lowercase learner and course slugs") from exc
     _reject_symlink(path)
-    if not path.name:
-        raise ValueError("Workspace path must name a course")
-    if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", path.name) or len(path.name) > 80:
-        raise ValueError("Workspace path must end in a lowercase course slug")
-    _reject_existing_symlinks(path, _WORKSPACE_DIRECTORIES)
-    _reject_symlink(path / "course.json")
-    _reject_symlink(path / "manifest.json")
+    learner = path.parent.parent
+    courses = path.parent
+    for candidate in (
+        learner,
+        courses,
+        path,
+        path / "course.json",
+        path / "manifest.json",
+        path / "lessons",
+        path / ".course.lock",
+    ):
+        _reject_symlink(candidate)
     return path
+
+
+def _held_locks():
+    locks = getattr(_LOCK_STATE, "paths", None)
+    if locks is None:
+        locks = set()
+        _LOCK_STATE.paths = locks
+    return locks
+
+
+@contextmanager
+def _workspace_lock(path: Path):
+    """Hold an exclusive lock for all mutations of one workspace plan."""
+    path = Path(path)
+    key = str(path.absolute())
+    held = _held_locks()
+    if key in held:
+        yield
+        return
+
+    lock_path = path / ".course.lock"
+    _reject_symlink(lock_path)
+    flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
+    nofollow = getattr(os, "O_NOFOLLOW", 0)
+    fd = None
+    try:
+        fd = os.open(lock_path, flags | nofollow, 0o600)
+    except FileExistsError as exc:
+        raise ConflictError("Course workspace is busy; retry after refresh") from exc
+    held.add(key)
+    try:
+        os.write(fd, f"pid={os.getpid()}\n".encode("ascii"))
+        os.fsync(fd)
+        yield
+    finally:
+        held.discard(key)
+        if fd is not None:
+            os.close(fd)
+        try:
+            lock_path.unlink()
+        except FileNotFoundError:
+            pass
 
 
 def atomic_json(path: Path, data: dict) -> None:
@@ -115,6 +175,31 @@ def atomic_json(path: Path, data: dict) -> None:
                 pass
 
 
+def _atomic_bytes(path: Path, data: bytes) -> None:
+    """Atomically replace a file while preserving its original bytes."""
+    path = Path(path)
+    if not path.parent.is_dir():
+        raise FileNotFoundError(path.parent)
+    _reject_symlink(path)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="wb", dir=path.parent,
+                                         prefix=f".{path.name}.", suffix=".tmp",
+                                         delete=False) as handle:
+            temporary = Path(handle.name)
+            handle.write(data)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+        temporary = None
+    finally:
+        if temporary is not None:
+            try:
+                temporary.unlink()
+            except FileNotFoundError:
+                pass
+
+
 def _read_json(path: Path) -> dict:
     _reject_symlink(path)
     try:
@@ -146,30 +231,28 @@ def create_workspace(learners_root: Path, learner_id: str, plan: dict) -> Path:
     path = workspace_path(learners_root, learner_id, checked["id"])
     path.mkdir(parents=True, exist_ok=True)
     _workspace_path_for_operation(path)
-    _make_workspace_directories(path)
+    with _workspace_lock(path):
+        _make_workspace_directories(path)
 
-    course_file = path / "course.json"
-    if course_file.exists():
-        current = read_plan(path)
-        if course_fingerprint(current) != course_fingerprint(checked):
-            raise ConflictError("Course workspace already contains a different plan")
-    else:
-        atomic_json(course_file, checked)
+        course_file = path / "course.json"
+        if course_file.exists():
+            current = read_plan(path)
+            if course_fingerprint(current) != course_fingerprint(checked):
+                raise ConflictError("Course workspace already contains a different plan")
+        else:
+            _write_plan_unlocked(path, checked, None)
 
-    manifest_file = path / "manifest.json"
-    if not manifest_file.exists():
-        atomic_json(manifest_file, {
-            "schema_version": MANIFEST_SCHEMA_VERSION,
-            "course_id": checked["id"],
-            "artifacts": [],
-        })
+        manifest_file = path / "manifest.json"
+        if not manifest_file.exists():
+            atomic_json(manifest_file, {
+                "schema_version": MANIFEST_SCHEMA_VERSION,
+                "course_id": checked["id"],
+                "artifacts": [],
+            })
     return path
 
 
-def write_plan(path: Path, plan: dict, expected_fingerprint: str | None = None) -> str:
-    """Validate and atomically write a course plan with optimistic concurrency."""
-    checked = validate_course(plan)
-    path = _workspace_path_for_operation(Path(path))
+def _write_plan_unlocked(path: Path, checked: dict, expected_fingerprint: str | None) -> str:
     course_file = path / "course.json"
     current = read_plan(path) if course_file.exists() else None
     if expected_fingerprint is not None:
@@ -181,32 +264,62 @@ def write_plan(path: Path, plan: dict, expected_fingerprint: str | None = None) 
     return course_fingerprint(checked)
 
 
+def write_plan(path: Path, plan: dict, expected_fingerprint: str | None = None) -> str:
+    """Validate and atomically write a course plan with optimistic concurrency."""
+    checked = validate_course(plan)
+    path = _workspace_path_for_operation(Path(path))
+    with _workspace_lock(path):
+        return _write_plan_unlocked(path, checked, expected_fingerprint)
+
+
 def publish_lesson(path: Path, lesson: dict) -> str:
     """Validate and atomically save a lesson, exposing only ready lessons."""
     path = _workspace_path_for_operation(Path(path))
-    plan = read_plan(path)
-    plan_fingerprint = course_fingerprint(plan)
-    original_plan = copy.deepcopy(plan)
-    checked = validate_lesson(lesson, plan)
-    lesson_dir = path / "lessons" / checked["id"]
-    _reject_symlink(path / "lessons")
-    _reject_symlink(lesson_dir)
-    lesson_dir.mkdir(parents=False, exist_ok=True)
-    atomic_json(lesson_dir / "lesson.json", checked)
+    with _workspace_lock(path):
+        plan = read_plan(path)
+        plan_fingerprint = course_fingerprint(plan)
+        original_plan = copy.deepcopy(plan)
+        checked = validate_lesson(lesson, plan)
+        lesson_dir = path / "lessons" / checked["id"]
+        lesson_file = lesson_dir / "lesson.json"
+        _reject_symlink(lesson_dir)
+        _reject_symlink(lesson_file)
+        had_lesson = lesson_file.exists()
+        previous_bytes = lesson_file.read_bytes() if had_lesson else None
+        lesson_dir.mkdir(parents=False, exist_ok=True)
+        try:
+            atomic_json(lesson_file, checked)
 
-    # Confirm the plan did not change while the lesson snapshot was written.
-    if course_fingerprint(read_plan(path)) != plan_fingerprint:
-        raise ConflictError("Course changed; refresh before publishing lesson")
-
-    topics = course_topics(plan)
-    for topic in topics:
-        topic["lesson_ids"] = [
-            lesson_id for lesson_id in topic["lesson_ids"]
-            if lesson_id != checked["id"]
-        ]
-    if checked["publication"] == "ready":
-        selected = next(topic for topic in topics if topic["id"] == checked["topic_id"])
-        selected["lesson_ids"].append(checked["id"])
-    if plan != original_plan:
-        write_plan(path, plan, expected_fingerprint=plan_fingerprint)
-    return lesson_fingerprint(checked)
+            topics = course_topics(plan)
+            for topic in topics:
+                topic["lesson_ids"] = [
+                    lesson_id for lesson_id in topic["lesson_ids"]
+                    if lesson_id != checked["id"]
+                ]
+            if checked["publication"] == "ready":
+                selected = next(topic for topic in topics if topic["id"] == checked["topic_id"])
+                selected["lesson_ids"].append(checked["id"])
+            if plan != original_plan:
+                write_plan(path, plan, expected_fingerprint=plan_fingerprint)
+        except Exception:
+            # A plan write may have completed before surfacing an injected
+            # exception. Keep the replacement only if the plan now references
+            # that exact snapshot; otherwise restore/remove it atomically.
+            try:
+                plan_was_replaced = course_fingerprint(read_plan(path)) == course_fingerprint(plan)
+            except (OSError, ValueError):
+                plan_was_replaced = False
+            if not plan_was_replaced:
+                if had_lesson:
+                    _atomic_bytes(lesson_file, previous_bytes)
+                else:
+                    try:
+                        lesson_file.unlink()
+                    except FileNotFoundError:
+                        pass
+                    try:
+                        lesson_dir.rmdir()
+                    except OSError:
+                        pass
+            raise
+        return lesson_fingerprint(checked)
