@@ -36,6 +36,78 @@ class LearnerTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         return json.loads(result.stdout)
 
+    def state(self, learner='alex'):
+        return json.loads((self.root / learner / 'state.json').read_text())
+
+    def enroll(self, learner='alex', plan=None):
+        plan = plan or CourseTests().course()
+        path = self.root / 'course.json'
+        path.write_text(json.dumps(plan))
+        result = self.call('enroll', learner, '--course', str(path))
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_enrollment_stores_canonical_reference_not_embedded_plan(self):
+        self.enroll()
+        entry = self.state()['courses']['test-course']
+        self.assertNotIn('plan', entry)
+        self.assertEqual(entry['plan_ref'], 'courses/test-course/course.json')
+        self.assertEqual(len(entry['plan_fingerprint']), 64)
+
+    def test_legacy_embedded_plan_migrates_once_without_losing_events(self):
+        plan = CourseTests().course()
+        legacy_event = dict(id='first', date='2026-01-01', course_id='motion',
+                            covered=['math.derivative'], attempts=[],
+                            interpretation='', next_step='Try a new slope problem.')
+        legacy = dict(schema_version=1, learner_id='alex', profile={},
+                      courses={'test-course': dict(plan=plan, status='active',
+                                                   completion_history=[])},
+                      events=[legacy_event])
+        folder = self.root / 'alex'
+        folder.mkdir()
+        (folder / 'state.json').write_text(json.dumps(legacy))
+
+        first = self.call('migrate-courses', 'alex')
+        self.assertEqual(first.returncode, 0, first.stderr)
+        migrated = self.state()
+        self.assertEqual(migrated['events'], [legacy_event])
+        self.assertTrue((self.root / 'alex/courses/test-course/course.json').exists())
+        self.assertNotIn('plan', migrated['courses']['test-course'])
+
+        second = self.call('migrate-courses', 'alex')
+        self.assertEqual(second.returncode, 0, second.stderr)
+        self.assertEqual(self.state(), migrated)
+
+    def test_stale_canonical_plan_reference_is_rejected(self):
+        self.enroll()
+        canonical = self.root / 'alex/courses/test-course/course.json'
+        changed = json.loads(canonical.read_text())
+        changed['title'] = 'Changed title'
+        canonical.write_text(json.dumps(changed))
+        result = self.call('summary', 'alex')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('Stale course plan reference', result.stderr)
+
+    def test_v2_curriculum_renders_chapters_and_topics(self):
+        from tests.test_course_workspace import valid_v2_course
+        self.enroll(plan=valid_v2_course())
+        curriculum = self.root / 'alex/memory/courses/gradient-descent/CURRICULUM.md'
+        rendered = curriculum.read_text()
+        self.assertIn('Chapter 1: Local change', rendered)
+        self.assertIn('Topic 1: Slope as local change', rendered)
+        self.assertNotIn("['modules']", rendered)
+
+    def test_revision_enrollment_preserves_completed_history(self):
+        self.enroll()
+        self.assertEqual(self.call('complete-course', 'alex', '--course-id', 'test-course').returncode, 0)
+        revised = CourseTests().course()
+        revised['revision'] = 2
+        revised['title'] = 'Motion, revised'
+        self.enroll(plan=revised)
+        entry = self.state()['courses']['test-course']
+        self.assertEqual(entry['status'], 'active')
+        self.assertEqual(entry['completion_history'][0]['revision'], 1)
+        self.assertNotIn('completed_at', entry)
+
     def test_exposure_is_not_demonstrated_and_retry_does_not_duplicate(self):
         event = self.event()
         for _ in range(2):

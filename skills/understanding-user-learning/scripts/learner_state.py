@@ -79,6 +79,75 @@ def state_path(root, learner):
     return path
 
 
+def _course_contract():
+    sys.path.insert(0, str(ROOT / 'skills/course-design/scripts'))
+    from course_contract import course_fingerprint, validate_course
+    return course_fingerprint, validate_course
+
+
+def _course_workspace():
+    sys.path.insert(0, str(ROOT / 'skills/course-design/scripts'))
+    from course_workspace import create_workspace, read_plan, workspace_path, write_plan
+    return create_workspace, read_plan, workspace_path, write_plan
+
+
+def _validate_enrollment(course_id, entry):
+    if not isinstance(entry, dict) or entry.get('status') not in ('active', 'completed'):
+        raise ValueError('Invalid saved course status')
+    if 'plan' in entry:
+        _, validate_course = _course_contract()
+        plan = validate_course(entry.get('plan'))
+        if plan['id'] != course_id:
+            raise ValueError('Saved course ID mismatch')
+        return
+    reference = entry.get('plan_ref')
+    match = re.fullmatch(r'courses/([a-z0-9]+(?:-[a-z0-9]+)*)/course\.json', reference or '')
+    if not match or match.group(1) != course_id:
+        raise ValueError('Invalid saved course plan reference')
+    revision = entry.get('plan_revision')
+    if type(revision) is not int or revision < 1:
+        raise ValueError('Invalid saved course plan revision')
+    fingerprint = entry.get('plan_fingerprint')
+    if not isinstance(fingerprint, str) or not re.fullmatch(r'[0-9a-f]{64}', fingerprint):
+        raise ValueError('Invalid saved course plan fingerprint')
+    if not isinstance(entry.get('completion_history', []), list):
+        raise ValueError('completion_history must be a list')
+
+
+def resolve_enrolled_plan(learners_root: Path, learner_id: str, entry: dict) -> dict:
+    """Read the canonical plan named by an enrollment and verify its snapshot."""
+    _, validate_course = _course_contract()
+    if not isinstance(entry, dict):
+        raise ValueError('Enrollment must be an object')
+    if 'plan' in entry:
+        return validate_course(entry['plan'])
+    reference = entry.get('plan_ref', '')
+    match = re.fullmatch(r'courses/([a-z0-9]+(?:-[a-z0-9]+)*)/course\.json', reference)
+    if not match:
+        raise ValueError(f'Invalid enrolled course plan reference: {reference!r}')
+    course_id = match.group(1)
+    if learners_root is None or learner_id is None:
+        raise ValueError('Resolving a referenced course plan requires learners_root and learner_id')
+    _, read_plan, workspace_path, _ = _course_workspace()
+    try:
+        plan = read_plan(workspace_path(Path(learners_root), learner_id, course_id))
+    except FileNotFoundError as exc:
+        raise ValueError(
+            f"Stale course plan reference for {course_id!r}: canonical plan is missing"
+        ) from exc
+    if plan['id'] != course_id:
+        raise ValueError(f"Canonical course plan ID mismatch for {course_id!r}")
+    actual = _course_contract()[0](plan)
+    expected = entry.get('plan_fingerprint')
+    if actual != expected or plan['revision'] != entry.get('plan_revision'):
+        raise ValueError(
+            f"Stale course plan reference for {course_id!r}: "
+            f"enrollment expects revision {entry.get('plan_revision')} / {expected}, "
+            f"canonical plan is revision {plan['revision']} / {actual}"
+        )
+    return plan
+
+
 def read_state(root, learner):
     path = state_path(root, learner)
     if not path.exists():
@@ -93,14 +162,9 @@ def read_state(root, learner):
         raise ValueError('courses must be an object')
     if courses:
         sys.path.insert(0, str(ROOT / 'skills/course-design/scripts'))
-        from course_contract import validate_course
         for id_, course in courses.items():
             slug(id_)
-            if not isinstance(course, dict) or course.get('status') not in ('active', 'completed'):
-                raise ValueError('Invalid saved course status')
-            plan = validate_course(course.get('plan'))
-            if plan['id'] != id_:
-                raise ValueError('Saved course ID mismatch')
+            _validate_enrollment(id_, course)
     ids = set()
     for event in data['events']:
         validate_event(event)
@@ -142,7 +206,7 @@ def save_state(path, data):
             os.unlink(name)
 
 
-def summarize(data, course_id=None):
+def summarize(data, course_id=None, learners_root=None, learner_id=None):
     concepts = {}
     events = sorted([e for e in data['events'] if course_id is None or e['course_id'] == course_id], key=lambda e: e['date'])
     history = {}
@@ -161,8 +225,10 @@ def summarize(data, course_id=None):
                 history.setdefault(concept, []).append(event['date'])
             entry.update(status=status, last_date=event['date'], latest=attempt)
     latest_event = events[-1] if events else None
-    courses = {id_: dict(title=c['plan']['title'], status=c['status'], revision=c['plan']['revision'])
-               for id_, c in data.get('courses', {}).items()}
+    courses = {}
+    for id_, entry in data.get('courses', {}).items():
+        plan = resolve_enrolled_plan(learners_root, learner_id, entry)
+        courses[id_] = dict(title=plan['title'], status=entry['status'], revision=plan['revision'])
     next_step = latest_event['next_step'] if latest_event else None
     if latest_event and courses.get(latest_event['course_id'], {}).get('status') == 'completed':
         next_step = 'Course completed. Use its curriculum to choose a review target or agree the next goal.'
@@ -178,20 +244,70 @@ def mutate(root, learner, command, payload=None):
         data = read_state(root, learner) if path.exists() else dict(
             schema_version=1, learner_id=learner, profile={}, courses={}, events=[])
         if command == 'enroll':
-            sys.path.insert(0, str(ROOT / 'skills/course-design/scripts'))
-            from course_contract import validate_course
+            course_fingerprint, validate_course = _course_contract()
+            create_workspace, _, workspace_path, write_plan = _course_workspace()
             plan = validate_course(payload)
             previous = data.setdefault('courses', {}).get(plan['id'])
-            if previous and previous['plan'] != plan and plan['revision'] <= previous['plan']['revision']:
-                raise ValueError('A changed course plan requires a higher revision')
-            if not previous or previous['plan'] != plan:
-                completions = list(previous.get('completion_history', [])) if previous else []
-                if previous and previous.get('completed_at'):
-                    completions.append(dict(revision=previous['plan']['revision'], completed_at=previous['completed_at']))
-                data['courses'][plan['id']] = dict(plan=plan, status='active', completion_history=completions)
+            if previous:
+                previous_plan = (validate_course(previous['plan']) if 'plan' in previous
+                                 else resolve_enrolled_plan(root, learner, previous))
+                previous_fingerprint = course_fingerprint(previous_plan)
+                if previous_fingerprint != course_fingerprint(plan) and plan['revision'] <= previous_plan['revision']:
+                    raise ValueError('A changed course plan requires a higher revision')
+                if previous_fingerprint == course_fingerprint(plan) and 'plan' not in previous:
+                    return 'Already enrolled; unchanged'
+            else:
+                previous_plan = None
+            # The canonical workspace must exist before the state can refer to it.
+            if previous and previous_plan and previous_fingerprint != course_fingerprint(plan):
+                workspace = workspace_path(root, learner, plan['id'])
+                if (workspace / 'course.json').exists():
+                    write_plan(workspace, plan, expected_fingerprint=previous_fingerprint)
+                else:
+                    create_workspace(root, learner, plan)
+            else:
+                create_workspace(root, learner, plan)
+            completions = list(previous.get('completion_history', [])) if previous else []
+            if previous and previous.get('completed_at'):
+                completions.append(dict(revision=previous_plan['revision'], completed_at=previous['completed_at']))
+            status = previous.get('status', 'active') if previous and previous_plan and previous_plan == plan else 'active'
+            entry = dict(status=status,
+                         plan_ref=f"courses/{plan['id']}/course.json",
+                         plan_revision=plan['revision'],
+                         plan_fingerprint=course_fingerprint(plan),
+                         completion_history=completions)
+            if status == 'completed' and previous and previous.get('completed_at'):
+                entry['completed_at'] = previous['completed_at']
+            data['courses'][plan['id']] = entry
+        elif command == 'migrate-courses':
+            course_fingerprint, validate_course = _course_contract()
+            create_workspace, _, _, _ = _course_workspace()
+            migrations = {}
+            for course_id, old in data.get('courses', {}).items():
+                if 'plan' not in old:
+                    continue
+                plan = validate_course(old['plan'])
+                if plan['id'] != course_id:
+                    raise ValueError('Saved course ID mismatch')
+                # Workspace creation is deliberately completed for every plan before
+                # the state snapshot is replaced with references.
+                create_workspace(root, learner, plan)
+                entry = dict(status=old['status'],
+                             plan_ref=f"courses/{plan['id']}/course.json",
+                             plan_revision=plan['revision'],
+                             plan_fingerprint=course_fingerprint(plan),
+                             completion_history=list(old.get('completion_history', [])))
+                if old.get('completed_at'):
+                    entry['completed_at'] = old['completed_at']
+                migrations[course_id] = entry
+            if migrations:
+                data['courses'].update(migrations)
+            else:
+                return 'No course migrations needed; unchanged'
         elif command == 'complete-course':
             if payload not in data.get('courses', {}):
                 raise ValueError('Enroll the course before completing it')
+            resolve_enrolled_plan(root, learner, data['courses'][payload])
             data['courses'][payload]['status'] = 'completed'
             data['courses'][payload]['completed_at'] = date.today().isoformat()
         elif command == 'record':
@@ -201,7 +317,7 @@ def mutate(root, learner, command, payload=None):
                 if previous != payload:
                     raise ValueError('Event ID already exists with different content')
                 from memory_views import write_views
-                write_views(path, data, summarize(data))
+                write_views(path, data, summarize(data, learners_root=root, learner_id=learner))
                 return 'Already recorded; unchanged'
             data['events'].append(payload)
         elif command == 'profile':
@@ -229,7 +345,7 @@ def mutate(root, learner, command, payload=None):
             return 'Already initialized; unchanged'
         save_state(path, data)
         from memory_views import write_views
-        write_views(path, data, summarize(data))
+        write_views(path, data, summarize(data, learners_root=root, learner_id=learner))
         return f'Saved {path}'
 
 
@@ -237,7 +353,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, default=ROOT / 'learners')
     commands = parser.add_subparsers(dest='command', required=True)
-    for command in ('init', 'summary', 'record', 'profile', 'retract', 'delete', 'enroll', 'complete-course'):
+    for command in ('init', 'summary', 'record', 'profile', 'retract', 'delete', 'enroll', 'complete-course', 'migrate-courses'):
         sub = commands.add_parser(command)
         sub.add_argument('learner')
         if command == 'summary':
@@ -255,7 +371,9 @@ def main():
     args = parser.parse_args()
     try:
         if args.command == 'summary':
-            print(json.dumps(summarize(read_state(args.root, args.learner), args.course_id), indent=2, ensure_ascii=False))
+            print(json.dumps(summarize(read_state(args.root, args.learner), args.course_id,
+                                       learners_root=args.root, learner_id=args.learner),
+                             indent=2, ensure_ascii=False))
             return
         payload = None
         if args.command in ('record', 'profile'):

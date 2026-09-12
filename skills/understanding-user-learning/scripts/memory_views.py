@@ -3,6 +3,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import sys
 import tempfile
 
 CATEGORIES = ('01-profile.md', '02-courses.md', '03-topics.md', '04-teaching.md', '05-next.md')
@@ -22,42 +23,57 @@ def atomic_text(path, text):
         Path(name).unlink(missing_ok=True)
 
 
-def curriculum(course, events):
-    plan = course['plan']
+def curriculum(course, events, plan=None):
+    """Render a canonical v2 plan and evidence as a readable hierarchy."""
+    if plan is None:
+        plan = course.get('plan') if isinstance(course, dict) else None
+        if plan is None and isinstance(course, dict) and course.get('schema_version') in (1, 2):
+            plan = course
+            course = {'status': 'active'}
+    if not isinstance(plan, dict):
+        raise ValueError('Curriculum rendering requires a resolved course plan')
+    if plan.get('schema_version') == 1:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[3] / 'skills/course-design/scripts'))
+        from course_contract import validate_course
+        plan = validate_course(plan)
     root = Path(__file__).resolve().parents[3]
-    catalog = {r['id']: r for r in json.loads((root/'skills/subject/references/resources.json').read_text())}
     def teacher_name(id_):
         return (root/f'teachers/{id_}/SOUL.md').read_text().splitlines()[0].lstrip('# ').split(' · ')[0]
     relevant = [e for e in events if e['course_id'] == plan['id']]
     covered = {c for e in relevant for c in e['covered']}
     attempts = [(e['date'], a) for e in relevant for a in e['attempts']]
     covered.update(a['concept'] for _, a in attempts)
-    lines = [f"# {plan['title']} · Curriculum", '', f"Status: {course['status']}",
+    lines = [f"# {plan['title']} · Curriculum", '', f"Status: {course.get('status', 'active')}",
              f"Goal: {plan['goal']}", f"Plan revision: {plan['revision']}", '',
              'Completion records the course decision. Topic evidence below shows what was actually taught and tested.', '']
-    for index, module in enumerate(plan['modules'], 1):
-        lines += [f"## Chapter {index}: {module['title']}", '', f"Outcome: {module['outcome']}",
-                  f"Lead teacher: {teacher_name(module['teacher'])}",
-                  'Supporting teachers: ' + (', '.join(teacher_name(t) for t in module['supporting_teachers']) or 'None'),
-                  f"Planned study time: {module['minutes']} minutes", '', 'Topics:', '']
-        for concept in module['concepts']:
-            title = module.get('topic_titles', {}).get(concept, concept.split('.', 1)[-1].replace('-', ' ').capitalize())
-            evidence = [(day, a) for day, a in attempts if a['concept'] == concept]
-            status = 'taught; untested' if concept in covered else 'not recorded as taught'
-            if evidence:
-                day, a = evidence[-1]
-                status = f"latest attempt {day}: {a['result']}, help={a['help']}, task={a['kind']}"
-            lines.append(f'- {title} (`{concept}`): {status}.')
-        lines += ['', 'Assessment: ' + module['assessment']['prompt'], '', 'Success criteria:', '']
-        lines += ['- ' + criterion for criterion in module['assessment']['success_criteria']]
-        lines += ['', 'Resources:', '']
-        for id_ in module['resources']:
-            item = catalog[id_]
-            section = module.get('source_sections', {}).get(id_, '')
-            lines.append(f"- [{item['title']}]({item['url']})" + (f': {section}' if section else ''))
-        if not module['resources']:
-            lines.append('No source selected.')
-        lines.append('')
+    for chapter_index, chapter in enumerate(plan['chapters'], 1):
+        lines += [f"## Chapter {chapter_index}: {chapter['title']} ({chapter['state']})", '']
+        for topic_index, topic in enumerate(chapter['topics'], 1):
+            lines += [f"### Topic {topic_index}: {topic['title']} ({topic['state']})", '',
+                      f"Outcome: {topic['outcome']}",
+                      f"Lead teacher: {teacher_name(topic['teacher'])}",
+                      'Supporting teachers: ' + (', '.join(teacher_name(t) for t in topic['supporting_teachers']) or 'None'),
+                      f"Planned study time: {topic['minutes']} minutes", '', 'Concepts:', '']
+            for concept in topic['concepts']:
+                evidence = [(day, a) for day, a in attempts if a['concept'] == concept]
+                status = 'taught; untested' if concept in covered else 'not recorded as taught'
+                if evidence:
+                    day, attempt = evidence[-1]
+                    status = f"latest attempt {day}: {attempt['result']}, help={attempt['help']}, task={attempt['kind']}"
+                lines.append(f'- `{concept}`: {status}.')
+            assessment = topic.get('assessment')
+            if assessment:
+                lines += ['', 'Assessment: ' + assessment['prompt'], '', 'Success criteria:', '']
+                lines += ['- ' + criterion for criterion in assessment['success_criteria']]
+            lines += ['', 'Resources:', '']
+            for resource_id in topic['resource_ids']:
+                source = plan['sources'][resource_id]
+                location = source.get('url') or source.get('local_path', '')
+                sections = ', '.join(source.get('sections', []))
+                lines.append(f"- [{source['title']}]({location})" + (f': {sections}' if sections else ''))
+            if not topic['resource_ids']:
+                lines.append('No source selected.')
+            lines.append('')
     return '\n'.join(lines)
 
 
@@ -72,13 +88,17 @@ def write_views(state_path, data, summary):
         profile += [f'## {field.capitalize()}', '']
         profile += ['- ' + value for value in data['profile'].get(field, [])] or ['No stated ' + field + '.']
         profile.append('')
+    from learner_state import resolve_enrolled_plan
+    learners_root = Path(state_path).parent.parent
+    learner_id = Path(state_path).parent.name
     courses = ['# Course memory', '']
     for id_, course in data.get('courses', {}).items():
-        courses.append(f"- {course['plan']['title']} (`{id_}`): {course['status']}; revision {course['plan']['revision']}.")
+        plan = resolve_enrolled_plan(learners_root, learner_id, course)
+        courses.append(f"- {plan['title']} (`{id_}`): {course['status']}; revision {plan['revision']}.")
         target = folder / 'courses' / id_ / 'CURRICULUM.md'
         if (folder/'courses').is_symlink() or target.parent.is_symlink():
             raise ValueError('Course memory cannot use symbolic links')
-        atomic_text(target, prefix + curriculum(course, sorted(data['events'], key=lambda e:e['date'])))
+        atomic_text(target, prefix + curriculum(course, sorted(data['events'], key=lambda e:e['date']), plan=plan))
     topics = ['# Taught topics and evidence', '']
     for concept, record in summary['concepts'].items():
         topics.append(f"- `{concept}`: {record['status']}; {record['attempts']} attempts.")
