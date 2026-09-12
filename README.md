@@ -4,6 +4,8 @@
 
 **A learning harness that designs your course, teaches you in real time, and adapts as you learn.**
 
+<img src="assets/hero.png" alt="Gnos" width="100%" />
+
 <br/>
 
 [Subjects](#subjects) · [How it works](#how-it-works) · [Features](#features) · [Getting started](#getting-started)
@@ -15,6 +17,8 @@
 ## What it is
 
 Gnos is a personal learning harness. You pick a topic, it builds your course, assigns you a teacher, and teaches — fetching the right content, tracking your progress, and explaining ideas with exercises, simulations, video, and imagery. It learns *you* in real time.
+
+It's built to teach almost anything — from the sciences to the humanities — and to adjust to the way you actually learn, rather than forcing you through a fixed path.
 
 ## Subjects
 
