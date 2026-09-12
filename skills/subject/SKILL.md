@@ -11,14 +11,14 @@ gap. Select a lead subject, then add only the bridge that the task requires.
 
 | Subject ID | Reference | Teacher |
 | --- | --- | --- |
-| math | [Mathematics](references/math.md) | `teachers/math/SOUL.md` |
-| physics | [Physics](references/physics.md) | `teachers/physics/SOUL.md` |
-| history | [History](references/history.md) | `teachers/history/SOUL.md` |
-| biology | [Biology](references/biology.md) | `teachers/biology/SOUL.md` |
-| economics | [Economics](references/economics.md) | `teachers/economics/SOUL.md` |
-| computer-science | [Computer science](references/computer-science.md) | `teachers/computer-science/SOUL.md` |
+| math | [Mathematics](subjects/math.md) | `teachers/math/SOUL.md` |
+| physics | [Physics](subjects/physics.md) | `teachers/physics/SOUL.md` |
+| history | [History](subjects/history.md) | `teachers/history/SOUL.md` |
+| biology | [Biology](subjects/biology.md) | `teachers/biology/SOUL.md` |
+| economics | [Economics](subjects/economics.md) | `teachers/economics/SOUL.md` |
+| computer-science | [Computer science](subjects/computer-science.md) | `teachers/computer-science/SOUL.md` |
 
-Read the selected reference. Its subfield map is a starting structure, not a
+Read the selected subject file. Its subfield map is a starting structure, not a
 complete taxonomy. For an unlisted specialty, research a suitable primary or
 academic source before designing a deep course. Do not imply that a supplied
 introductory textbook covers every advanced branch.
