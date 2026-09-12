@@ -5,8 +5,12 @@ import json
 from pathlib import Path
 import sys
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / 'scripts'))
-from gnos_core import SUBJECTS, resources
+ROOT = Path(__file__).resolve().parents[3]
+SUBJECTS = ('math', 'physics', 'history', 'biology', 'economics', 'computer-science')
+
+
+def resources():
+    return json.loads((ROOT / 'skills/subject/references/resources.json').read_text())
 
 
 def main():
