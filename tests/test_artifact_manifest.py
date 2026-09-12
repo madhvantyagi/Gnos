@@ -63,7 +63,9 @@ class ArtifactManifestTests(unittest.TestCase):
     def setUp(self):
         self.tempdir = tempfile.TemporaryDirectory()
         self.root = Path(self.tempdir.name)
-        self.workspace = create_workspace(self.root, "alex", valid_v2_course())
+        plan = valid_v2_course()
+        plan["chapters"][0]["topics"][0]["lesson_ids"] = ["slope-introduction"]
+        self.workspace = create_workspace(self.root, "alex", plan)
         (self.workspace / "artifacts/videos/gradient.mp4").write_bytes(b"video")
         (self.workspace / "artifacts/diagrams/gradient.svg").write_text("<svg/>")
 
@@ -168,6 +170,49 @@ class ArtifactManifestTests(unittest.TestCase):
             artifact["location"] = location
             with self.assertRaises(ValueError):
                 register_artifact(self.workspace, artifact)
+
+    def test_ready_local_artifact_requires_existing_regular_file(self):
+        missing = copy.deepcopy(ready_video())
+        missing["id"] = "missing-ready"
+        missing["location"] = {"path": "artifacts/videos/not-created.mp4"}
+        with self.assertRaises(ValueError):
+            register_artifact(self.workspace, missing)
+
+        directory = self.workspace / "artifacts/videos/directory.mp4"
+        directory.mkdir()
+        directory_artifact = copy.deepcopy(ready_video())
+        directory_artifact["id"] = "directory-ready"
+        directory_artifact["location"] = {"path": "artifacts/videos/directory.mp4"}
+        with self.assertRaises(ValueError):
+            register_artifact(self.workspace, directory_artifact)
+
+        symlink_target = self.workspace / "artifacts/videos/target.mp4"
+        symlink_target.write_bytes(b"target")
+        symlink = self.workspace / "artifacts/videos/symlink-ready.mp4"
+        symlink.symlink_to(symlink_target)
+        symlink_artifact = copy.deepcopy(ready_video())
+        symlink_artifact["id"] = "symlink-ready"
+        symlink_artifact["location"] = {"path": "artifacts/videos/symlink-ready.mp4"}
+        with self.assertRaises(ValueError):
+            register_artifact(self.workspace, symlink_artifact)
+
+    def test_draft_local_artifact_can_be_registered_before_output_exists(self):
+        draft = copy.deepcopy(draft_diagram())
+        draft["location"] = {"path": "artifacts/diagrams/not-created.svg"}
+        fingerprint = register_artifact(self.workspace, draft)
+        self.assertEqual(fingerprint, manifest_fingerprint(read_manifest(self.workspace)))
+
+    def test_artifact_requires_published_lesson_placement(self):
+        artifact = copy.deepcopy(ready_video())
+        artifact["lesson_id"] = "different-lesson"
+        with self.assertRaises(ValueError):
+            register_artifact(self.workspace, artifact)
+
+    def test_artifact_concepts_must_belong_to_selected_topic(self):
+        artifact = copy.deepcopy(ready_video())
+        artifact["concepts"] = ["math.unrelated"]
+        with self.assertRaises(ValueError):
+            register_artifact(self.workspace, artifact)
 
     def test_manifest_validation_rejects_wrong_course_and_duplicate_ids(self):
         manifest = read_manifest(self.workspace)

@@ -152,7 +152,7 @@ def read_manifest(workspace: Path) -> dict:
     return _read_manifest_unlocked(workspace)
 
 
-def _validate_local_path(workspace: Path, raw_path: str) -> None:
+def _validate_local_path(workspace: Path, raw_path: str) -> Path:
     path = Path(raw_path)
     if path.is_absolute() or ".." in path.parts or "." in path.parts or "\\" in raw_path:
         raise ValueError("Artifact path must be a clean workspace-relative path")
@@ -171,6 +171,7 @@ def _validate_local_path(workspace: Path, raw_path: str) -> None:
         raise ValueError("Artifact path must remain inside the course workspace") from exc
     if candidate.exists() and candidate.is_dir():
         raise ValueError("Artifact path must name a file")
+    return candidate
 
 
 def _validate_artifact_for_workspace(workspace: Path, artifact: dict, plan: dict) -> dict:
@@ -183,8 +184,16 @@ def _validate_artifact_for_workspace(workspace: Path, artifact: dict, plan: dict
     topics = {topic["id"]: topic for topic in chapter.get("topics", [])}
     if checked["topic_id"] not in topics:
         raise ValueError(f"{artifact_id}.topic_id must belong to {checked['chapter_id']}")
+    topic = topics[checked["topic_id"]]
+    if checked["lesson_id"] not in topic.get("lesson_ids", []):
+        raise ValueError(f"{artifact_id}.lesson_id must be a published lesson for {checked['topic_id']}")
+    topic_concepts = set(topic.get("concepts", []))
+    if any(concept not in topic_concepts for concept in checked["concepts"]):
+        raise ValueError(f"{artifact_id}.concepts must belong to {checked['topic_id']}")
     if location_key == "path":
-        _validate_local_path(workspace, checked["location"]["path"])
+        resolved_path = _validate_local_path(workspace, checked["location"]["path"])
+        if checked["status"] == "ready" and not resolved_path.is_file():
+            raise ValueError("Ready local artifacts must name an existing regular file")
     return checked
 
 
