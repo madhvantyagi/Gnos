@@ -100,6 +100,8 @@ def build(source, output, font_dir=None):
                 if max_width <= 0:
                     raise ValueError('Image width must be positive')
                 scale = min(max_width / w, 360 / h)
+                if kind == 'equation':
+                    scale = min(scale, 72 / 220)  # Equation helper exports at 220 DPI.
                 picture = Image(str(path), width=w * scale, height=h * scale)
                 picture.hAlign = 'LEFT'
                 caption = Paragraph(checked_text(block['caption'], 'Sans'), s['caption'])
@@ -122,7 +124,7 @@ def build(source, output, font_dir=None):
                     ('TOPPADDING', (0, 0), (-1, -1), 8),
                     ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
                 ]))
-                story += [table, Spacer(1, 12)]
+                story += [KeepTogether([table]) if len(rows) <= 8 else table, Spacer(1, 12)]
             elif kind == 'code':
                 text = block['text']
                 checked_text(text, 'Mono')
