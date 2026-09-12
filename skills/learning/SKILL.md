@@ -65,7 +65,10 @@ progress. Exposure, assisted success, independent success, and delayed recall
 are different evidence. A fluent explanation from the teacher proves none of
 them. Never invent a learner response to complete a record.
 
-At a useful stopping point, leave the precise next step and any unresolved
+Record meaningful evidence changes during the lesson, including a corrected
+misconception or transition to a new topic. On course completion, use the learner
+skill to create the final chapter curriculum from the enrolled plan and actual
+events. At a useful stopping point, leave the precise next step and any unresolved
 doubt. Do not append a compulsory quiz or summary to every answer. A changed
 goal can replace the plan; say what moves and why.
 
