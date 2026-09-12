@@ -88,6 +88,19 @@ def read_state(root, learner):
         raise ValueError('State version or learner ID mismatch')
     if not isinstance(data.get('profile'), dict) or not isinstance(data.get('events'), list):
         raise ValueError('Malformed learner state')
+    courses = data.get('courses', {})
+    if not isinstance(courses, dict):
+        raise ValueError('courses must be an object')
+    if courses:
+        sys.path.insert(0, str(ROOT / 'skills/course-design/scripts'))
+        from course_contract import validate_course
+        for id_, course in courses.items():
+            slug(id_)
+            if not isinstance(course, dict) or course.get('status') not in ('active', 'completed'):
+                raise ValueError('Invalid saved course status')
+            plan = validate_course(course.get('plan'))
+            if plan['id'] != id_:
+                raise ValueError('Saved course ID mismatch')
     ids = set()
     for event in data['events']:
         validate_event(event)
@@ -129,9 +142,9 @@ def save_state(path, data):
             os.unlink(name)
 
 
-def summarize(data):
+def summarize(data, course_id=None):
     concepts = {}
-    events = sorted(data['events'], key=lambda e: e['date'])
+    events = sorted([e for e in data['events'] if course_id is None or e['course_id'] == course_id], key=lambda e: e['date'])
     history = {}
     for event in events:
         for concept in event['covered']:
@@ -171,7 +184,11 @@ def mutate(root, learner, command, payload=None):
             previous = data.setdefault('courses', {}).get(plan['id'])
             if previous and previous['plan'] != plan and plan['revision'] <= previous['plan']['revision']:
                 raise ValueError('A changed course plan requires a higher revision')
-            data['courses'][plan['id']] = dict(plan=plan, status=previous['status'] if previous else 'active')
+            if not previous or previous['plan'] != plan:
+                completions = list(previous.get('completion_history', [])) if previous else []
+                if previous and previous.get('completed_at'):
+                    completions.append(dict(revision=previous['plan']['revision'], completed_at=previous['completed_at']))
+                data['courses'][plan['id']] = dict(plan=plan, status='active', completion_history=completions)
         elif command == 'complete-course':
             if payload not in data.get('courses', {}):
                 raise ValueError('Enroll the course before completing it')
@@ -223,6 +240,8 @@ def main():
     for command in ('init', 'summary', 'record', 'profile', 'retract', 'delete', 'enroll', 'complete-course'):
         sub = commands.add_parser(command)
         sub.add_argument('learner')
+        if command == 'summary':
+            sub.add_argument('--course-id')
         if command == 'record':
             sub.add_argument('--event', type=Path, required=True)
         if command == 'profile':
@@ -236,7 +255,7 @@ def main():
     args = parser.parse_args()
     try:
         if args.command == 'summary':
-            print(json.dumps(summarize(read_state(args.root, args.learner)), indent=2, ensure_ascii=False))
+            print(json.dumps(summarize(read_state(args.root, args.learner), args.course_id), indent=2, ensure_ascii=False))
             return
         payload = None
         if args.command in ('record', 'profile'):
