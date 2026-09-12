@@ -83,6 +83,44 @@ class LearnerTests(unittest.TestCase):
         self.assertNotEqual(result.returncode,0)
         self.assertEqual(self.summary()['session_count'],0)
 
+    def test_course_views_completion_retry_and_revision(self):
+        plan=CourseTests().course()
+        path=self.root/'course.json'; path.write_text(json.dumps(plan))
+        self.assertEqual(self.call('enroll','alex','--course',str(path)).returncode,0)
+        self.assertEqual(self.call('complete-course','alex','--course-id','test-course').returncode,0)
+        before=json.loads((self.root/'alex/state.json').read_text())['courses']['test-course']
+        self.assertEqual(self.call('enroll','alex','--course',str(path)).returncode,0)
+        after=json.loads((self.root/'alex/state.json').read_text())['courses']['test-course']
+        self.assertEqual(after,before)
+        curriculum=self.root/'alex/memory/courses/test-course/CURRICULUM.md'
+        self.assertIn('Chapter 1: Rates',curriculum.read_text())
+        self.assertIn('not recorded as taught',curriculum.read_text())
+        plan['revision']=2;plan['modules'][0]['concepts'].append('math.vector')
+        path.write_text(json.dumps(plan))
+        self.assertEqual(self.call('enroll','alex','--course',str(path)).returncode,0)
+        self.assertEqual(self.summary()['courses']['test-course']['status'],'active')
+
+    def test_invalid_topic_titles_cannot_poison_record(self):
+        self.assertEqual(self.call('init','alex').returncode,0)
+        before=(self.root/'alex/state.json').read_bytes()
+        plan=CourseTests().course();plan['modules'][0]['topic_titles']=None
+        path=self.root/'course.json';path.write_text(json.dumps(plan))
+        self.assertNotEqual(self.call('enroll','alex','--course',str(path)).returncode,0)
+        self.assertEqual((self.root/'alex/state.json').read_bytes(),before)
+
+    def test_selected_course_resumes_its_own_event_and_enrolled_plan(self):
+        plan=CourseTests().course();path=self.root/'course.json';path.write_text(json.dumps(plan))
+        self.assertEqual(self.call('enroll','alex','--course',str(path)).returncode,0)
+        self.call('record','alex','--event',self.event(course_id='test-course',next_step='Resume slope here'))
+        self.call('record','alex','--event',self.event(id='other',date='2026-01-02',course_id='history',next_step='Read a diary'))
+        loader=ROOT/'skills/learning/scripts/assemble_context.py'
+        result=subprocess.run([sys.executable,str(loader),'--subject','math','--learner','alex',
+                               '--learners-root',str(self.root),'--course-id','test-course'],capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertIn('Resume slope here',result.stdout)
+        self.assertIn('Predict motion',result.stdout)
+        self.assertNotIn('Read a diary',result.stdout)
+
 
 class CourseTests(unittest.TestCase):
     def check_course(self, data):
