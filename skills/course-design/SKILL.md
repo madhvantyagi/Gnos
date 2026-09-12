@@ -1,62 +1,82 @@
 ---
 name: course-design
-description: Design or revise a GNOS lesson path or sustained course from the learner's goal, starting evidence, and available time.
+description: Decide whether a GNOS learning goal needs a focused lesson or a persistent course, then research and revise a learner-specific chapter and topic route over time.
 ---
 
 # Course design
 
-Design backward from something the learner wants to be able to do. “Understand
-physics” needs a destination; “explain why a satellite keeps falling” already
-has one. Use the subject skill to locate prerequisites and choose teachers.
+Begin with what the learner wants to be able to do and the evidence already
+available. Do not turn a subject name into a generic syllabus before
+understanding the destination, current reasoning, depth, and constraints.
 
-## Ask only what changes the plan
+## Choose the scale
 
-Reuse information already given. For a broad request, ask up to three short
-questions: the desired capability, something they can already do or have tried,
-and the available time or deadline. Offer concrete destinations if they cannot
-name one. Do not require a test, biography, or preferred “learning style.”
+Use a small in-turn plan for one local target with only a few direct
+dependencies. The working sequence is target, missing connection, explanation,
+example, and an optional revealing check. Dividing an answer into headings does
+not make it a course.
 
-A tiny doubt needs only: target → missing connection → example → optional
-check. Keep this plan in the turn; a course file is unnecessary unless requested.
-For sustained study, read [references/course-contract.md](references/course-contract.md)
-and create `courses/<slug>/course.json` plus a readable `COURSE.md` if useful.
+Use a persistent course when the learner requests sustained study or the
+destination spans multiple competency branches, prerequisite chains, subjects,
+artifacts, assessments, or sessions. A single named topic may still need a
+course when learning it well requires that breadth.
 
-## Research the route
+Reuse what the learner has already said or demonstrated. If the boundary remains
+uncertain, ask only what changes the route: the desired capability, relevant
+work they can already do, and available time or depth. Do not require a test,
+biography, or preferred learning style. Unknown evidence means unknown, not
+beginner.
 
-Before fixing the chapters of a sustained course, read
-[references/course-research.md](references/course-research.md). Verify topic
-scope, prerequisites, sequence, assessment fit, and source sections. Preserve
-what was checked and what remains assumed in the course's `RESEARCH.md`.
-A familiar course title or generated syllabus is not verification.
+For a persistent course, read
+[the living course contract](references/course-contract.md), then
+[research the route](references/course-research.md). Create a defensible
+chapter-level table of contents, not every future lesson. Read
+[the adaptive lifecycle](references/adaptive-lifecycle.md) before enrollment or
+revision. Read [the lesson contract](references/lesson-contract.md) only when
+authoring a detailed lesson.
 
-## Build a teachable path
+## Design the route
 
-1. Phrase outcomes as observable actions: derive, predict, implement, distinguish,
-   argue from evidence. Name the conditions under which the action counts.
-2. Identify prerequisites. Separate confirmed knowledge from assumptions. Place
-   a short diagnostic or bridge where an uncertain prerequisite first matters.
-3. Order modules by dependency. Assign one lead teacher per module; add a
-   supporting teacher only for a named conceptual bridge.
-4. Pair each outcome with an assessment that can reveal misunderstanding.
-   Put answer criteria in the plan, but withhold them during an assessment until
-   the learner tries or asks for the solution.
-5. Pick one main resource per module and optional alternatives for real gaps.
-   Record the exact chapter/page once inspected. A book's existence does not
-   mean its entire sequence fits this learner.
-6. Reserve room for retrieval, repair, and application. Time estimates are
-   negotiable; do not equate hours scheduled with mastery.
+1. Phrase the destination and topic outcomes as observable actions under named
+   conditions: derive, predict, implement, distinguish, or argue from evidence.
+2. Separate confirmed starting evidence from assumptions. Place a short
+   diagnostic or bridge where an uncertain prerequisite first matters.
+3. Order chapters and topics by dependency. Mark distant material provisional
+   when learner evidence may change it.
+4. Assign one lead subject and teacher per topic. Add supporting subjects,
+   teachers, or skills only for a named bridge or representation.
+5. Map each outcome to an exercise that can expose misunderstanding. Keep private
+   criteria out of the learner's view until an attempt or explicit solution
+   request.
+6. Record inspected sources and exact sections. A familiar title or search
+   result does not verify a route.
+7. Set one current topic and precise next step. Fully author only the next useful
+   lesson.
 
-Present the destination, route, first lesson, and largest assumption in plain
-language. If the request already supplies enough detail, begin teaching after
-the brief plan. Ask for a choice only when competing destinations would produce
-materially different courses.
+Present the destination, chapter route, current topic, and largest unresolved
+assumption in plain language. If competing destinations would produce different
+courses, ask for the choice. Otherwise begin teaching rather than making the
+learner approve routine internal structure.
 
-## Revise rather than accumulate
+## Compose, teach, and revise
 
-On new evidence, repair a prerequisite, replace an example, or shorten a module.
-Preserve stable concept IDs and completed evidence. Increment the course revision
-and note the reason. A new goal can retire modules; mark them out of scope rather
-than completed. Never silently rewrite history to make progress look linear.
+A lesson can combine explanation, bullets, equations, voice animation, diagrams,
+interactive graphs, simulations, and exercises. Each representation must serve
+the same concept and preserve terminology, symbols, and visual meanings. Do not
+assemble an artifact gallery and call it a lesson.
 
-Validate: `python3 skills/course-design/scripts/validate_course.py <course.json>`.
-See `examples/courses/` for a tiny path and a multi-subject course.
+Teaching happens primarily in chat. After meaningful learner evidence, keep,
+repair, reorder, expand, or retire future topics. Preserve stable identifiers and
+earlier attempts. Increment the course revision and state the reason. Material
+can be marked out of scope; it cannot be relabeled completed to make progress
+look smooth.
+
+Course design owns the route. The learner skill owns attempts and evidence-based
+progress. Scheduled minutes, opened files, watched videos, and completed
+explanations do not prove understanding.
+
+Validate a plan with:
+
+```bash
+python3 skills/course-design/scripts/validate_course.py <course.json>
+```

@@ -1,8 +1,11 @@
-# Research a course before promising its route
+# Research a living course before promising its route
 
 Start with a capability and an audience. Search for the curriculum that supports
 that destination, rather than searching the course title and copying the first
 syllabus. Keep a short research ledger beside `course.json` as `RESEARCH.md`.
+Use known learner evidence to compress established prerequisites and expose
+uncertain bridges. Do not infer a starting level from age, degree, job title, or
+the apparent difficulty of the requested topic.
 
 ## Search in layers
 
@@ -25,11 +28,13 @@ syllabus. Keep a short research ledger beside `course.json` as `RESEARCH.md`.
    primary records. Label unresolved claims instead of filling the gap from a
    plausible title. A stable elementary explanation may need no new web search.
 
-## Verify each proposed chapter
+## Verify the chapter route
 
-Record the topic names and exact scope, entering prerequisites, observable exit
-capability, a fitting resource section, and one assessment. Check the bridge to
-the next chapter: does it use anything not yet introduced or confirmed?
+Record chapter and topic names at the resolution needed to inspect dependencies,
+with entering prerequisites, observable exit capability, a fitting resource
+section, and an assessment intention. Check each bridge: does it use anything
+not yet introduced or confirmed? Later topics can remain provisional; research
+does not require generating every future lesson or exercise at enrollment.
 
 For example, a gradient descent route should distinguish scalar derivative,
 partial derivative, gradient, directional change, update rule, step size, and
@@ -46,9 +51,10 @@ calling that part of the syllabus verified.
 
 Map source chapters to the learner's curriculum; do not copy a table of contents
 wholesale. Compress material supported by prior learner evidence, add missing
-bridges, and omit content outside the goal. Tell the learner about a major gap
-or assumption, not every search query.
+bridges, and omit content outside the goal. Record why a source changed the
+route. Tell the learner about a major gap or assumption, not every search query.
 
-For a tiny doubt, this can be one checked reference and a three-step plan. For
-a sustained course, retain the ledger so future sessions can revisit the reason
-for the sequence.
+For a tiny doubt, this can be one checked reference and a three-step plan kept in
+the turn. For a sustained course, retain the ledger so later revisions can
+revisit why the route was chosen and distinguish checked facts from provisional
+decisions.

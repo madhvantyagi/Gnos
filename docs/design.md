@@ -25,10 +25,13 @@ across subjects by concept ID, so vectors are not re-taught under every label.
 1. Read learning. Classify a direct doubt, lesson, course request, or resumption.
 2. Load the relevant learner snapshot if an identity is established. Read only
    the active course and recent evidence for the concept at hand.
-3. Select subject and teacher. Use course design only when a plan is needed.
-4. Teach the missing connection. Choose text, a diagram, an exercise, or motion
+3. Select subject and teacher. Use course design only when a persistent route is
+   justified; a local doubt keeps its small plan in the turn.
+4. For a course, resolve the current chapter/topic and author only the next useful
+   lesson. Teach the missing connection. Choose text, a diagram, an exercise, or motion
    for what it reveals; a media deliverable is not a prerequisite to answering.
-5. Record observed evidence and a concrete next step. Persist only when a
+5. Record observed evidence and a concrete next step, then revise provisional
+   future topics only when that evidence changes the route. Persist only when a
    learner identity is established and local tracking is wanted.
 
 `skills/learning/scripts/assemble_context.py` prints this selected context or its file manifest.
