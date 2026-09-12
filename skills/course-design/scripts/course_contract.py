@@ -1,92 +1,392 @@
 """Course contracts and source catalog lookup; no third-party dependencies."""
+
+import copy
+import hashlib
 import json
 from pathlib import Path
 import re
 
+
 ROOT = Path(__file__).resolve().parents[3]
-SUBJECTS = ('math', 'physics', 'history', 'biology', 'economics', 'computer-science')
+COURSE_SCHEMA_VERSION = 2
+PLANNING_STATES = ("current", "planned", "provisional", "retired", "out-of-scope")
+
+
+def _available_subjects():
+    subject_dir = ROOT / "skills/subject/subjects"
+    teacher_dir = ROOT / "teachers"
+    subjects = {path.stem for path in subject_dir.glob("*.md")}
+    teachers = {path.name for path in teacher_dir.iterdir() if (path / "SOUL.md").is_file()}
+    return tuple(sorted(subjects & teachers))
+
+
+# Existing callers use this as the CLI's choices list. Its value is derived
+# from the repository at import time, rather than being an authority baked
+# into the contract.
+SUBJECTS = _available_subjects()
 
 
 def slug(value):
-    if not isinstance(value, str) or not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', value) or len(value) > 80:
-        raise ValueError(f'Expected a lowercase slug of at most 80 characters: {value!r}')
+    if not isinstance(value, str) or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", value) or len(value) > 80:
+        raise ValueError(f"Expected a lowercase slug of at most 80 characters: {value!r}")
     return value
 
 
 def nonempty(value, label):
     if not isinstance(value, str) or not value.strip():
-        raise ValueError(f'{label} must be nonempty text')
+        raise ValueError(f"{label} must be nonempty text")
     return value
 
 
 def strings(value, label, required=False):
     if not isinstance(value, list) or (required and not value):
-        raise ValueError(f'{label} must be a {"nonempty " if required else ""}list')
+        raise ValueError(f"{label} must be a {'nonempty ' if required else ''}list")
     for item in value:
         nonempty(item, label)
     return value
 
 
 def resources():
-    return json.loads((ROOT / 'skills/subject/references/resources.json').read_text())
+    return json.loads((ROOT / "skills/subject/references/resources.json").read_text())
+
+
+def course_fingerprint(data):
+    payload = json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(payload.encode()).hexdigest()
+
+
+def course_topics(data):
+    return [topic for chapter in data["chapters"] for topic in chapter["topics"]]
+
+
+def _known_teachers():
+    return {path.name for path in (ROOT / "teachers").iterdir() if (path / "SOUL.md").is_file()}
+
+
+def _known_subjects():
+    return set(SUBJECTS)
+
+
+def _validate_skill_route(route):
+    nonempty(route, "skill route")
+    path = Path(route)
+    if path.is_absolute() or ".." in path.parts or "\\" in route:
+        raise ValueError(f"Invalid skill route: {route!r}")
+    if not path.parts or path.parts[0] != "skills":
+        raise ValueError(f"Skill route must be beneath skills/: {route!r}")
+    resolved = ROOT / path
+    if not resolved.is_file():
+        raise ValueError(f"Unknown skill route: {route!r}")
+    approved = path.name == "SKILL.md" or (
+        len(path.parts) == 4
+        and path.parts[:3] == ("skills", "subject", "subjects")
+        and path.suffix == ".md"
+    )
+    if not approved:
+        raise ValueError(f"Skill route is not an approved entry point: {route!r}")
+
+
+def _validate_source_registry(source_data, known_resource_ids):
+    if not isinstance(source_data, dict):
+        raise ValueError("sources must be an object")
+    for source_id, source in source_data.items():
+        slug(source_id)
+        if not isinstance(source, dict):
+            raise ValueError(f"{source_id}: source must be an object")
+        nonempty(source.get("title"), f"{source_id}.title")
+        location_fields = [field for field in ("url", "local_path") if source.get(field)]
+        if len(location_fields) != 1:
+            raise ValueError(f"{source_id}: source requires exactly one nonempty url or local_path")
+        nonempty(source.get("type"), f"{source_id}.type")
+        nonempty(source.get("checked_on"), f"{source_id}.checked_on")
+        strings(source.get("sections"), f"{source_id}.sections")
+        nonempty(source.get("verification_notes"), f"{source_id}.verification_notes")
+        if source_id not in known_resource_ids:
+            raise ValueError(f"Unknown source/resource ID: {source_id}")
+
+
+def _validate_revision_notes(notes):
+    if not isinstance(notes, list) or not notes:
+        raise ValueError("revision_notes must be a nonempty list")
+    for note in notes:
+        if not isinstance(note, dict):
+            raise ValueError("Each revision note must be an object")
+        revision = note.get("revision")
+        if type(revision) is not int or revision < 1:
+            raise ValueError("revision_notes.revision must be a positive integer")
+        nonempty(note.get("date"), "revision_notes.date")
+        nonempty(note.get("reason"), "revision_notes.reason")
+
+
+def _validate_v2(data):
+    if not isinstance(data, dict) or data.get("schema_version") != COURSE_SCHEMA_VERSION:
+        raise ValueError("Course requires schema_version 1 or 2")
+    slug(data.get("id"))
+    for key in ("title", "goal"):
+        nonempty(data.get(key), key)
+    revision = data.get("revision")
+    if type(revision) is not int or revision < 1:
+        raise ValueError("revision must be a positive integer")
+    _validate_revision_notes(data.get("revision_notes"))
+    if not isinstance(data.get("starting_evidence"), list):
+        raise ValueError("starting_evidence must be a list")
+    strings(data.get("assumptions"), "assumptions")
+
+    catalog = resources()
+    known_resource_ids = {item["id"] for item in catalog}
+    _validate_source_registry(data.get("sources"), known_resource_ids)
+
+    chapters = data.get("chapters")
+    if not isinstance(chapters, list) or not chapters:
+        raise ValueError("chapters must be a nonempty list")
+    known_teachers = _known_teachers()
+    known_subjects = _known_subjects()
+    chapter_ids = set()
+    topic_ids = set()
+    concept_ids = set()
+    exercise_ids = set()
+    lesson_ids = set()
+    seen_topics = set()
+
+    for chapter in chapters:
+        if not isinstance(chapter, dict):
+            raise ValueError("Each chapter must be an object")
+        chapter_id = slug(chapter.get("id"))
+        if chapter_id in chapter_ids:
+            raise ValueError(f"Duplicate course ID: {chapter_id}")
+        chapter_ids.add(chapter_id)
+        nonempty(chapter.get("title"), f"{chapter_id}.title")
+        if chapter.get("state") not in PLANNING_STATES:
+            raise ValueError(f"{chapter_id}: invalid planning state")
+        topics = chapter.get("topics")
+        if not isinstance(topics, list) or not topics:
+            raise ValueError(f"{chapter_id}.topics must be a nonempty list")
+        for topic in topics:
+            if not isinstance(topic, dict):
+                raise ValueError(f"{chapter_id}: each topic must be an object")
+            topic_id = slug(topic.get("id"))
+            if topic_id in topic_ids:
+                raise ValueError(f"Duplicate course ID: {topic_id}")
+            topic_ids.add(topic_id)
+            for key in ("title", "outcome"):
+                nonempty(topic.get(key), f"{topic_id}.{key}")
+            if topic.get("state") not in PLANNING_STATES:
+                raise ValueError(f"{topic_id}: invalid planning state")
+            subject = topic.get("subject")
+            teacher = topic.get("teacher")
+            if subject not in known_subjects:
+                raise ValueError(f"{topic_id}: unknown subject")
+            if teacher not in known_teachers or teacher != subject:
+                raise ValueError(f"{topic_id}: unknown or mismatched lead teacher")
+
+            supporting_subjects = strings(topic.get("supporting_subjects"), "supporting_subjects")
+            supporting_teachers = strings(topic.get("supporting_teachers"), "supporting_teachers")
+            if len(supporting_subjects) != len(supporting_teachers):
+                raise ValueError(f"{topic_id}: supporting subjects and teachers must be paired")
+            if len(supporting_subjects) != len(set(supporting_subjects)):
+                raise ValueError(f"{topic_id}: duplicate supporting subject")
+            for support_subject, support_teacher in zip(supporting_subjects, supporting_teachers):
+                if support_subject not in known_subjects or support_teacher not in known_teachers:
+                    raise ValueError(f"{topic_id}: unknown supporting subject or teacher")
+                if support_subject != support_teacher or support_subject == subject:
+                    raise ValueError(f"{topic_id}: invalid supporting subject/teacher")
+
+            routes = topic.get("skill_routes")
+            if not isinstance(routes, list) or not routes:
+                raise ValueError(f"{topic_id}.skill_routes must be a nonempty list")
+            for route in routes:
+                _validate_skill_route(route)
+            concepts = strings(topic.get("concepts"), "concepts", required=True)
+            for concept in concepts:
+                if not re.fullmatch(r"[a-z][a-z0-9-]*\.[a-z0-9]+(?:[.-][a-z0-9]+)*", concept):
+                    raise ValueError(f"Invalid concept ID: {concept}")
+                if concept in concept_ids:
+                    raise ValueError(f"Duplicate concept ID: {concept}")
+                concept_ids.add(concept)
+
+            prerequisites = strings(topic.get("prerequisites"), "prerequisites")
+            if any(prerequisite not in seen_topics for prerequisite in prerequisites):
+                raise ValueError(f"{topic_id}: prerequisites must refer to earlier topics")
+            minutes = topic.get("minutes")
+            if type(minutes) is not int or minutes <= 0:
+                raise ValueError(f"{topic_id}: minutes must be a positive integer")
+
+            selected = strings(topic.get("resource_ids"), "resource_ids")
+            if any(resource_id not in known_resource_ids for resource_id in selected):
+                raise ValueError(f"{topic_id}: unknown resource ID")
+            if any(resource_id not in data["sources"] for resource_id in selected):
+                raise ValueError(f"{topic_id}: resource ID has no source record")
+            for key, label, seen in (
+                ("exercise_ids", "exercise_ids", exercise_ids),
+                ("lesson_ids", "lesson_ids", lesson_ids),
+            ):
+                values = strings(topic.get(key), label)
+                for value in values:
+                    slug(value)
+                    if value in seen:
+                        raise ValueError(f"Duplicate {label[:-4]} ID: {value}")
+                    seen.add(value)
+            seen_topics.add(topic_id)
+
+    current = data.get("current")
+    if not isinstance(current, dict):
+        raise ValueError("current must be an object")
+    current_chapter = current.get("chapter_id")
+    current_topic = current.get("topic_id")
+    nonempty(current_chapter, "current.chapter_id")
+    nonempty(current_topic, "current.topic_id")
+    nonempty(current.get("next_step"), "current.next_step")
+    chapter_by_id = {chapter["id"]: chapter for chapter in chapters}
+    topic_by_id = {topic["id"]: topic for topic in course_topics(data)}
+    if current_chapter not in chapter_by_id:
+        raise ValueError("current.chapter_id must refer to a chapter")
+    if current_topic not in topic_by_id:
+        raise ValueError("current.topic_id must refer to a topic")
+    if current_topic not in {topic["id"] for topic in chapter_by_id[current_chapter]["topics"]}:
+        raise ValueError("current chapter and topic do not match")
+    if topic_by_id[current_topic]["state"] != "current":
+        raise ValueError("current.topic_id must identify a current topic")
+    return data
+
+
+def _validate_v1(data):
+    if not isinstance(data, dict) or data.get("schema_version") != 1:
+        raise ValueError("Course requires schema_version 1 or 2")
+    slug(data.get("id"))
+    for key in ("title", "goal"):
+        nonempty(data.get(key), key)
+    revision = data.get("revision")
+    if type(revision) is not int or revision < 1:
+        raise ValueError("revision must be a positive integer")
+    strings(data.get("assumptions"), "assumptions")
+    modules = data.get("modules")
+    if not isinstance(modules, list) or not modules:
+        raise ValueError("modules must be a nonempty list")
+    seen = set()
+    known_resources = {resource["id"] for resource in resources()}
+    known_teachers = _known_teachers()
+    known_subjects = _known_subjects()
+    for module in modules:
+        if not isinstance(module, dict):
+            raise ValueError("Each module must be an object")
+        id_ = slug(module.get("id"))
+        if id_ in seen:
+            raise ValueError(f"Duplicate module: {id_}")
+        for key in ("title", "outcome"):
+            nonempty(module.get(key), f"{id_}.{key}")
+        subject = module.get("subject")
+        if subject not in known_subjects or module.get("teacher") not in known_teachers or module.get("teacher") != subject:
+            raise ValueError(f"{id_}: lead teacher must match a supplied subject")
+        support = strings(module.get("supporting_teachers"), "supporting_teachers")
+        if any(t not in known_teachers or t == subject for t in support) or len(support) != len(set(support)):
+            raise ValueError(f"{id_}: invalid or duplicate supporting teacher")
+        strings(module.get("concepts"), "concepts", required=True)
+        for concept in module["concepts"]:
+            if not re.fullmatch(r"[a-z][a-z0-9-]*\.[a-z0-9]+(?:[.-][a-z0-9]+)*", concept):
+                raise ValueError(f"Invalid concept ID: {concept}")
+        topic_titles = module.get("topic_titles", {})
+        if not isinstance(topic_titles, dict) or any(k not in module["concepts"] for k in topic_titles):
+            raise ValueError(f"{id_}: topic_titles must map module concept IDs to text")
+        for value in topic_titles.values():
+            nonempty(value, "topic_titles value")
+        prerequisites = strings(module.get("prerequisites"), "prerequisites")
+        if any(prerequisite not in seen for prerequisite in prerequisites):
+            raise ValueError(f"{id_}: prerequisites must refer to earlier modules; found missing, cyclic, or unordered dependency")
+        minutes = module.get("minutes")
+        if type(minutes) is not int or minutes <= 0:
+            raise ValueError(f"{id_}: minutes must be a positive integer")
+        assessment = module.get("assessment")
+        if not isinstance(assessment, dict):
+            raise ValueError(f"{id_}: assessment must be an object")
+        nonempty(assessment.get("prompt"), "assessment.prompt")
+        strings(assessment.get("success_criteria"), "success_criteria", required=True)
+        selected = strings(module.get("resources"), "resources")
+        if any(resource_id not in known_resources for resource_id in selected):
+            raise ValueError(f"{id_}: unknown resource ID")
+        sections = module.get("source_sections", {})
+        if not isinstance(sections, dict) or any(key not in selected for key in sections):
+            raise ValueError(f"{id_}: source_sections must map selected resource IDs to text")
+        for value in sections.values():
+            nonempty(value, "source_sections value")
+        seen.add(id_)
+    return data
+
+
+def upgrade_v1_course(data):
+    """Return a deterministic version-two representation of a version-one plan."""
+    _validate_v1(data)
+    catalog = {resource["id"]: resource for resource in resources()}
+    source_sections = {}
+    selected_resources = []
+    chapters = []
+    modules = copy.deepcopy(data["modules"])
+    for index, module in enumerate(modules):
+        for resource_id in module["resources"]:
+            if resource_id not in selected_resources:
+                selected_resources.append(resource_id)
+            section = module.get("source_sections", {}).get(resource_id)
+            if section and section not in source_sections.setdefault(resource_id, []):
+                source_sections[resource_id].append(section)
+        chapters.append({
+            "id": module["id"],
+            "title": module["title"],
+            "state": "current" if index == 0 else "planned",
+            "topics": [{
+                "id": module["id"],
+                "title": module["title"],
+                "state": "current" if index == 0 else "planned",
+                "outcome": module["outcome"],
+                "subject": module["subject"],
+                "teacher": module["teacher"],
+                "supporting_subjects": list(module["supporting_teachers"]),
+                "supporting_teachers": list(module["supporting_teachers"]),
+                "skill_routes": [
+                    "skills/subject/SKILL.md",
+                    f"skills/subject/subjects/{module['subject']}.md",
+                ],
+                "concepts": list(module["concepts"]),
+                "prerequisites": list(module["prerequisites"]),
+                "minutes": module["minutes"],
+                "resource_ids": list(module["resources"]),
+                "exercise_ids": [],
+                "lesson_ids": [],
+                "assessment": copy.deepcopy(module["assessment"]),
+            }],
+        })
+
+    sources = {}
+    for resource_id in selected_resources:
+        item = catalog[resource_id]
+        sources[resource_id] = {
+            "title": item["title"],
+            "url": item["url"],
+            "type": item.get("format", "reference"),
+            "checked_on": item.get("checked", "unknown"),
+            "sections": source_sections.get(resource_id, []),
+            "verification_notes": item.get("verification", "Catalog entry checked."),
+        }
+    first = chapters[0]["topics"][0]
+    upgraded = copy.deepcopy(data)
+    upgraded.update({
+        "schema_version": COURSE_SCHEMA_VERSION,
+        "revision_notes": [{
+            "revision": data["revision"],
+            "date": "unknown",
+            "reason": "Deterministic upgrade from schema version 1.",
+        }],
+        "starting_evidence": [],
+        "sources": sources,
+        "current": {
+            "chapter_id": chapters[0]["id"],
+            "topic_id": first["id"],
+            "next_step": first["outcome"],
+        },
+        "chapters": chapters,
+    })
+    return _validate_v2(upgraded)
 
 
 def validate_course(data):
-    if not isinstance(data, dict) or data.get('schema_version') != 1:
-        raise ValueError('Course requires schema_version 1')
-    slug(data.get('id'))
-    for key in ('title', 'goal'):
-        nonempty(data.get(key), key)
-    revision = data.get('revision')
-    if type(revision) is not int or revision < 1:
-        raise ValueError('revision must be a positive integer')
-    strings(data.get('assumptions'), 'assumptions')
-    modules = data.get('modules')
-    if not isinstance(modules, list) or not modules:
-        raise ValueError('modules must be a nonempty list')
-    seen = set()
-    known_resources = {r['id'] for r in resources()}
-    for module in modules:
-        if not isinstance(module, dict):
-            raise ValueError('Each module must be an object')
-        id_ = slug(module.get('id'))
-        if id_ in seen:
-            raise ValueError(f'Duplicate module: {id_}')
-        for key in ('title', 'outcome'):
-            nonempty(module.get(key), f'{id_}.{key}')
-        subject = module.get('subject')
-        if subject not in SUBJECTS or module.get('teacher') != subject:
-            raise ValueError(f'{id_}: lead teacher must match a supplied subject')
-        support = strings(module.get('supporting_teachers'), 'supporting_teachers')
-        if any(t not in SUBJECTS or t == subject for t in support) or len(support) != len(set(support)):
-            raise ValueError(f'{id_}: invalid or duplicate supporting teacher')
-        strings(module.get('concepts'), 'concepts', required=True)
-        for concept in module['concepts']:
-            if not re.fullmatch(r'[a-z][a-z0-9-]*\.[a-z0-9]+(?:[.-][a-z0-9]+)*', concept):
-                raise ValueError(f'Invalid concept ID: {concept}')
-        topic_titles = module.get('topic_titles', {})
-        if not isinstance(topic_titles, dict) or any(k not in module['concepts'] for k in topic_titles):
-            raise ValueError(f'{id_}: topic_titles must map module concept IDs to text')
-        for value in topic_titles.values():
-            nonempty(value, 'topic_titles value')
-        prerequisites = strings(module.get('prerequisites'), 'prerequisites')
-        if any(p not in seen for p in prerequisites):
-            raise ValueError(f'{id_}: prerequisites must refer to earlier modules; found missing, cyclic, or unordered dependency')
-        minutes = module.get('minutes')
-        if type(minutes) is not int or minutes <= 0:
-            raise ValueError(f'{id_}: minutes must be a positive integer')
-        assessment = module.get('assessment')
-        if not isinstance(assessment, dict):
-            raise ValueError(f'{id_}: assessment must be an object')
-        nonempty(assessment.get('prompt'), 'assessment.prompt')
-        strings(assessment.get('success_criteria'), 'success_criteria', required=True)
-        selected = strings(module.get('resources'), 'resources')
-        if any(r not in known_resources for r in selected):
-            raise ValueError(f'{id_}: unknown resource ID')
-        sections = module.get('source_sections', {})
-        if not isinstance(sections, dict) or any(k not in selected for k in sections):
-            raise ValueError(f'{id_}: source_sections must map selected resource IDs to text')
-        for value in sections.values():
-            nonempty(value, 'source_sections value')
-        seen.add(id_)
-    return data
+    if isinstance(data, dict) and data.get("schema_version") == 1:
+        return upgrade_v1_course(data)
+    return _validate_v2(data)
