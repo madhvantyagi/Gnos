@@ -12,6 +12,21 @@ The Markdown files are the operating context for a file-capable LLM. Python
 scripts handle records, course checks, PDFs, and animations. GNOS does not run
 a model server or listen to conversations in the background.
 
+## Install as a Codex plugin
+
+The `codex` branch packages GNOS as a Codex plugin and bundles its Excalidraw
+MCP server. Add the GitHub marketplace and install GNOS:
+
+```bash
+codex plugin marketplace add madhvantyagi/Gnos --ref codex
+codex plugin add gnos@gnos
+```
+
+Start a new Codex task after installation so the GNOS skills and bundled MCP
+tools enter the new task's tool inventory. Installing GNOS is sufficient; users
+do not need to add the Excalidraw server separately. The remote diagram server
+is used only when the selected teaching instructions call its tools.
+
 ## Start learning
 
 Open this repository in your LLM workspace and ask:
@@ -40,9 +55,9 @@ and script-execution tools to persist learning or produce artifacts.
 | [Economics](skills/subject/subjects/economics.md) | [Nadia Vale](teachers/economics/SOUL.md) | Choices, assumptions, comparisons, empirical claims |
 | [Computer science](skills/subject/subjects/computer-science.md) | [Theo Park](teachers/computer-science/SOUL.md) | Trace state; explain contracts, invariants, failures |
 
-Teachers are fictional personas. Their SOUL files contain identity, judgment,
-tone, good and bad examples, and drift checks. Subject files contain subfields,
-prerequisites, resources, and connections to the other skills.
+Teacher SOUL files contain identity, judgment, tone, good and bad examples, and
+drift checks. Subject files contain subfields, prerequisites, resources, and
+connections to the other skills.
 
 ## Skill library
 

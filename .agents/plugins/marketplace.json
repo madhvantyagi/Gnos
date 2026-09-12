@@ -1,0 +1,21 @@
+{
+  "name": "gnos",
+  "interface": {
+    "displayName": "GNOS"
+  },
+  "plugins": [
+    {
+      "name": "gnos",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/madhvantyagi/Gnos.git",
+        "ref": "codex"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Education"
+    }
+  ]
+}

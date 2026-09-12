@@ -1,0 +1,29 @@
+{
+  "name": "gnos",
+  "version": "0.1.0",
+  "description": "A teaching harness that diagnoses the learner's reasoning gap and selects the right teacher, subject guidance, and learning artifact.",
+  "author": {
+    "name": "Madhvan Tyagi",
+    "url": "https://github.com/madhvantyagi"
+  },
+  "homepage": "https://github.com/madhvantyagi/Gnos",
+  "repository": "https://github.com/madhvantyagi/Gnos",
+  "keywords": ["education", "teaching", "learning", "diagrams", "excalidraw"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "GNOS",
+    "shortDescription": "Learn difficult ideas with subject-aware teachers.",
+    "longDescription": "GNOS diagnoses the learner's exact reasoning gap, selects focused subject and teacher context, and uses text, code, diagrams, PDFs, or animation when each representation helps.",
+    "developerName": "Madhvan Tyagi",
+    "category": "Education",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "websiteURL": "https://github.com/madhvantyagi/Gnos",
+    "defaultPrompt": [
+      "Teach me a difficult idea from the point where my reasoning breaks.",
+      "Help me understand this computer-science concept with a useful diagram.",
+      "Build a course around what I want to be able to do."
+    ],
+    "brandColor": "#2F5D50"
+  }
+}

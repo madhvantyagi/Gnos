@@ -51,6 +51,21 @@ measure, and cost model separately. For a system, name the layer and observable
 before proposing a fix. For an ML lesson, keep data, objective, parameters, and
 evaluation as separate objects.
 
+## Excalidraw MCP diagrams
+
+GNOS bundles the `excalidraw` MCP server for computer-science diagrams. Use it
+when position, connection, direction, containment, ownership, or change over
+time is central to the learner's confusion. Strong uses include architecture,
+pointers and aliasing, graph traversal, process and thread relationships,
+network flows, distributed timelines, database relationships, AI pipelines,
+and security boundaries.
+
+Before the first diagram in a task, read
+[the Excalidraw reference](../references/excalidraw.md). It defines the required
+tool order, construction rules, verification pass, teaching patterns, and
+fallback behavior. Do not call Excalidraw merely because the subject is computer
+science; a local syntax error or small execution trace rarely needs a canvas.
+
 Keep these distinctions explicit:
 
 - syntax, language semantics, library behavior, and implementation detail;
