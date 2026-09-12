@@ -13,7 +13,7 @@ from course_contract import SUBJECTS, validate_course
 
 def selected_paths(subject, mode='lesson', media=None):
     paths = ['skills/learning/SKILL.md', 'skills/subject/SKILL.md',
-             f'skills/subject/references/{subject}.md', f'teachers/{subject}/SOUL.md']
+             f'skills/subject/subjects/{subject}.md', f'teachers/{subject}/SOUL.md']
     if mode == 'course':
         paths += ['skills/course-design/SKILL.md', 'skills/course-design/references/course-contract.md']
     if media:
