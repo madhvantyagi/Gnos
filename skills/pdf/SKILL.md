@@ -41,5 +41,5 @@ with the figure. Include source/creator and whether a diagram is schematic.
 Use actual math rendering for equations; do not send raw LaTeX to paragraph text.
 
 Read [references/visual-review.md](references/visual-review.md) when inspecting.
-`examples/lessons/gradient/lesson.json` exercises the builder with equations,
+`examples/lessons/gradient/README.md` exercises the builder with equations,
 an image, a comparison table, and a worked example.
