@@ -9,7 +9,7 @@ from urllib.parse import unquote, urlparse
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / 'skills/course-design/scripts'))
-from course_contract import SUBJECTS, validate_course
+from course_contract import SUBJECTS, TEACHERS, validate_course
 
 
 def validate():
@@ -25,9 +25,13 @@ def validate():
         elif not all(re.search(rf'^{field}:\s*\S', parts[1], re.M) for field in ('name', 'description')):
             errors.append(f'{path.relative_to(ROOT)}: missing skill name/description')
     for subject in SUBJECTS:
-        for path in [ROOT/f'teachers/{subject}/SOUL.md', ROOT/f'skills/subject/subjects/{subject}.md']:
-            if not path.is_file():
-                errors.append(f'Missing {path.relative_to(ROOT)}')
+        path = ROOT / f'skills/subject/subjects/{subject}.md'
+        if not path.is_file():
+            errors.append(f'Missing {path.relative_to(ROOT)}')
+    for teacher in TEACHERS:
+        path = ROOT / f'teachers/{teacher}/SOUL.md'
+        if not path.is_file():
+            errors.append(f'Missing {path.relative_to(ROOT)}')
     documents = [ROOT/'README.md', ROOT/'AGENTS.md'] + list((ROOT/'skills').rglob('*.md'))
     for path in documents:
         for target in re.findall(r'(?<!!)\[[^\]]+\]\(([^)]+)\)', path.read_text()):
@@ -49,7 +53,8 @@ def validate():
     if errors:
         print('\n'.join(errors), file=sys.stderr)
         return 1
-    print(f'Validated {len(skills)} skills, {len(SUBJECTS)} subjects/teachers, links, Python syntax, and example courses.')
+    print(f'Validated {len(skills)} skills, {len(SUBJECTS)} subjects, {len(TEACHERS)} teachers, '
+          'links, Python syntax, and example courses.')
     return 0
 
 

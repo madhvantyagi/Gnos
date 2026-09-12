@@ -99,8 +99,10 @@ def validate_lesson(data, course):
         raise ValueError("Lesson requires schema_version 1")
     for key in ("id", "course_id", "chapter_id", "topic_id"):
         slug(data.get(key))
-    for key in ("title", "purpose", "teacher"):
+    for key in ("title", "purpose"):
         nonempty(data.get(key), key)
+    if "teacher" not in data:
+        raise ValueError("teacher must be present")
     if data["course_id"] != course.get("id"):
         raise ValueError("lesson.course_id must refer to the selected course")
     chapters = {chapter["id"]: chapter for chapter in course.get("chapters", [])}

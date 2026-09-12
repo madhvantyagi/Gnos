@@ -16,16 +16,20 @@ PLANNING_STATES = ("current", "planned", "provisional", "retired", "out-of-scope
 
 def _available_subjects():
     subject_dir = ROOT / "skills/subject/subjects"
+    return tuple(sorted(path.stem for path in subject_dir.glob("*.md")))
+
+
+def _available_teachers():
     teacher_dir = ROOT / "teachers"
-    subjects = {path.stem for path in subject_dir.glob("*.md")}
-    teachers = {path.name for path in teacher_dir.iterdir() if (path / "SOUL.md").is_file()}
-    return tuple(sorted(subjects & teachers))
+    return tuple(sorted(path.name for path in teacher_dir.iterdir()
+                        if (path / "SOUL.md").is_file()))
 
 
 # Existing callers use this as the CLI's choices list. Its value is derived
 # from the repository at import time, rather than being an authority baked
 # into the contract.
 SUBJECTS = _available_subjects()
+TEACHERS = _available_teachers()
 
 
 def slug(value):
@@ -62,7 +66,7 @@ def course_topics(data):
 
 
 def _known_teachers():
-    return {path.name for path in (ROOT / "teachers").iterdir() if (path / "SOUL.md").is_file()}
+    return set(TEACHERS)
 
 
 def _known_subjects():
@@ -193,24 +197,29 @@ def _validate_v2(data):
                 nonempty(topic.get(key), f"{topic_id}.{key}")
             if topic.get("state") not in PLANNING_STATES:
                 raise ValueError(f"{topic_id}: invalid planning state")
+            if "teacher" not in topic:
+                raise ValueError(f"{topic_id}: teacher must be present")
             subject = topic.get("subject")
             teacher = topic.get("teacher")
             if subject not in known_subjects:
                 raise ValueError(f"{topic_id}: unknown subject")
-            if teacher not in known_teachers or teacher != subject:
+            if (teacher is not None and
+                    (not isinstance(teacher, str) or teacher not in known_teachers or teacher != subject)):
                 raise ValueError(f"{topic_id}: unknown or mismatched lead teacher")
 
             supporting_subjects = strings(topic.get("supporting_subjects"), "supporting_subjects")
-            supporting_teachers = strings(topic.get("supporting_teachers"), "supporting_teachers")
-            if len(supporting_subjects) != len(supporting_teachers):
-                raise ValueError(f"{topic_id}: supporting subjects and teachers must be paired")
             if len(supporting_subjects) != len(set(supporting_subjects)):
                 raise ValueError(f"{topic_id}: duplicate supporting subject")
-            for support_subject, support_teacher in zip(supporting_subjects, supporting_teachers):
-                if support_subject not in known_subjects or support_teacher not in known_teachers:
-                    raise ValueError(f"{topic_id}: unknown supporting subject or teacher")
-                if support_subject != support_teacher or support_subject == subject:
-                    raise ValueError(f"{topic_id}: invalid supporting subject/teacher")
+            if any(support_subject not in known_subjects or support_subject == subject
+                   for support_subject in supporting_subjects):
+                raise ValueError(f"{topic_id}: invalid supporting subject")
+            supporting_teachers = strings(topic.get("supporting_teachers", []), "supporting_teachers")
+            if len(supporting_teachers) != len(set(supporting_teachers)):
+                raise ValueError(f"{topic_id}: duplicate supporting teacher")
+            for support_teacher in supporting_teachers:
+                if (support_teacher not in known_teachers or support_teacher == subject or
+                        support_teacher not in supporting_subjects):
+                    raise ValueError(f"{topic_id}: invalid supporting teacher")
 
             routes = topic.get("skill_routes")
             if not isinstance(routes, list) or not routes:

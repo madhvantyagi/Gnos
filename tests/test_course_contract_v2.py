@@ -96,6 +96,37 @@ def valid_v1_course():
 
 
 class CourseContractV2Tests(unittest.TestCase):
+    def test_teacher_neutral_subject_is_valid_without_a_teacher(self):
+        plan = valid_v2_course()
+        topic = plan["chapters"][0]["topics"][0]
+        topic.update({
+            "subject": "accounting",
+            "teacher": None,
+            "skill_routes": [
+                "skills/subject/SKILL.md",
+                "skills/subject/subjects/accounting.md",
+            ],
+        })
+        checked = contract.validate_course(plan)
+        self.assertIsNone(checked["chapters"][0]["topics"][0]["teacher"])
+
+    def test_supporting_subjects_do_not_require_supporting_teachers(self):
+        plan = valid_v2_course()
+        topic = plan["chapters"][0]["topics"][0]
+        topic["supporting_subjects"] = ["accounting"]
+        topic["supporting_teachers"] = []
+        contract.validate_course(plan)
+
+    def test_unknown_or_unlisted_supporting_teacher_is_rejected(self):
+        for supporting_subjects, supporting_teachers in ((["accounting"], ["physics"]),
+                                                         ([], ["invented"])):
+            plan = valid_v2_course()
+            topic = plan["chapters"][0]["topics"][0]
+            topic["supporting_subjects"] = supporting_subjects
+            topic["supporting_teachers"] = supporting_teachers
+            with self.assertRaises(ValueError):
+                contract.validate_course(plan)
+
     def test_v2_course_accepts_chapters_topics_routes_and_sources(self):
         checked = contract.validate_course(valid_v2_course())
         self.assertEqual(checked["current"]["topic_id"], "local-change")

@@ -45,6 +45,14 @@ def valid_lesson():
 
 
 class LessonContractTests(unittest.TestCase):
+    def test_teacher_neutral_lesson_matches_null_topic_teacher(self):
+        course = valid_v2_course()
+        course["chapters"][0]["topics"][0]["teacher"] = None
+        lesson = valid_lesson()
+        lesson["teacher"] = None
+        checked = validate_lesson(lesson, validate_course(course))
+        self.assertIsNone(checked["teacher"])
+
     def test_lesson_combines_media_explanation_simulation_and_exercise(self):
         checked = validate_lesson(valid_lesson(), validate_course(valid_v2_course()))
         self.assertEqual([b["type"] for b in checked["blocks"]], ["explanation", "voice-animation", "interactive-graph", "exercise"])

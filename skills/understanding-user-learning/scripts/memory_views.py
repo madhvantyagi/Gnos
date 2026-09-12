@@ -40,6 +40,8 @@ def curriculum(course, events, plan=None):
         plan = validate_course(plan)
     root = Path(__file__).resolve().parents[3]
     def teacher_name(id_):
+        if id_ is None:
+            return 'No assigned teacher'
         return (root/f'teachers/{id_}/SOUL.md').read_text().splitlines()[0].lstrip('# ').split(' · ')[0]
     relevant = [e for e in events if e['course_id'] == plan['id']]
     course_scripts = Path(__file__).resolve().parents[3] / 'skills/course-design/scripts'

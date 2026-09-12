@@ -13,6 +13,61 @@ COURSE = ROOT / 'skills/course-design/scripts/validate_course.py'
 
 
 class LearnerTests(unittest.TestCase):
+    def test_teacher_neutral_accounting_course_loads_without_persona(self):
+        from tests.test_course_contract_v2 import valid_v2_course
+
+        course = valid_v2_course()
+        topic = course["chapters"][0]["topics"][0]
+        topic.update({
+            "subject": "accounting",
+            "teacher": None,
+            "skill_routes": [
+                "skills/subject/SKILL.md",
+                "skills/subject/subjects/accounting.md",
+            ],
+        })
+        course_path = self.root / "accounting-course.json"
+        course_path.write_text(json.dumps(course))
+        loader = ROOT / "skills/learning/scripts/assemble_context.py"
+        result = subprocess.run([
+            sys.executable, str(loader), "--subject", "accounting", "--mode", "course",
+            "--course", str(course_path),
+        ], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("skills/subject/subjects/accounting.md", result.stdout)
+        self.assertNotIn("teachers/accounting/SOUL.md", result.stdout)
+        direct = subprocess.run([
+            sys.executable, str(loader), "--subject", "accounting", "--manifest",
+        ], capture_output=True, text=True)
+        self.assertEqual(direct.returncode, 0, direct.stderr)
+        self.assertNotIn("teachers/accounting/SOUL.md", direct.stdout)
+
+    def test_teacher_neutral_accounting_course_renders_curriculum(self):
+        from tests.test_course_contract_v2 import valid_v2_course
+
+        course = valid_v2_course()
+        topic = course["chapters"][0]["topics"][0]
+        topic.update({
+            "subject": "accounting",
+            "teacher": None,
+            "skill_routes": [
+                "skills/subject/SKILL.md",
+                "skills/subject/subjects/accounting.md",
+            ],
+        })
+        course_path = self.root / "accounting-course.json"
+        course_path.write_text(json.dumps(course))
+        enrolled = self.call("enroll", "alex", "--course", str(course_path))
+        self.assertEqual(enrolled.returncode, 0, enrolled.stderr)
+        curriculum = self.root / "alex/memory/courses/gradient-descent/CURRICULUM.md"
+        self.assertIn("Lead teacher: No assigned teacher", curriculum.read_text())
+
+    def test_harness_reports_subject_and_teacher_counts_separately(self):
+        harness = ROOT / "skills/learning/scripts/validate_harness.py"
+        result = subprocess.run([sys.executable, str(harness)], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("12 subjects, 6 teachers", result.stdout)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)

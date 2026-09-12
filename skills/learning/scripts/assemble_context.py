@@ -22,20 +22,24 @@ def _current_topic(course):
 
 def selected_paths(subject, mode='lesson', media=None, course=None):
     paths = ['skills/learning/SKILL.md']
+    teacher = subject
     if course is None:
         paths += ['skills/subject/SKILL.md',
                   f'skills/subject/subjects/{subject}.md']
     else:
         topic = _current_topic(course)
         topic_subject = topic.get('subject')
-        topic_teacher = topic.get('teacher')
-        if topic_subject != subject or topic_teacher != subject:
+        teacher = topic.get('teacher')
+        if topic_subject != subject:
             raise ValueError(
                 f'Requested subject {subject!r} does not match the current course topic '
-                f'({topic_subject!r}/{topic_teacher!r})'
+                f'({topic_subject!r}/{teacher!r})'
             )
         paths.extend(topic.get('skill_routes', []))
-    paths.append(f'teachers/{subject}/SOUL.md')
+    if teacher is not None:
+        teacher_path = ROOT / f'teachers/{teacher}/SOUL.md'
+        if teacher_path.is_file():
+            paths.append(str(teacher_path.relative_to(ROOT)))
     if mode == 'course':
         paths += [
             'skills/course-design/SKILL.md',
