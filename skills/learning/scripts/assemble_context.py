@@ -5,7 +5,10 @@ import importlib.util
 import json
 from pathlib import Path
 
-from gnos_core import ROOT, SUBJECTS, validate_course
+import sys
+ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / 'skills/course-design/scripts'))
+from course_contract import SUBJECTS, validate_course
 
 
 def selected_paths(subject, mode='lesson', media=None):
