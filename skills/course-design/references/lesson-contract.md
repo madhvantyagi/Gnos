@@ -22,6 +22,11 @@ A lesson file uses `schema_version: 1` and contains:
 - `publication`: `draft`, `ready`, or `archived`;
 - `created_at` and `updated_at` timestamps.
 
+Timestamps are real ISO-8601 UTC instants ending in `Z`; `updated_at` cannot
+precede `created_at`. Lesson skill routes must be unique and selected from the
+owning topic's declared routes. A lesson can use fewer routes than its topic,
+but it cannot silently introduce an unrelated skill.
+
 Stable identifiers preserve links from attempts, artifacts, and questions.
 Changing the title or explanation does not justify changing the lesson ID.
 
@@ -147,10 +152,13 @@ Supported response types are `multiple-choice`, `short-text`, `long-text`,
 `numeric`, and `code-text`. Supported evaluation modes are:
 
 - `manual` for explanations, proofs, arguments, and code review;
-- `choice` for a declared option set and private accepted value;
-- `numeric` for a private answer and tolerance.
+- `choice` for a nonempty unique `options` list and a private `answer` equal to
+  one of those options;
+- `numeric` for a numeric private `answer` and nonnegative numeric `tolerance`.
 
 The first portal version stores code as text; it never executes submitted code.
+An `execute` field is invalid in every evaluation mode. Manual evaluation does
+not contain an answer, accepted values, tolerance, or solution.
 Manual responses remain awaiting review until an active teacher evaluates the
 actual attempt. Revealing a solution is not independent success.
 
@@ -158,7 +166,8 @@ Success criteria belong in the private lesson file so the teacher can review
 consistently. A public lesson projection is an explicit allowlist. It includes
 the identity, placement, purpose, visible blocks, prompt, response shape, and
 publication metadata, but never success criteria, accepted answers, tolerances,
-solutions, or other private evaluation fields.
+solutions, or other private evaluation fields. Choice options remain public
+because the learner needs them to answer; the accepted choice does not.
 
 ## Validation
 
