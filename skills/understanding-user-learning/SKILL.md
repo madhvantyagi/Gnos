@@ -24,6 +24,20 @@ Use `--root <directory>` before the subcommand for isolated tests or another
 storage location. The default is this repository's ignored `learners/`.
 For schema and update rules, read [references/evidence.md](references/evidence.md).
 
+## Course and memory categories
+
+Read [references/memory-categories.md](references/memory-categories.md) when
+starting, resuming, enrolling, or finishing a course. Store a validated course
+with `enroll <id> --course <course.json>`. Use `complete-course <id> --course-id
+<slug>` when the learner finishes; the script produces a chapter-by-chapter
+curriculum with topic names, teachers, sources, assessments, and actual evidence.
+
+Every recorded attempt or topic transition refreshes profile, course, topic,
+teaching-observation, and next-step memories. Update at meaningful evidence
+changes during the conversation, not only at the end of a course. On resumption,
+use earlier taught topics as explicit bridges into the next topic. Read the
+same learner ID; do not assume unrelated chats have shared memory.
+
 ## Separate the kinds of knowledge
 
 - **Stated preference:** “Use fewer analogies.” Store the wording and date;
