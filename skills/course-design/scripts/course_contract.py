@@ -83,5 +83,10 @@ def validate_course(data):
         selected = strings(module.get('resources'), 'resources')
         if any(r not in known_resources for r in selected):
             raise ValueError(f'{id_}: unknown resource ID')
+        sections = module.get('source_sections', {})
+        if not isinstance(sections, dict) or any(k not in selected for k in sections):
+            raise ValueError(f'{id_}: source_sections must map selected resource IDs to text')
+        for value in sections.values():
+            nonempty(value, 'source_sections value')
         seen.add(id_)
     return data
