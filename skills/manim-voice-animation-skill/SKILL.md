@@ -5,50 +5,65 @@ description: Create Manim teaching animations with optional measured narration, 
 
 # Manim teaching animations
 
-Choose one change the learner needs to see: a secant approaching a tangent,
-a basis transformation, a force changing motion, or an algorithm changing state.
-A good still diagram is preferable when nothing needs to move.
+Use Manim when motion exposes a relationship the learner needs to inspect. A
+still diagram, runnable example, or source excerpt is the better representation
+when nothing meaningful changes.
 
-## Build around a teaching question
+## Start with GNOS context
 
-Write a storyboard before scene code. Each scene needs a concept target, exact
-narration, visible objects, and the change each cue reveals. Keep notation
-consistent with the course. Predict → show → explain → vary the case is a useful
-sequence, not a mandatory script for every video.
+Treat the animation as a teaching artifact, not a generic explainer. Before
+writing scene code:
 
-Use `templates/storyboard_schema.json`; validate IDs and cues with the voice
-script before spending time on narration. The storyboard's duration field is
-only an authored silent-preview timing. Spoken durations are measured from audio.
+1. Identify the learner's target action (derive, predict, implement, or explain)
+   and the last step supported by evidence. Do not invent a learner record.
+2. Load the selected subject reference and one lead teacher. Read the active
+   course only when it sets notation, sequence, or assessment; read the learner
+   snapshot only when an identity and relevant evidence are established. A
+   supporting subject supplies a named bridge, not a second narrator.
+3. State the concept ID, prerequisite assumption, and one observable success
+   check in the storyboard notes or adjacent design file. Keep course notation
+   and the teacher's voice consistent with the lesson.
+4. Choose one change the learner needs to see: for example, a secant tending to
+   a tangent, a basis transforming, a force changing motion, or an algorithm
+   changing state. Predict → show → explain → vary is useful when it serves the
+   target, but is not a universal script.
+
+Write the storyboard before scene code. Each scene needs a concept target, exact
+narration, visible objects, and the change each cue reveals. Use
+`templates/storyboard_schema.json`; validate IDs and cues before spending time
+on narration. Its `duration` is authored timing for a silent preview. Spoken
+durations come from measured clips or local recordings.
 
 ## Narration and timing
 
-Commands below run from the repository root in an environment with Manim,
-edge-tts, PyAV, and imageio-ffmpeg. Check dependencies without network calls:
+Read [references/02_voiceover_synchronization.md](references/02_voiceover_synchronization.md).
+`scripts/cue_player.py` is the timeline boundary: construct it with the scene,
+manifest path, and scene ID; call `play(cue_id, *animations, run_time=...)` once
+per cue; call `finish(output_prefix)` after all cues. It attaches each local clip
+at the current scene time, fills unused cue duration with a wait, applies
+`pause_after`, and exports actual cue starts to SRT and timing JSON. Do not reuse
+a cue or leave one unplayed. An animation must fit inside its cue.
+
+Check dependencies without network calls:
 
 ```bash
 python3 skills/manim-voice-animation-skill/scripts/setup_env.py
 ```
 
-Generate narration from a storyboard:
+Narration generation uses an external provider only when explicitly requested:
 
 ```bash
 python3 skills/manim-voice-animation-skill/scripts/voice_synthesizer.py \
-  --storyboard examples/animations/gradient/storyboard.json \
-  --out output/gradient/audio
+  --storyboard path/to/storyboard.json --out output/topic/audio
 ```
 
-This uses the external Edge TTS service; only the narration text is sent. Do not
-send learner records or unrelated personal context. Availability and voice names
-can change. For an offline preview use `--silent`; for pre-recorded local MP3s use
-`--audio-dir <folder>` with filenames `SceneID_cue-id.mp3`. Do not label silence
-as generated speech. A provider error must remain visible.
+`--silent` creates an honest preview manifest with authored durations and no
+speech. `--audio-dir <folder>` uses measured local files named
+`SceneID_cue-id.mp3`. Never call silence generated speech, send learner records
+to a voice provider, or hide a provider failure. Do not mux again after
+cue-timed audio is already in the scene.
 
-Read [references/02_voiceover_synchronization.md](references/02_voiceover_synchronization.md).
-Use `scripts/cue_player.py` to attach each clip at the actual scene time and
-export subtitles. A teacher's deliberate pause can then stay between cues.
-Do not mux again after a scene already includes audio.
-
-## Render and inspect
+## Render and review the artifact
 
 ```bash
 python3 skills/manim-voice-animation-skill/scripts/linter.py scene.py
@@ -56,24 +71,22 @@ python3 skills/manim-voice-animation-skill/scripts/render_pipeline.py \
   render scene.py MyScene -q l -o output/preview.mp4
 ```
 
-Inspect the beginning, each conceptual transition, and the ending; listen for
-pronunciation and early/late narration. Check numbers against the equations and
-inspect text at actual playback size. Low quality means lower resolution, not
-a shorter video. Use `-q h` only after the preview is correct.
-
-For an already-aligned whole-scene audio track, the `mux` command preserves the
-longer duration by adding silence or holding the last frame. That prevents
-truncation; it does not repair semantic misalignment. Lossless `concat` requires
-matching stream formats and reports mismatches.
+Review the first frame, every conceptual transition, and the ending at actual
+playback size. Check that each spoken term points to the corresponding object,
+numbers agree with displayed equations and simulation state, labels stay in
+frame, and no updater remains attached after its section. Listen for cue drift
+when audio exists. A silent render verifies choreography only. Use a higher
+quality only after the low-quality preview is correct.
 
 ## Visual judgment
 
-Use a stable camera unless movement reveals useful structure. Keep the quantity
-being compared visible. Prefer continuous updates to re-creating expensive text
-or LaTeX every frame. Tie displayed values to the same state as the geometry.
-Check bounds against the actual frame/aspect ratio. Clear active updaters when
-objects leave the scene. Grids, halos, particles, and camera motion are optional;
-they should clarify a relationship, not compete for attention.
+Keep the compared quantity visible and use a stable camera unless movement
+reveals structure. Prefer `ValueTracker`, `DecimalNumber`, and lightweight
+updaters over rebuilding `MathTex` or other expensive objects every frame. Tie
+displayed values to the same state as the geometry. Grids, halos, particles,
+and camera motion are optional signals; remove them when they compete with the
+concept. Check bounds against the chosen aspect ratio and clear updaters when
+objects leave the scene.
 
 Read only the reference for the chosen scene:
 
@@ -86,5 +99,5 @@ Read only the reference for the chosen scene:
 - [Common failures](references/08_anti_patterns_curated_fixes.md)
 - [Optional visual components](references/09_cinematic_depth_and_illustrations.md)
 
-The five subject templates remain starting points, not verified lessons for all
-inputs. The runnable GNOS example is `examples/animations/gradient/scene.py`.
+The five subject templates are starting points, not verified lessons for every
+input. The runnable GNOS example is `examples/animations/gradient/scene.py`.
