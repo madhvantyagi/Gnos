@@ -1,0 +1,5 @@
+reportlab>=4,<6
+Pillow>=10,<13
+matplotlib>=3.8,<4
+markdown-it-py>=3,<5
+pypdf>=5,<7
