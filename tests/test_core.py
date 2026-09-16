@@ -356,6 +356,8 @@ class LearnerTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn('skills/learner-tracking/references/adaptive-lifecycle.md', result.stdout)
         self.assertIn('skills/course-design/references/lesson-contract.md', result.stdout)
+        self.assertIn('skills/course-design/references/representation-choices.md', result.stdout)
+        self.assertIn('skills/course-viewer/SKILL.md', result.stdout)
         self.assertIn('skills/subject/subjects/math.md', result.stdout)
         self.assertIn('teachers/math/SOUL.md', result.stdout)
         self.assertIn('--- COURSE DATA:', result.stdout)
@@ -381,6 +383,15 @@ class LearnerTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertNotIn('skills/course-design/SKILL.md', result.stdout)
         self.assertNotIn('skills/course-design/references/', result.stdout)
+
+    def test_media_image_loads_image_gen_skill(self):
+        loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
+        result = subprocess.run([
+            sys.executable, str(loader), '--subject', 'math', '--media', 'image',
+            '--manifest',
+        ], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('skills/image-gen/SKILL.md', result.stdout)
 
 
 class CourseTests(unittest.TestCase):

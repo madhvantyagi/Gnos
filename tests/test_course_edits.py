@@ -171,7 +171,7 @@ class CourseEditTests(unittest.TestCase):
         self.assertEqual(enrolled["plan_fingerprint"], new_fingerprint)
 
     def test_retire_topic_with_evidence_keeps_id_and_events(self):
-        before_state = (self.root / "alex" / "state.json").read_bytes()
+        before = json.loads((self.root / "alex" / "state.json").read_text())
         old_fingerprint = self.fingerprint()
         new_fingerprint = course_edits.apply_course_edit(
             self.workspace,
@@ -183,7 +183,12 @@ class CourseEditTests(unittest.TestCase):
 
         self.assertEqual(self.topic("gradient")["state"], "retired")
         self.assertEqual(self.topic("gradient")["id"], "gradient")
-        self.assertEqual((self.root / "alex" / "state.json").read_bytes(), before_state)
+        after = json.loads((self.root / "alex" / "state.json").read_text())
+        self.assertEqual(after["events"], before["events"])
+        expected_enrollment = dict(before["courses"]["gradient-descent"])
+        expected_enrollment["plan_revision"] = 2
+        expected_enrollment["plan_fingerprint"] = new_fingerprint
+        self.assertEqual(after["courses"]["gradient-descent"], expected_enrollment)
         self.assertEqual(learner_state.read_state(self.root, "alex")["events"], [])
         self.assertEqual(self.enrollment()["plan_fingerprint"], new_fingerprint)
 
@@ -207,7 +212,7 @@ class CourseEditTests(unittest.TestCase):
         fingerprint = course_edits.apply_course_edit(
             self.workspace,
             {"type": "reorder-future-topics", "chapter_id": "change",
-             "topic_ids": ["gradient", "step-size", "momentum"],
+             "topic_ids": ["momentum", "step-size", "gradient"],
              "reason": "Teach the visual intuition before the step-size details."},
             evidence={}, expected_fingerprint=fingerprint,
         )
@@ -215,7 +220,7 @@ class CourseEditTests(unittest.TestCase):
         plan = read_plan(self.workspace)
         self.assertEqual(plan["current"]["topic_id"], "local-change")
         self.assertEqual([topic["id"] for topic in plan["chapters"][0]["topics"]],
-                         ["local-change", "gradient", "step-size", "momentum"])
+                         ["local-change", "momentum", "step-size", "gradient"])
         self.assertEqual(plan["revision"], 3)
         self.assertEqual(self.enrollment()["plan_fingerprint"], fingerprint)
 

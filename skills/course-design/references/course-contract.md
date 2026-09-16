@@ -34,9 +34,10 @@ New plans use `schema_version: 2`. Do not write new version-1 plans.
 ## Each topic
 
 Each topic has `id`, `title`, `outcome`, `subject`, `teacher`,
-`concepts`, `prerequisites`, `minutes`, `resource_ids`,
-`exercise_ids`, `lesson_ids`, `skill_routes`, `state`,
-and optional `feedback`.
+`supporting_subjects`, `supporting_teachers`, `concepts`,
+`prerequisites`, `minutes`, `resource_ids`, `exercise_ids`,
+`lesson_ids`, `skill_routes`, `state`, and optional `feedback` and
+`representations`.
 
 - `outcome`: what the learner can do after it,
   for example "Predict the sign of a small change."
@@ -64,6 +65,53 @@ and optional `feedback`.
 - `state` tells where the step sits in the route:
   `current` is now, `planned` is next, `provisional` is later and may
   change, `retired` and `out-of-scope` stay as history and are not taught.
+
+## Split each topic by representation
+
+When you design a topic, decide which part of it needs which skill.
+Write that into `representations` on the topic:
+
+```json
+"representations": [
+  {"id": "secant-motion", "kind": "manim", "concept": "math.derivative",
+   "purpose": "Animate secant lines converging to the tangent."},
+  {"id": "slope-structure", "kind": "image",
+   "purpose": "Label the rise-over-run structure of a slope."},
+  {"id": "slope-lab", "kind": "simulation",
+   "purpose": "Drag x and watch the predicted sign change."},
+  {"id": "definition", "kind": "text",
+   "purpose": "State the derivative as a local limit."}
+]
+```
+
+Each representation is a different part of the topic. Do not show the
+same idea twice in two tools; different parts of one concept may each
+earn one representation.
+
+- `kind` is one of `text`, `manim`, `image`, `simulation`, `diagram`,
+  `pdf`, `exercise`.
+- `id` is unique inside the topic. `purpose` is one line.
+- `concept` is optional; when present it must be one of the topic's
+  `concepts`.
+- Decide which part needs motion, which needs a still image, and which
+  stays text. Read
+  [representation-choices.md](representation-choices.md) for the rules
+  that stop Manim from being ordered for everything.
+- Dispatch each part to its skill, then to its lesson block:
+
+| kind | skill | lesson block type |
+| --- | --- | --- |
+| `manim` | manim-voice-animation | `voice-animation` or `animation` |
+| `image`, `diagram` | image-gen | `diagram` or `artifact` |
+| `simulation` | a small self-contained HTML file, registered with manage_artifact | `interactive-graph` or `simulation` |
+| `pdf` | pdf | `artifact` |
+| `text` | the subject teacher | `explanation`, `bullets`, `equation`, `code` |
+| `exercise` | the subject teacher | `exercise` |
+
+- The viewer page shows one chip per representation. A chip flips from
+  planned to ready when its artifact is registered. Every skill that
+  produces a file must register it in the artifact manifest, or its
+  chip never flips.
 
 ## Revision notes tell what changed and why
 

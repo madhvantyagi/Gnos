@@ -14,7 +14,7 @@ automatic assessment service hidden behind these files.
 | Subject | Subfields, prerequisites, representations, sources | General tutor rules |
 | Course design | Outcomes, sequence, teacher assignments, assessments | Evidence of progress |
 | Learner model | Dated observations, attempts, preferences, next step | Fixed labels of ability |
-| PDF / Manim | Artifact construction and verification | Whether the learner understood |
+| PDF / Manim / Image | Artifact construction and verification | Whether the learner understood |
 
 One teacher leads a turn. A supporting subject contributes only the needed
 idea; it does not trigger an invented panel discussion. Mathematics is shared
@@ -56,11 +56,18 @@ under the learner course workspace or `output/`; media sources remain editable.
 
 ## Media choices
 
+A topic declares its representations in `course.json` so each part is
+dispatched to the right skill: manim for motion, image-gen for still
+images, pdf for handouts, simulation for interactive parts, text for the
+rest. `representation-choices.md` holds the rules that stop Manim from
+being ordered for everything.
+
 PDF: structured lesson JSON to ReportLab, with embedded fonts, image captions,
 equation images, page numbering, and source links. Inspect rendered pages.
 Manim: storyboard to narration clips to scenes. Place each clip at the scene's
 actual cue start; extra pauses then cannot shift later narration. Export
 subtitles from the same cue timings. Keep silent rendering usable offline.
+The course viewer renders registered artifacts on one static page.
 
 ## Scope decisions
 

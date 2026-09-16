@@ -16,8 +16,11 @@ from lesson_contract import validate_lesson
 def validate():
     errors = []
     skills = sorted((ROOT / 'skills').glob('*/SKILL.md'))
-    if len(skills) != 7:
-        errors.append(f'Expected seven skill entry points; found {len(skills)}')
+    expected = ('course-design', 'course-viewer', 'image-gen', 'learner-tracking',
+                'learning-orchestrator', 'manim-voice-animation', 'pdf', 'subject')
+    if [path.parent.name for path in skills] != sorted(expected):
+        found = [path.parent.name for path in skills]
+        errors.append(f'Expected skills {sorted(expected)}; found {sorted(found)}')
     for path in skills:
         text = path.read_text()
         parts = text.split('---', 2)
@@ -25,6 +28,10 @@ def validate():
             errors.append(f'{path.relative_to(ROOT)}: missing YAML frontmatter')
         elif not all(re.search(rf'^{field}:\s*\S', parts[1], re.M) for field in ('name', 'description')):
             errors.append(f'{path.relative_to(ROOT)}: missing skill name/description')
+        else:
+            name = re.search(r'^name:\s*(\S+)', parts[1], re.M)
+            if not name or name.group(1) != path.parent.name:
+                errors.append(f'{path.relative_to(ROOT)}: frontmatter name must match folder')
     for subject in SUBJECTS:
         path = ROOT / f'skills/subject/subjects/{subject}.md'
         if not path.is_file():

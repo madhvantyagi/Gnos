@@ -45,12 +45,14 @@ def selected_paths(subject, mode='lesson', media=None, course=None):
             'skills/course-design/SKILL.md',
             'skills/course-design/references/course-contract.md',
             'skills/course-design/references/course-research.md',
+            'skills/course-design/references/representation-choices.md',
             'skills/course-design/references/lesson-contract.md',
             'skills/learner-tracking/SKILL.md',
             'skills/learner-tracking/references/adaptive-lifecycle.md',
+            'skills/course-viewer/SKILL.md',
         ]
     if media:
-        folder = 'pdf' if media == 'pdf' else 'manim-voice-animation'
+        folder = {'pdf': 'pdf', 'manim': 'manim-voice-animation', 'image': 'image-gen'}.get(media)
         paths.append(f'skills/{folder}/SKILL.md')
     return list(dict.fromkeys(paths))
 
@@ -59,7 +61,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--subject', choices=SUBJECTS, required=True)
     parser.add_argument('--mode', choices=('lesson', 'course'), default='lesson')
-    parser.add_argument('--media', choices=('pdf', 'manim'))
+    parser.add_argument('--media', choices=('pdf', 'manim', 'image'))
     parser.add_argument('--learner')
     parser.add_argument('--learners-root', type=Path, default=ROOT / 'learners')
     parser.add_argument('--course', type=Path)

@@ -235,6 +235,55 @@ class CourseContractV2Tests(unittest.TestCase):
         with self.assertRaises(ValueError):
             contract.validate_course(plan)
 
+    def test_topic_representations_plan_is_validated(self):
+        plan = valid_v2_course()
+        topic = plan["chapters"][0]["topics"][0]
+        topic["representations"] = [
+            {"id": "motion", "kind": "manim", "concept": "math.derivative",
+             "purpose": "Animate a secant approaching the tangent."},
+            {"id": "still", "kind": "image", "purpose": "Label the slope structure."},
+        ]
+        contract.validate_course(plan)
+        for mutation in (
+            [{"id": "x", "kind": "movie", "purpose": "p"}],
+            [{"id": "x", "kind": "text", "purpose": "a"},
+             {"id": "x", "kind": "text", "purpose": "b"}],
+            [{"id": "x", "kind": "text", "concept": "math.gradient", "purpose": "a"}],
+            [{"id": "x", "kind": "text"}],
+            [{"id": "x", "kind": "text", "purpose": "a", "concept": ""}],
+            [],
+            "not-a-list",
+            [{"kind": "text", "purpose": "a"}],
+        ):
+            bad = valid_v2_course()
+            bad["chapters"][0]["topics"][0]["representations"] = mutation
+            with self.assertRaises(ValueError):
+                contract.validate_course(bad)
+
+    def test_topic_feedback_fields_are_validated(self):
+        valid = valid_v2_course()
+        topic = valid["chapters"][0]["topics"][0]
+        topic["feedback"] = {
+            "source_results": {"openstax-calculus-1": "too-hard"},
+            "direction": "swap",
+            "note": "asked twice",
+            "repeats": 2,
+        }
+        contract.validate_course(valid)
+        for feedback in (
+            {"source_results": {"missing-source": "worked"}},
+            {"source_results": {"openstax-calculus-1": "meh"}},
+            {"direction": "explode"},
+            {"repeats": -1},
+            {"repeats": "two"},
+            {"note": ""},
+            "not-an-object",
+        ):
+            bad = valid_v2_course()
+            bad["chapters"][0]["topics"][0]["feedback"] = feedback
+            with self.assertRaises(ValueError):
+                contract.validate_course(bad)
+
 
 if __name__ == "__main__":
     unittest.main()

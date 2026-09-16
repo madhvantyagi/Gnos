@@ -44,6 +44,17 @@ Supported types are:
   `simulation`;
 - `source`, `exercise`, `feedback`, and generic `artifact`.
 
+Each block comes from the topic's representation plan in `course.json`:
+
+| representation kind | block type |
+| --- | --- |
+| `manim` | `voice-animation` or `animation` |
+| `image`, `diagram` | `diagram` or `artifact` |
+| `simulation` | `interactive-graph` or `simulation` |
+| `pdf` | `artifact` |
+| `text` | `explanation`, `bullets`, `equation`, `code` |
+| `exercise` | `exercise` |
+
 Media blocks refer to registered artifact IDs. Exercise blocks refer to an
 exercise defined by the same lesson. References must resolve; a plausible
 filename is not an artifact.

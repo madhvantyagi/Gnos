@@ -37,7 +37,7 @@ attempts, and adapts the moment it hurts. Each pillar is its own skill:
 | **Build** | [course-design](skills/course-design/SKILL.md) | Researches sources, writes the plan, records every route change. |
 | **Track & adapt** | [learner-tracking](skills/learner-tracking/SKILL.md) | Records attempts and stuck points; the course changes in real time. |
 | **Choose** | [subject](skills/subject/SKILL.md) | Picks the subject and the teacher persona that fits the problem. |
-| **Show** | [manim-voice-animation](skills/manim-voice-animation/SKILL.md) · [pdf](skills/pdf/SKILL.md) | Turns words into narrated animations, videos, images, diagrams, handouts. |
+| **Show** | [manim-voice-animation](skills/manim-voice-animation/SKILL.md) · [image-gen](skills/image-gen/SKILL.md) · [pdf](skills/pdf/SKILL.md) | Turns words into narrated animations, images, diagrams, handouts. |
 | **View** | [course-viewer](skills/course-viewer/SKILL.md) | Renders the course into one static page: videos, images, simulations, exercises. |
 
 ## Teachers with souls

@@ -27,8 +27,11 @@ Paths below are relative to the repository root.
    prerequisite-rich study. Use `skills/course-design/SKILL.md` only when a
    persistent route is justified. For a local doubt, make the small plan in
    working context and answer immediately.
-4. Load the PDF or Manim skill only when that representation is useful or
-   requested. Read supporting references at the point of use.
+4. Load the PDF, Manim, or image skill only when that representation is
+   useful or requested. Read supporting references at the point of use.
+   During course work, load `skills/course-viewer/SKILL.md` and render
+   the viewer page after lessons or artifacts change:
+   `python3 skills/course-viewer/scripts/render_viewer.py learners/<learner>/courses/<course-id>`.
 
 The explicit loader is `python3 skills/learning-orchestrator/scripts/assemble_context.py --subject math`.
 Use `--learner <id>`, `--course-id <id>` for an enrolled course, or

@@ -20,7 +20,11 @@ for example "learn mechanics over six weeks".
 
 2. **Write the plan.** Read [course-contract.md](references/course-contract.md).
    Write `course.json` with title, goal, steps, sources, and one
-   current step. Say which source each step uses. Check it with:
+   current step. Say which source each step uses. Split each topic
+   into its representations: which part needs manim motion, which needs
+   a still image, which needs a simulation, which stays text. Read
+   [representation-choices.md](references/representation-choices.md)
+   for the rules. Check the plan with:
 
    ```bash
    python3 skills/course-design/scripts/validate_course.py <course.json>
@@ -35,11 +39,16 @@ for example "learn mechanics over six weeks".
    the learner had. See `skills/learner-tracking/SKILL.md`
    for the learner record and its adaptive step.
 
-4. **Show the course.** After lessons or artifacts exist, render the
-   learner's page with the course-viewer skill:
+4. **Make each representation, then show the course.** Dispatch each
+   topic representation to its skill: `manim` -> manim-voice-animation,
+   `image`/`diagram` -> image-gen, `simulation` -> a small self-contained
+   HTML file registered with `manage_artifact.py`, `pdf` -> pdf,
+   `text`/`exercise` -> the subject teacher. Every skill that produces a
+   file registers it in the artifact manifest. After lessons or
+   artifacts exist, render the learner's page:
 
    ```bash
-   python3 skills/course-viewer/scripts/render_viewer.py <learner>/courses/<course-id>
+   python3 skills/course-viewer/scripts/render_viewer.py learners/<learner>/courses/<course-id>
    ```
 
    Re-render after every new lesson, video, image, or simulation.

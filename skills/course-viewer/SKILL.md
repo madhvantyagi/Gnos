@@ -1,13 +1,14 @@
 ---
 name: course-viewer
-description: Render a learner's course into one static web page that shows lessons, videos, images, simulations, sources, exercises, and resources.
+description: Render a learner's course into one static web page with a sidebar, lessons, videos, images, simulations, exercises, and sources.
 ---
 
 # Course viewer
 
 Turn a course workspace into one static page the learner reads.
 No app, no build step, no external libraries. One self-contained
-HTML file with monospace type on a dark ink page.
+HTML file. White, minimal, full screen: a left sidebar with tabs
+and the lesson list, a main column with the lesson content.
 
 Use this skill after a course exists and lessons or artifacts were
 added. Re-render after every new lesson, video, image, or simulation.
@@ -18,10 +19,9 @@ added. Re-render after every new lesson, video, image, or simulation.
 python3 skills/course-viewer/scripts/render_viewer.py learners/alex/courses/motion
 ```
 
-Or pass the course folder directly. Add `--summary <file>` to show
-learner progress beside the topics. The script reads `course.json`,
-published lessons, and the artifact manifest, then writes
-`portal/index.html` inside the course folder.
+Add `--summary <file>` to show learner progress beside the topics.
+The script reads `course.json`, published lessons, and the artifact
+manifest, then writes `portal/index.html` inside the course folder.
 
 Open it locally:
 
@@ -31,38 +31,36 @@ python3 -m http.server 8080
 # visit http://localhost:8080/portal/
 ```
 
-## The look
+## The layout
 
 The design lives in [references/example.html](references/example.html).
-Copy that look exactly: centered column, monospace font, old ink style,
-ruled tables, small-caps headers. Colors always mean the same thing:
+Copy that look exactly:
 
-- gold = watch (videos, animations, audio)
-- green = generated (diagrams, images, simulations)
-- rust = resources (PDFs, documents, files)
-- mauve = exercises and questions
-- red = the current topic row
-- blue = planned, grey = provisional, dimmed = retired or out-of-scope
-
-Lessons appear in plan order. A lesson shows its explanation, bullets,
-equations, code, videos, images, sandboxed simulations, source cards,
-and exercise prompts. Arrow keys step between lessons; the page also
-has prev/next links.
+- white page, near-black text, one accent color, no gradients
+- left sidebar: course title, tabs (Overview, Lessons, Exercises,
+  Sources, Artifacts), lesson list with done / current / locked dots
+- main column scrolls; sticky header shows the course and prev/next
+- lessons show the topic's representation plan as chips: manim,
+  image, simulation, text. A chip turns ready when its artifact is
+  registered
+- videos, images, and sandboxed simulations render full width inside
+  rounded frames, captions below, never overlapping
+- arrow keys step between lessons
 
 ## Compatibility with other skills
 
-The viewer does not know about any single skill. It renders whatever
-is registered in the course artifact manifest, whatever made it:
+The viewer renders whatever is registered in the course artifact
+manifest, whatever made it:
 
-- Manim videos and narrated animations -> `watch` section, inline `<video>`
-- images made by image models -> `generated` section, inline `<img>`
+- manim-voice-animation videos -> watch, inline `<video>`
+- image-gen images -> generated, inline `<img>`
 - interactive simulations (HTML) -> sandboxed `<iframe>`
-- PDFs and documents -> `resources` section, open links
-- MCP server data lands here the same way: publish the artifact through
-  the manifest first, then re-render
+- pdf handouts and documents -> resources, open links
 
-Register every artifact with the course-design skill
-(`manage_artifact.py`) before rendering. Only `ready` artifacts appear.
+The topic's `representations` in `course.json` say which parts need
+which skill. The page shows that plan as chips, so the learner sees
+what is coming. Register every artifact with the course-design skill
+(`manage_artifact.py`) before rendering; only `ready` artifacts appear.
 
 ## Rules
 

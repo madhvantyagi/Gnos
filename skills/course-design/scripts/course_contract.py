@@ -12,6 +12,7 @@ from urllib.parse import urlparse
 ROOT = Path(__file__).resolve().parents[3]
 COURSE_SCHEMA_VERSION = 2
 PLANNING_STATES = ("current", "planned", "provisional", "retired", "out-of-scope")
+REPRESENTATION_KINDS = ("text", "manim", "image", "simulation", "diagram", "pdf", "exercise")
 
 
 def _available_subjects():
@@ -125,12 +126,16 @@ def _validate_source_registry(source_data):
 def _validate_revision_notes(notes):
     if not isinstance(notes, list) or not notes:
         raise ValueError("revision_notes must be a nonempty list")
+    previous = 0
     for note in notes:
         if not isinstance(note, dict):
             raise ValueError("Each revision note must be an object")
         revision = note.get("revision")
         if type(revision) is not int or revision < 1:
             raise ValueError("revision_notes.revision must be a positive integer")
+        if revision <= previous:
+            raise ValueError("revision_notes.revision must increase with each note")
+        previous = revision
         revision_date = note.get("date")
         nonempty(revision_date, "revision_notes.date")
         if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", revision_date):
@@ -177,7 +182,7 @@ def _validate_v2(data):
             raise ValueError("Each chapter must be an object")
         chapter_id = slug(chapter.get("id"))
         if chapter_id in chapter_ids:
-            raise ValueError(f"Duplicate course ID: {chapter_id}")
+            raise ValueError(f"Duplicate chapter ID: {chapter_id}")
         chapter_ids.add(chapter_id)
         nonempty(chapter.get("title"), f"{chapter_id}.title")
         if chapter.get("state") not in PLANNING_STATES:
@@ -190,7 +195,7 @@ def _validate_v2(data):
                 raise ValueError(f"{chapter_id}: each topic must be an object")
             topic_id = slug(topic.get("id"))
             if topic_id in topic_ids:
-                raise ValueError(f"Duplicate course ID: {topic_id}")
+                raise ValueError(f"Duplicate topic ID: {topic_id}")
             topic_ids.add(topic_id)
             for key in ("title", "outcome"):
                 nonempty(topic.get(key), f"{topic_id}.{key}")
@@ -236,6 +241,31 @@ def _validate_v2(data):
             prerequisites = strings(topic.get("prerequisites"), "prerequisites")
             if any(prerequisite not in seen_topics for prerequisite in prerequisites):
                 raise ValueError(f"{topic_id}: prerequisites must refer to earlier topics")
+            representations = topic.get("representations")
+            if representations is not None:
+                if not isinstance(representations, list) or not representations:
+                    raise ValueError(f"{topic_id}: representations must be a nonempty list")
+                representation_ids = set()
+                for representation in representations:
+                    if not isinstance(representation, dict):
+                        raise ValueError(f"{topic_id}: each representation must be an object")
+                    if representation.get("id") is None:
+                        raise ValueError(f"{topic_id}: representation requires an id")
+                    representation_id = slug(representation.get("id"))
+                    if representation_id in representation_ids:
+                        raise ValueError(f"{topic_id}: duplicate representation id")
+                    representation_ids.add(representation_id)
+                    kind = representation.get("kind")
+                    if kind not in REPRESENTATION_KINDS:
+                        raise ValueError(f"{topic_id}: unknown representation kind {kind!r}")
+                    if not representation.get("purpose"):
+                        raise ValueError(f"{topic_id}: representation purpose must be nonempty text")
+                    concept = representation.get("concept")
+                    if concept is not None:
+                        if not isinstance(concept, str) or not concept.strip():
+                            raise ValueError(f"{topic_id}: representation concept must be nonempty text")
+                        if concept not in concepts:
+                            raise ValueError(f"{topic_id}: representation concept is not in topic concepts")
             minutes = topic.get("minutes")
             if type(minutes) is not int or minutes <= 0:
                 raise ValueError(f"{topic_id}: minutes must be a positive integer")

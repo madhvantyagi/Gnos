@@ -9,6 +9,12 @@ Use Manim when motion exposes a relationship the learner needs to inspect. A
 still diagram, runnable example, or source excerpt is the better representation
 when nothing meaningful changes.
 
+Order Manim only for a topic representation with `kind: manim` in the course
+plan. Before that, read
+`skills/course-design/references/representation-choices.md`: it names the
+trigger words and the hard rules that stop Manim from being ordered for
+definitions, lists, and static diagrams.
+
 ## Start with GNOS context
 
 Treat the animation as a teaching artifact, not a generic explainer. Before
@@ -77,6 +83,27 @@ numbers agree with displayed equations and simulation state, labels stay in
 frame, and no updater remains attached after its section. Listen for cue drift
 when audio exists. A silent render verifies choreography only. Use a higher
 quality only after the low-quality preview is correct.
+
+## Register the artifact
+
+The viewer page shows the topic's `manim` chip as ready only after the
+video is registered. Copy the render into the course workspace, then
+register it:
+
+```bash
+cp output/preview.mp4 learners/<learner>/courses/<course-id>/artifacts/videos/<slug>.mp4
+python3 skills/course-design/scripts/manage_artifact.py --learners-root learners \
+  register <learner-id> <course-id> --file artifact.json
+```
+
+The artifact file uses `type: voice-animation`, `mime_type: video/mp4`,
+the topic's `lesson_id`, and `status: ready`. Register only the checked
+render; keep drafts as `draft` or `failed` with an honest note. Then
+re-render the page:
+
+```bash
+python3 skills/course-viewer/scripts/render_viewer.py learners/<learner>/courses/<course-id>
+```
 
 ## Visual judgment
 

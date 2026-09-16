@@ -28,6 +28,24 @@ Use headings to mark conceptual changes rather than decorating every paragraph.
 5. Extract text with `pdftotext` or `pypdf` and check for omissions or missing
    glyphs. Deliver the PDF with its editable source. State any unverified layout.
 
+## Register the artifact
+
+The viewer page shows the topic's `pdf` chip as ready only after the
+PDF is registered. Copy it into the course workspace, then register:
+
+```bash
+cp output/lesson.pdf learners/<learner>/courses/<course-id>/artifacts/documents/<slug>.pdf
+python3 skills/course-design/scripts/manage_artifact.py --learners-root learners \
+  register <learner-id> <course-id> --file artifact.json
+```
+
+Use `type: document`, `mime_type: application/pdf`, the topic's
+`lesson_id`, and `status: ready`. Then re-render the page:
+
+```bash
+python3 skills/course-viewer/scripts/render_viewer.py learners/<learner>/courses/<course-id>
+```
+
 ## Typography and figures
 
 Use a calm hierarchy: serif body, sans heading, mono code; 11–12 pt body with

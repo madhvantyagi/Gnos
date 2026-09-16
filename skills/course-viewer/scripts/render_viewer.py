@@ -2,8 +2,9 @@
 """Render one learner course workspace into a single static viewer page.
 
 Reads the validated course plan, ready lessons, and the artifact manifest,
-then writes a self-contained index.html that shows videos, images,
-simulations, sources, exercises, and resources. Only public projection
+then writes a self-contained index.html with a left sidebar (tabs and
+lesson list) and a scrolling main column: lessons with videos, images,
+simulations, exercises, sources, and resources. Only public projection
 fields are rendered; private evaluation criteria never appear.
 """
 import argparse
@@ -38,16 +39,29 @@ def artifact_note(artifact, workspace):
     location = artifact.get("location", {})
     if "path" not in location:
         return ""
-    target = workspace / Path(location["path"])
-    if not target.is_file():
-        return "missing file"
-    return ""
+    return "" if (workspace / Path(location["path"])).is_file() else "missing file"
 
 
 def badge(state):
-    label = esc(state)
     css = state if state in ("current", "planned", "provisional", "retired", "out-of-scope") else "planned"
-    return f'<span class="badge {css}">{label}</span>'
+    return f'<span class="badge {css}">{esc(state)}</span>'
+
+
+def media_element(artifact, group):
+    src = esc(artifact_src(artifact))
+    title = esc(artifact.get("title", artifact.get("id", "")))
+    mime = artifact.get("mime_type", "")
+    if group == "watch":
+        if mime.startswith("video/"):
+            return f'<video controls preload="metadata" src="{src}"></video>'
+        if mime.startswith("audio/"):
+            return f'<audio controls preload="metadata" src="{src}"></audio>'
+    if group == "generated":
+        if mime.startswith("image/"):
+            return f'<img src="{src}" alt="{title}" loading="lazy">'
+        if mime in ("text/html", "application/xhtml+xml"):
+            return f'<iframe sandbox="allow-scripts" src="{src}" title="{title}"></iframe>'
+    return None
 
 
 def render_media(artifact, group, workspace):
@@ -56,68 +70,52 @@ def render_media(artifact, group, workspace):
     purpose = esc(artifact.get("purpose", ""))
     mime = artifact.get("mime_type", "")
     metadata = artifact.get("metadata", {})
-    meta_bits = []
+    bits = []
     if metadata.get("duration_seconds") is not None:
         seconds = int(metadata["duration_seconds"])
-        meta_bits.append(f"{seconds // 60}:{seconds % 60:02d}")
-    for key, label in (("pages", "pages"), ("width", "w"), ("height", "h")):
-        if metadata.get(key) is not None:
-            meta_bits.append(f"{label} {metadata[key]}")
+        bits.append(f"{seconds // 60}:{seconds % 60:02d}")
+    if metadata.get("pages") is not None:
+        bits.append(f"{metadata['pages']} pages")
     if metadata.get("captions"):
-        meta_bits.append("captions")
+        bits.append("captions")
     if metadata.get("transcript"):
-        meta_bits.append("transcript")
-    meta = esc(" · ".join(str(bit) for bit in meta_bits))
-
+        bits.append("transcript")
+    meta = esc(" · ".join(str(bit) for bit in bits))
     missing = artifact_note(artifact, workspace)
-    element = None
-    if group == "watch":
-        if mime.startswith("video/"):
-            element = f'<video controls preload="metadata" src="{src}"></video>'
-        elif mime.startswith("audio/"):
-            element = f'<audio controls preload="metadata" src="{src}"></audio>'
-    elif group == "generated":
-        if mime.startswith("image/"):
-            element = f'<img src="{src}" alt="{title}" loading="lazy">'
-        elif mime in ("text/html", "application/xhtml+xml"):
-            element = f'<iframe sandbox="allow-scripts allow-same-origin" src="{src}" title="{title}"></iframe>'
 
+    element = media_element(artifact, group)
     if element is None:
-        return (f'<div class="card"><div class="card-title">{group} · {esc(artifact.get("type", ""))}</div>'
+        return (f'<div class="card"><div class="card-title">{esc(group)} · {esc(artifact.get("type", ""))}</div>'
                 f'<div class="prompt">{title}</div>'
                 f'<div class="meta"><a href="{src}">open</a> · {purpose}</div></div>')
 
     note = f'<div class="missing">{esc(missing)}</div>' if missing else ""
+    meta_line = esc(artifact.get("mime_type", ""))
+    if meta:
+        meta_line += " · " + meta
     return (f'<div class="media">{element}'
+            f'<div class="media-body">'
             f'<div class="media-title">{title} {note}</div>'
             f'<div class="media-purpose">{purpose}</div>'
-            f'<div class="media-meta">{esc(artifact.get("mime_type", ""))}'
-            + (f" · {meta}" if meta else "") + "</div></div>")
+            f'<div class="media-meta">{meta_line}</div></div></div>')
 
 
-def render_block(block, exercises, sources):
+def render_block(block, lesson_exercises, sources):
     block_type = block.get("type", "")
     concepts = " · ".join(esc(c) for c in block.get("concepts", []))
-    header = f'<div class="block-purpose">{esc(block_type)}'
+    label = esc(block_type)
     if concepts:
-        header += f" · {concepts}"
-    header += "</div>"
+        label += " · " + concepts
+    header = f'<div class="block-label">{label}</div>'
     body = ""
-    text = block.get("text")
-    if text:
-        body = f"<p>{esc(text)}</p>"
-    items = block.get("items")
-    if isinstance(items, list):
-        body = "<ul>" + "".join(f"<li>{esc(item)}</li>" for item in items) + "</ul>"
-    equation = block.get("equation")
-    if equation:
-        body = f"<pre>{esc(equation)}</pre>"
-    code = block.get("code")
-    if code:
-        body = f"<pre>{esc(code)}</pre>"
-    caption = block.get("caption")
-    if caption:
-        body += f'<div class="caption">{esc(caption)}</div>'
+    if block.get("text"):
+        body = f"<p>{esc(block['text'])}</p>"
+    if isinstance(block.get("items"), list):
+        body = "<ul>" + "".join(f"<li>{esc(item)}</li>" for item in block["items"]) + "</ul>"
+    if block.get("equation"):
+        body = f"<pre>{esc(block['equation'])}</pre>"
+    if block.get("code"):
+        body = f"<pre>{esc(block['code'])}</pre>"
 
     if block_type == "source":
         source = sources.get(block.get("source_id", ""), {})
@@ -125,51 +123,87 @@ def render_block(block, exercises, sources):
         link = ""
         if source.get("url"):
             link = f'<div class="meta"><a href="{esc(source["url"])}">open source</a></div>'
-        body = (f'<div class="card src"><div class="card-title">source · {esc(block.get("source_id", ""))}</div>'
+        body = (f'<div class="card"><div class="card-title">source · {esc(block.get("source_id", ""))}</div>'
                 f'<div class="prompt">{esc(source.get("title", ""))}'
-                + (f" — {sections}" if sections else "") + "</div>"
-                f'{link}<div class="meta">{esc(block.get("purpose", ""))}</div></div>')
+                + (f" — {sections}" if sections else "") + f"</div>{link}"
+                f'<div class="meta">{esc(block.get("purpose", ""))}</div></div>')
         return f'<div class="block">{header}{body}</div>'
 
     if block_type == "exercise":
-        exercise = exercises.get(block.get("exercise_id", ""), {})
-        return (f'<div class="block">{header}'
-                f'<div class="card ex"><div class="card-title">exercise · {esc(block.get("exercise_id", ""))}</div>'
+        exercise = lesson_exercises.get(block.get("exercise_id", ""), {})
+        body = (f'<div class="card"><div class="card-title">exercise · {esc(block.get("exercise_id", ""))}</div>'
                 f'<div class="prompt">{esc(exercise.get("prompt", ""))}</div>'
-                f'<div class="meta">response · {esc(exercise.get("response_type", ""))}</div></div></div>')
+                f'<div class="meta">response · {esc(exercise.get("response_type", ""))}</div></div>')
+        return f'<div class="block">{header}{body}</div>'
 
     return f'<div class="block">{header}{body}</div>'
 
 
-def render_lesson(lesson, index, total, previous_id, next_id, artifacts, sources, exercises, workspace):
+def rep_ready(representation, lesson_id, topic_id, artifacts):
+    kind = representation.get("kind")
+    if kind in ("text", "exercise"):
+        return True
+    for artifact in artifacts:
+        if artifact.get("lesson_id") != lesson_id:
+            continue
+        mime = artifact.get("mime_type", "")
+        if kind == "manim" and artifact.get("type") in ("voice-animation", "animation", "video", "audio"):
+            return True
+        if kind in ("image", "diagram") and mime.startswith("image/"):
+            return True
+        if kind == "simulation" and mime in ("text/html", "application/xhtml+xml"):
+            return True
+        if kind == "pdf" and mime == "application/pdf":
+            return True
+    return False
+
+
+def render_chips(representations, lesson_id, topic_id, artifacts):
+    if not representations:
+        return ""
+    chips = []
+    for representation in representations:
+        kind = esc(representation.get("kind", ""))
+        ready = rep_ready(representation, lesson_id, topic_id, artifacts)
+        css = f"chip {kind}"
+        if ready:
+            css += " ready"
+        purpose = esc(representation.get("purpose", ""))
+        chips.append(f'<span class="{css}" title="{purpose}"><span class="status"></span>'
+                     f'{kind}</span>')
+    return '<div class="chips">' + "".join(chips) + "</div>"
+
+
+def render_lesson(lesson, index, total, previous_id, next_id, artifacts, sources, workspace, topic_reps):
+    topic = lesson.get("topic_id", "")
     media_groups = {"voice-animation": "watch", "animation": "watch", "video": "watch",
                     "audio": "watch", "diagram": "generated", "interactive-graph": "generated",
                     "simulation": "generated"}
+    lesson_exercises = {ex["id"]: ex for ex in lesson.get("exercises", [])}
     blocks = []
     for block in lesson.get("blocks", []):
         artifact_id = block.get("artifact_id")
         if artifact_id and artifact_id in artifacts:
             group = media_groups.get(block.get("type", ""), "resources")
-            kind = "watch" if group == "watch" else "generated" if group == "generated" else "resources"
-            blocks.append(render_media(artifacts[artifact_id], kind, workspace))
-            blocks.append(render_block(block, exercises, sources))
+            blocks.append(render_media(artifacts[artifact_id], group, workspace))
+            blocks.append(render_block(block, lesson_exercises, sources))
         else:
-            blocks.append(render_block(block, exercises, sources))
-    nav = ""
-    if previous_id or next_id:
-        left = f'<a href="#lesson-{esc(previous_id)}">← prev</a>' if previous_id else "<span></span>"
-        right = f'<a href="#lesson-{esc(next_id)}">next →</a>' if next_id else "<span></span>"
-        nav = f'<div class="lesson-nav">{left}<span>{index} / {total}</span>{right}</div>'
-    concepts = " · ".join(esc(c) for c in lesson.get("concepts", []))
-    teacher = lesson.get("teacher")
-    teacher_line = esc(teacher) if teacher else "no assigned teacher"
-    return (f'<section class="lesson" id="lesson-{esc(lesson["id"])}">'
-            f'<span class="lesson-no">LESSON {index:02d}</span>'
+            blocks.append(render_block(block, lesson_exercises, sources))
+    chips = render_chips(topic_reps.get(topic, []), lesson["id"], topic, list(artifacts.values()))
+    teacher = esc(lesson.get("teacher")) if lesson.get("teacher") else "no assigned teacher"
+    meta = (f'teacher · {teacher} · updated {esc(lesson.get("updated_at", ""))}'
+            f' · concepts · {esc(" · ".join(lesson.get("concepts", [])))}')
+    left = (f'<a href="#" class="goto" data-index="{index - 2}">← prev · {esc(previous_id)}</a>'
+            if previous_id else "<span></span>")
+    right = (f'<a href="#" class="goto" data-index="{index}">next · {esc(next_id)} →</a>'
+             if next_id else "<span></span>")
+    nav = (f'<div class="lesson-nav">{left}<span>{index:02d} / {total:02d}</span>{right}</div>'
+           if previous_id or next_id else "")
+    return (f'<section class="lesson" id="lesson-{index - 1}">'
             f'<h3>{esc(lesson.get("title", lesson["id"]))}</h3>'
             f'<div class="purpose">{esc(lesson.get("purpose", ""))}</div>'
-            f'<div class="concepts">concepts · {concepts}</div>'
-            f'<div class="teacher">teacher · {teacher_line} · updated {esc(lesson.get("updated_at", ""))}</div>'
-            + "".join(blocks) + nav + "</section>")
+            f'<div class="meta">{meta}</div>'
+            + chips + "".join(blocks) + nav + "</section>")
 
 
 def ordered_lessons(view, plan):
@@ -185,23 +219,73 @@ def ordered_lessons(view, plan):
     ))
 
 
+def lesson_status(lesson, plan, current_topic):
+    order = []
+    for chapter in plan.get("chapters", []):
+        for topic in chapter.get("topics", []):
+            order.append((topic["id"], topic["state"]))
+    seen_current = False
+    for topic_id, state in order:
+        if topic_id == current_topic:
+            seen_current = True
+        if topic_id == lesson.get("topic_id"):
+            if state not in ("current", "planned", "provisional"):
+                return "locked"
+            if topic_id == current_topic:
+                return "current"
+            return "done" if not seen_current else "locked"
+    return "locked"
+
+
+def render_sidebar(plan, lessons, current_topic):
+    goal = esc(plan.get("goal", ""))
+    lesson_buttons = []
+    for index, lesson in enumerate(lessons):
+        status = lesson_status(lesson, plan, current_topic)
+        num = f"{index + 1:02d}"
+        title = esc(lesson.get("title", lesson["id"]))
+        extra = ' class="locked"' if status == "locked" else (' class="current"' if status == "current" else "")
+        lesson_buttons.append(
+            f'<button data-lesson="{index}"{extra}><span class="num">{num}</span>'
+            f'<span class="dot {status}"></span>{title}</button>')
+    return (
+        '<aside class="sidebar">'
+        f'<div class="side-head"><div class="course-title">{esc(plan.get("title", plan["id"]))}</div>'
+        f'<div class="course-id">course · {esc(plan["id"])} · rev {esc(plan.get("revision", ""))}</div>'
+        f'<div class="goal">{goal}</div></div>'
+        '<nav class="tabs" id="tabs">'
+        '<button data-tab="overview" class="active">Overview</button>'
+        '<button data-tab="lessons">Lessons</button>'
+        '<button data-tab="exercises">Exercises</button>'
+        '<button data-tab="sources">Sources</button>'
+        '<button data-tab="artifacts">Artifacts</button>'
+        '</nav>'
+        '<div class="lesson-list" id="lesson-list"><div class="list-label">lessons</div>'
+        + "".join(lesson_buttons) + "</div></aside>")
+
+
 def render_contents(view, course):
     rows = []
     for chapter in view["contents"]:
         for topic in chapter.get("topics", []):
             current = topic["id"] == course["current"]["topic_id"]
+            state = topic.get("state", "planned")
             sources = " · ".join(esc(r) for r in topic.get("resource_ids", []))
-            rows.append(
-                f'<tr class="current-row">' if current else "<tr>")
+            progress = topic.get("progress", {})
+            evidence = esc(progress.get("evidence", "not-started"))
+            attempts = progress.get("attempt_count", 0)
+            evidence_cell = evidence if not attempts else f"{evidence} · {attempts} tries"
+            rows.append('<tr class="current-row">' if current else "<tr>")
             rows.append(
                 f"<td>{esc(chapter.get('title', ''))}</td>"
                 f"<td>{esc(topic.get('title', ''))}</td>"
                 f"<td>{esc(topic.get('outcome', ''))}</td>"
-                f"<td>{badge(topic.get('state', 'planned'))}</td>"
+                f"<td>{badge(state)}</td>"
+                f"<td>{evidence_cell}</td>"
                 f"<td>{esc(topic.get('minutes', ''))}</td>"
                 f"<td>{sources}</td></tr>")
     return ("<table><tr><th>chapter</th><th>topic</th><th>outcome</th><th>state</th>"
-            "<th>min</th><th>sources</th></tr>" + "".join(rows) + "</table>")
+            "<th>evidence</th><th>min</th><th>sources</th></tr>" + "".join(rows) + "</table>")
 
 
 def render_sources(course):
@@ -219,126 +303,143 @@ def render_sources(course):
 
 
 def render_artifacts(view, workspace):
-    groups = (("watch", "watch · video / animation / audio"),
-              ("generated", "generated · diagram / image / simulation"),
-              ("resources", "resources · pdf / document / file"))
-    cards = []
-    for group, _label in groups:
+    groups = (("watch", "Watch"), ("generated", "Generated"), ("resources", "Resources"))
+    parts = []
+    for group, label in groups:
         grouped = view["artifacts"].get(group, {})
-        for artifact in list(grouped.get("recent", [])) + list(grouped.get("earlier", [])):
+        items = list(grouped.get("recent", [])) + list(grouped.get("earlier", []))
+        if not items:
+            continue
+        cards = []
+        for artifact in items:
             src = esc(artifact_src(artifact))
-            kind = "watch" if group == "watch" else "gen" if group == "generated" else "res"
             missing = artifact_note(artifact, workspace)
             note = f'<div class="meta">· {esc(missing)}</div>' if missing else ""
-            action = "open" if group == "resources" else (
-                "run" if artifact.get("mime_type", "").startswith("text/html") else
-                "watch" if group == "watch" else "open")
+            action = "open"
+            mime = artifact.get("mime_type", "")
+            if group == "watch":
+                action = "watch"
+            elif mime.startswith("text/html"):
+                action = "run"
             cards.append(
-                f'<div class="item"><div class="kind {kind}">{esc(group)} · {esc(artifact.get("type", ""))}</div>'
+                f'<div class="item"><div class="kind">{esc(group)} · {esc(artifact.get("type", ""))}</div>'
                 f'<div class="t">{esc(artifact.get("title", ""))}</div>'
                 f'<div class="p">{esc(artifact.get("purpose", ""))}</div>'
-                f'{note}<a class="open" href="{src}">{action}</a></div>')
-    return '<div class="gallery">' + "".join(cards) + "</div>"
+                f'{note}<a href="{src}">{action}</a></div>')
+        parts.append(f'<h2 class="sec">{label}</h2><div class="gallery">' + "".join(cards) + "</div>")
+    return "".join(parts) or '<p>No ready artifacts yet.</p>'
 
 
 def render_exercises(view):
     cards = []
     for exercise in view["exercises"]:
-        evaluation = exercise.get("evaluation", {})
-        options = evaluation.get("options")
+        options = exercise.get("evaluation", {}).get("options")
         options_line = ""
         if isinstance(options, list):
             options_line = "<ul>" + "".join(f"<li>{esc(o)}</li>" for o in options) + "</ul>"
         attempts = exercise.get("attempts", [])
-        attempt_lines = ""
+        attempt_line = ""
         if attempts:
-            attempt_lines = '<div class="meta">'
-            attempt_lines += " · ".join(
-                f"{esc(a.get('status', ''))} {esc(a.get('submitted_at', '')[:10])}"
+            attempt_line = " · ".join(
+                f"{esc(a.get('status', ''))} {esc(str(a.get('submitted_at', ''))[:10])}"
                 for a in attempts)
-            attempt_lines += "</div>"
         cards.append(
-            f'<div class="card ex"><div class="card-title">{esc(exercise["id"])} · lesson {esc(exercise.get("lesson_id", ""))}</div>'
+            f'<div class="card"><div class="card-title">{esc(exercise["id"])} · lesson {esc(exercise.get("lesson_id", ""))}</div>'
             f'<div class="prompt">{esc(exercise.get("prompt", ""))}</div>{options_line}'
             f'<div class="meta">{esc(exercise.get("response_type", ""))}'
-            + (f" · {len(attempts)} attempt{'s' if len(attempts) != 1 else ''}" if attempts else "")
-            + f"</div>{attempt_lines}</div>")
+            + (f" · {len(attempts)} attempt{'s' if len(attempts) != 1 else ''} · {attempt_line}"
+               if attempts else "")
+            + "</div></div>")
     return "".join(cards)
+
+
+def render_questions(view):
+    questions = list(view["questions"].get("recent", [])) + list(view["questions"].get("earlier", []))
+    cards = []
+    for question in questions:
+        cards.append(
+            f'<div class="card"><div class="card-title">question · {esc(question.get("id", ""))}</div>'
+            f'<div class="prompt">{esc(question.get("text", ""))}</div>'
+            f'<div class="meta">status · {esc(question.get("status", ""))}</div></div>')
+    return cards
 
 
 def render_body(view, plan, workspace):
     course = view["course"]
     current = course["current"]
-    assumptions = plan.get("assumptions", [])
-    assumptions_line = ""
-    if assumptions:
-        assumptions_line = ('<div class="card src"><div class="card-title">assumptions</div>'
-                            + "".join(f"<div class=\"prompt\">· {esc(a)}</div>" for a in assumptions)
-                            + "</div>")
-    vision = plan.get("vision")
-    vision_line = f'<p class="vision">Vision: {esc(vision)}</p>' if vision else ""
+    topic_reps = {}
+    for chapter in plan.get("chapters", []):
+        for topic in chapter.get("topics", []):
+            topic_reps[topic["id"]] = topic.get("representations", [])
 
-    sources = course["sources"]
-    lessons = ordered_lessons(view, plan)
     artifacts = {}
     for group in ("watch", "generated", "resources"):
         for artifact in list(view["artifacts"].get(group, {}).get("recent", [])) + \
                 list(view["artifacts"].get(group, {}).get("earlier", [])):
             artifacts[artifact["id"]] = artifact
-    exercises = {ex["id"]: ex for ex in view["exercises"]}
 
+    lessons = ordered_lessons(view, plan)
     lesson_html = ""
     for index, lesson in enumerate(lessons, start=1):
         previous_id = lessons[index - 2]["id"] if index > 1 else None
         next_id = lessons[index]["id"] if index < len(lessons) else None
-        lesson_exercises = {ex["id"]: ex for ex in lesson.get("exercises", [])}
         lesson_html += render_lesson(lesson, index, len(lessons), previous_id, next_id,
-                                     artifacts, sources, lesson_exercises, workspace)
+                                     artifacts, course["sources"], workspace, topic_reps)
 
-    questions = list(view["questions"].get("recent", [])) + list(view["questions"].get("earlier", []))
+    assumptions = plan.get("assumptions", [])
+    assumptions_html = ""
+    if assumptions:
+        assumptions_html = ('<h2 class="sec">Assumptions</h2><div class="card"><div class="prompt">'
+                            + "".join(f"· {esc(a)}<br>" for a in assumptions) + "</div></div>")
+    vision = plan.get("vision")
+    vision_line = f'<p class="page-vision">Vision: {esc(vision)}</p>' if vision else ""
+
     questions_html = ""
-    if questions:
-        cards = []
-        for question in questions:
-            status = esc(question.get("status", ""))
-            cards.append(
-                f'<div class="card ex"><div class="card-title">question · {esc(question.get("id", ""))}</div>'
-                f'<div class="prompt">{esc(question.get("text", ""))}</div>'
-                f'<div class="meta">status · {status}</div></div>')
-        questions_html = '<h2 class="section"><span class="no">06</span> Questions</h2>' + "".join(cards)
+    question_cards = render_questions(view)
+    if question_cards:
+        questions_html = '<h2 class="sec">Questions</h2>' + "".join(question_cards)
 
     parts = [
-        '<header class="masthead">',
-        f'<div class="course-id">course · {esc(course["id"])} · revision {esc(course.get("revision", ""))}</div>',
-        f'<h1>{esc(course.get("title", course["id"]))}</h1>',
-        f'<p class="goal">Goal: {esc(course.get("goal", ""))}</p>',
-        vision_line,
-        f'<div class="meta">current · {esc(current.get("chapter_id", ""))} · {esc(current.get("topic_id", ""))}'
-        f' · next: {esc(current.get("next_step", ""))}</div>',
-        '<div class="rule"></div></header>',
-        '<div class="legend">',
-        '<span class="watch"><span class="dot"></span>watch · video / animation / audio</span>',
-        '<span class="gen"><span class="dot"></span>generated · diagram / image / simulation</span>',
-        '<span class="res"><span class="dot"></span>resources · pdf / document / file</span>',
-        '<span class="ex"><span class="dot"></span>exercises</span>',
-        '<span class="now"><span class="dot"></span>current topic</span>',
-        '</div>',
-        '<h2 class="section"><span class="no">01</span> Contents</h2>',
-        render_contents(view, course),
-        assumptions_line,
-        '<h2 class="section"><span class="no">02</span> Sources</h2>',
-        render_sources(course),
-        '<h2 class="section"><span class="no">03</span> Lessons</h2>',
-        lesson_html or '<p>No ready lessons yet. Publish a lesson, then render again.</p>',
-        '<h2 class="section"><span class="no">04</span> Artifacts</h2>',
-        render_artifacts(view, workspace) or '<p>No ready artifacts yet.</p>',
-        '<h2 class="section"><span class="no">05</span> Exercises</h2>',
-        render_exercises(view) or '<p>No exercises yet.</p>',
-        questions_html,
-        '<div class="footer">rendered by course-viewer · data read from course.json, lessons, '
-        'and the artifact manifest · private evaluation criteria never appear here</div>',
+        render_sidebar(plan, lessons, current["topic_id"]),
+        '<main class="main">',
+        '<header class="main-head"><div class="inner">',
+        f'<div class="head-title"><span>course /</span> {esc(plan.get("title", plan["id"]))}</div>',
+        '<nav><a href="#" id="prev-link" data-disabled="1">← prev</a>'
+        '<a href="#" id="next-link">next →</a></nav>',
+        '</div></header>',
+        '<div class="content">',
+        f'<section class="tab active" id="tab-overview">'
+        f'<h1 class="page-title">{esc(plan.get("title", plan["id"]))}</h1>'
+        f'<p class="page-goal">Goal: {esc(course.get("goal", ""))}</p>'
+        f'{vision_line}'
+        f'<div class="page-meta">current · {esc(current.get("chapter_id", ""))} · {esc(current.get("topic_id", ""))}'
+        f' · next: {esc(current.get("next_step", ""))}</div>'
+        f'<h2 class="sec">Contents</h2>{render_contents(view, course)}'
+        f'{assumptions_html}</section>',
+        f'<section class="tab" id="tab-lessons">'
+        + (lesson_html or "<p>No ready lessons yet. Publish a lesson, then render again.</p>")
+        + "</section>",
+        f'<section class="tab" id="tab-exercises"><h2 class="sec">Exercises</h2>'
+        + (render_exercises(view) or "<p>No exercises yet.</p>") + questions_html + "</section>",
+        f'<section class="tab" id="tab-sources"><h2 class="sec">Sources</h2>{render_sources(course)}</section>',
+        f'<section class="tab" id="tab-artifacts">{render_artifacts(view, workspace)}</section>',
+        '<div class="footer">rendered by course-viewer · private evaluation criteria never appear here</div>',
+        '</div></main>',
     ]
     return "\n".join(parts)
+
+
+def _empty_view(plan):
+    from portal_views import build_contents, public_course
+    return {
+        "course": public_course(plan),
+        "contents": build_contents(plan, {}),
+        "lessons": {"recent": [], "earlier": []},
+        "artifacts": {group: {"recent": [], "earlier": []}
+                      for group in ("watch", "generated", "resources")},
+        "exercises": [],
+        "questions": {"recent": [], "earlier": []},
+    }
 
 
 def main():
@@ -356,7 +457,10 @@ def main():
         summary = {}
         if args.summary:
             summary = json.loads(args.summary.read_text())
-        view = build_portal_view(workspace, summary)
+        try:
+            view = build_portal_view(workspace, summary)
+        except FileNotFoundError:
+            view = _empty_view(plan)
         body = render_body(view, plan, workspace)
         template = TEMPLATE.read_text()
         if BODY_START not in template or BODY_END not in template:
