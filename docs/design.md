@@ -34,7 +34,7 @@ across subjects by concept ID, so vectors are not re-taught under every label.
    future topics only when that evidence changes the route. Persist only when a
    learner identity is established and local tracking is wanted.
 
-`skills/learning/scripts/assemble_context.py` prints this selected context or its file manifest.
+`skills/learning-orchestrator/scripts/assemble_context.py` prints this selected context or its file manifest.
 It is an explicit loader for hosts without native skill discovery. It does not
 classify arbitrary prose or call a model. `AGENTS.md` is the in-repository entry.
 

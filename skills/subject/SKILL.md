@@ -1,6 +1,6 @@
 ---
 name: subject
-description: Select GNOS subjects, prerequisite bridges, teaching representations, resources, and teachers for a learning goal.
+description: Pick the subject, teacher, and resources for a learning goal.
 ---
 
 # Subject routing
@@ -66,7 +66,7 @@ by default.
 - For a quick inspectable computer-science canvas, read
   [the Excalidraw workflow](references/excalidraw.md).
 - For a narrated rendered lesson, use
-  `skills/manim-voice-animation-skill/SKILL.md`; for a handout, use
+  `skills/manim-voice-animation/SKILL.md`; for a handout, use
   `skills/pdf/SKILL.md`.
 
 Choose one primary medium. Do not create the same diagram in multiple tools

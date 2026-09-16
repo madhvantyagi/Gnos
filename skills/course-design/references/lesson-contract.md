@@ -1,12 +1,8 @@
-# Composed lesson contract
+# Composed lesson contract — optional legacy
 
-A lesson is one coherent teaching encounter inside a course topic. It is not the
-topic itself, and it is not a folder of loosely related files. A topic can gain
-several lessons as the learner practices, asks a new question, or repairs a gap.
-
-Read this reference when authoring, revising, validating, or publishing a lesson.
-Use the course contract first to resolve the chapter, topic, concepts, teacher,
-and current frontier.
+You usually do not need this file. Teach in chat and save lesson
+notes in the learner folder (`learners/<id>/courses/<course-id>/lessons/`).
+Use this contract only when the portal needs a formal lesson file.
 
 ## Lesson fields
 
@@ -74,7 +70,7 @@ This example uses prose, media, interaction, and an exercise for one concept:
   "skill_routes": [
     "skills/subject/SKILL.md",
     "skills/subject/subjects/math.md",
-    "skills/manim-voice-animation-skill/SKILL.md"
+    "skills/manim-voice-animation/SKILL.md"
   ],
   "assumptions": [
     "The learner has computed a two-variable gradient; direction choice remains unverified."

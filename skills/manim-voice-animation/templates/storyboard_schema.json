@@ -1,0 +1,133 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ManimStoryboard",
+  "type": "object",
+  "required": [
+    "title",
+    "concept_id",
+    "prerequisite",
+    "success_check",
+    "scenes"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The title of the animated explainer video"
+    },
+    "concept_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Course concept ID this animation teaches; state it with the prerequisite and success check in the storyboard notes or an adjacent design file."
+    },
+    "prerequisite": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Prerequisite assumption the learner is expected to bring."
+    },
+    "success_check": {
+      "type": "string",
+      "minLength": 1,
+      "description": "One observable check (prediction, explanation, or changed case) the teacher can use after the render."
+    },
+    "aspect_ratio": {
+      "type": "string",
+      "enum": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "default": "16:9"
+    },
+    "voice": {
+      "type": "string",
+      "default": "explainer-male"
+    },
+    "scenes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "concept_target",
+          "narration_cues"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+            "description": "Unique scene identifier matching the Scene class name in Python"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "concept_target": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Single core insight this scene teaches"
+          },
+          "narration_cues": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "cue_id",
+                "text",
+                "visible_objects",
+                "change"
+              ],
+              "properties": {
+                "cue_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "description": "Unique within its scene; CuePlayer plays each cue exactly once."
+                },
+                "text": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Exact spoken words for this cue; must be nonempty."
+                },
+                "visible_objects": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "description": "Precise list of Mobjects visible while this cue plays."
+                },
+                "change": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The state change this cue reveals to the learner."
+                },
+                "sync_target": {
+                  "type": "string",
+                  "description": "Legacy alias for the synchronized animation; prefer visible_objects plus change."
+                },
+                "voice": {
+                  "type": "string"
+                },
+                "duration": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "description": "Authored timing for silent previews; speech duration is measured. Must be positive when present."
+                },
+                "pause_after": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              }
+            },
+            "minItems": 1
+          }
+        }
+      },
+      "minItems": 1
+    }
+  }
+}

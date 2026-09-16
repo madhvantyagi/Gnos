@@ -1,60 +1,63 @@
-# Research a living course before promising its route
+# Search before you promise a course
 
-Start with a capability and an audience. Search for the curriculum that supports
-that destination, rather than searching the course title and copying the first
-syllabus. Keep a short research ledger beside `course.json` as `RESEARCH.md`.
-Use known learner evidence to compress established prerequisites and expose
-uncertain bridges. Do not infer a starting level from age, degree, job title, or
-the apparent difficulty of the requested topic.
+Search first. Do not copy the first syllabus you see.
+Use books, course sites, and docs you can open.
 
-## Search in layers
+## Where to look
 
-1. **Locate the field.** Use the subject map to identify the branch, neighboring
-   branches, and mathematical or language prerequisites. A broad goal may need
-   a choice: “build a small language model” and “understand language acquisition”
-   are different courses despite shared words.
-2. **Find a backbone.** Search an official university syllabus or an open textbook
-   table of contents. Useful queries: `site:ocw.mit.edu <topic> syllabus`,
-   `site:openstax.org <topic> contents`, or `<university> <topic> course prerequisites`.
-   Use the local source catalog first when it has a good match.
-3. **Inspect, don't infer.** Open the syllabus, prerequisites, chapter headings,
-   and a representative lesson/exercise. Note source title, edition/date, URL,
-   section, intended level, and access status. A search snippet is a lead.
-4. **Cross-check the sequence.** Compare another independent academic source.
-   Identify required foundations, optional branches, and differing conventions.
-   A second source is useful when it tests the plan, not when it repeats it.
-5. **Verify specialist content.** For changing software, read the installed-version
-   documentation. For empirical or disputed topics, inspect relevant research or
-   primary records. Label unresolved claims instead of filling the gap from a
-   plausible title. A stable elementary explanation may need no new web search.
+- **Books:** open textbook contents, for example `site:openstax.org <topic> contents`.
+- **Course sites:** syllabus and prerequisites, for example `site:ocw.mit.edu <topic> syllabus`.
+- **Docs and papers:** for software read the installed version.
+  For disputed topics read the paper itself, not a summary.
+- The starter list `skills/subject/references/resources.json`
+  is ideas only. Every course starts empty. Search fills it.
 
-## Verify the chapter route
+One main source for order plus one second source to test it is enough.
+The second source counts when it changes a step, not when it repeats it.
 
-Record chapter and topic names at the resolution needed to inspect dependencies,
-with entering prerequisites, observable exit capability, a fitting resource
-section, and an assessment intention. Check each bridge: does it use anything
-not yet introduced or confirmed? Later topics can remain provisional; research
-does not require generating every future lesson or exercise at enrollment.
+## What to take
 
-For example, a gradient descent route should distinguish scalar derivative,
-partial derivative, gradient, directional change, update rule, step size, and
-convergence assumptions. Do not compress all of those into “learn optimization.”
-For history, verify period, region, source access, causal question, and competing
-interpretations; do not impose a mathematical prerequisite ladder.
+- the definition in the author's words, plus page or section
+- what must come before this step
+- one exercise idea that shows a wrong idea fast
+- who it is written for, and could you open it
 
-## Keep the ledger actionable
+A search snippet is a lead, not proof. If you did not open it,
+say so.
 
-Use columns: chapter/topic, source and section, what was verified, unresolved
-point, decision. Cite exact pages only after reading them. If a source cannot be
-opened, record that limitation and choose an accessible replacement before
-calling that part of the syllabus verified.
+## What to save
 
-Map source chapters to the learner's curriculum; do not copy a table of contents
-wholesale. Compress material supported by prior learner evidence, add missing
-bridges, and omit content outside the goal. Record why a source changed the
-route. Tell the learner about a major gap or assumption, not every search query.
+Keep short notes beside `course.json`. Only sources you will use
+move into `course.json/sources`.
 
-For a tiny doubt, this can be one checked reference and a three-step plan kept in
-the turn. For a sustained course, retain the ledger so later revisions can
-revisit why the route was chosen and distinguish checked facts from provisional
-decisions.
+1. `RESEARCH.md` — small table: step, source and section,
+   what you checked, what is still open, what you chose.
+2. `course-research.json` — same facts, short form:
+
+```json
+{
+  "goal": "predict small changes with derivatives",
+  "sources": [
+    {
+      "id": "mit-1802-sec2",
+      "title": "MIT 18.02 notes",
+      "url": "https://ocw.mit.edu/example/18-02-notes",
+      "opened_sections": ["Chain rule examples"],
+      "gives": ["plain definition", "step order", "sign exercise"],
+      "trust": "opened",
+      "used_in": ["chain-rule"]
+    }
+  ],
+  "open_questions": ["fluency unverified"]
+}
+```
+
+Rules:
+
+- `id` must match the key you use in `course.json/sources`.
+- `trust` is `opened` only when you read it. Else use `snippet`
+  and do not call it checked.
+- `used_in` lists step IDs it supports. Empty means you skipped it.
+- `queries` are optional. For a small course, skip them.
+  Keep only what you use. Ten searched links do not belong here,
+  only the two or three you teach from.

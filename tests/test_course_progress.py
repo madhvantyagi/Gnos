@@ -8,7 +8,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-STATE = ROOT / "skills/understanding-user-learning/scripts/learner_state.py"
+STATE = ROOT / "skills/learner-tracking/scripts/learner_state.py"
 sys.path.insert(0, str(ROOT / "skills/course-design/scripts"))
 from course_progress import derive_course_progress  # noqa: E402
 from tests.test_course_workspace import valid_v2_course  # noqa: E402

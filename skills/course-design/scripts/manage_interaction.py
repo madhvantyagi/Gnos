@@ -32,7 +32,7 @@ def _load_object(path: str) -> dict:
 
 
 def _learner_state():
-    scripts = str(ROOT / "skills/understanding-user-learning/scripts")
+    scripts = str(ROOT / "skills/learner-tracking/scripts")
     if scripts not in sys.path:
         sys.path.insert(0, scripts)
     import learner_state

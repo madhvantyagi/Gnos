@@ -92,7 +92,8 @@ def _validate_skill_route(route):
         raise ValueError(f"Skill route is not an approved entry point: {route!r}")
 
 
-def _validate_source_registry(source_data, known_resource_ids):
+def _validate_source_registry(source_data):
+    """Check per-course sources. Any slug is allowed; the course search fills this."""
     if not isinstance(source_data, dict):
         raise ValueError("sources must be an object")
     for source_id, source in source_data.items():
@@ -119,8 +120,6 @@ def _validate_source_registry(source_data, known_resource_ids):
         nonempty(source.get("checked_on"), f"{source_id}.checked_on")
         strings(source.get("sections"), f"{source_id}.sections")
         nonempty(source.get("verification_notes"), f"{source_id}.verification_notes")
-        if source_id not in known_resource_ids:
-            raise ValueError(f"Unknown source/resource ID: {source_id}")
 
 
 def _validate_revision_notes(notes):
@@ -149,6 +148,8 @@ def _validate_v2(data):
     slug(data.get("id"))
     for key in ("title", "goal"):
         nonempty(data.get(key), key)
+    if "vision" in data and data["vision"] is not None:
+        nonempty(data.get("vision"), "vision")
     revision = data.get("revision")
     if type(revision) is not int or revision < 1:
         raise ValueError("revision must be a positive integer")
@@ -157,9 +158,7 @@ def _validate_v2(data):
         raise ValueError("starting_evidence must be a list")
     strings(data.get("assumptions"), "assumptions")
 
-    catalog = resources()
-    known_resource_ids = {item["id"] for item in catalog}
-    _validate_source_registry(data.get("sources"), known_resource_ids)
+    _validate_source_registry(data.get("sources"))
 
     chapters = data.get("chapters")
     if not isinstance(chapters, list) or not chapters:
@@ -242,10 +241,29 @@ def _validate_v2(data):
                 raise ValueError(f"{topic_id}: minutes must be a positive integer")
 
             selected = strings(topic.get("resource_ids"), "resource_ids")
-            if any(resource_id not in known_resource_ids for resource_id in selected):
-                raise ValueError(f"{topic_id}: unknown resource ID")
             if any(resource_id not in data["sources"] for resource_id in selected):
                 raise ValueError(f"{topic_id}: resource ID has no source record")
+            if "feedback" in topic and topic["feedback"] is not None:
+                feedback = topic["feedback"]
+                if not isinstance(feedback, dict):
+                    raise ValueError(f"{topic_id}: feedback must be an object")
+                results = feedback.get("source_results", {})
+                if not isinstance(results, dict):
+                    raise ValueError(f"{topic_id}: feedback.source_results must be an object")
+                for key, value in results.items():
+                    slug(key)
+                    if key not in selected:
+                        raise ValueError(f"{topic_id}: feedback source must be in resource_ids")
+                    if value not in ("worked", "did-not-work", "too-hard", "no-access"):
+                        raise ValueError(f"{topic_id}: unknown source result")
+                if "direction" in feedback and feedback["direction"] not in ("keep", "swap", "split"):
+                    raise ValueError(f"{topic_id}: unknown direction")
+                if "note" in feedback and feedback["note"] is not None:
+                    nonempty(feedback["note"], f"{topic_id}.feedback.note")
+                if "repeats" in feedback:
+                    repeats = feedback["repeats"]
+                    if type(repeats) is not int or repeats < 0:
+                        raise ValueError(f"{topic_id}: feedback.repeats must be zero or more")
             for key, label, seen in (
                 ("exercise_ids", "exercise_ids", exercise_ids),
                 ("lesson_ids", "lesson_ids", lesson_ids),

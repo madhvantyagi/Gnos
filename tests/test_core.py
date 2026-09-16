@@ -8,7 +8,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-STATE = ROOT / 'skills/understanding-user-learning/scripts/learner_state.py'
+STATE = ROOT / 'skills/learner-tracking/scripts/learner_state.py'
 COURSE = ROOT / 'skills/course-design/scripts/validate_course.py'
 
 
@@ -28,7 +28,7 @@ class LearnerTests(unittest.TestCase):
         })
         course_path = self.root / "accounting-course.json"
         course_path.write_text(json.dumps(course))
-        loader = ROOT / "skills/learning/scripts/assemble_context.py"
+        loader = ROOT / "skills/learning-orchestrator/scripts/assemble_context.py"
         result = subprocess.run([
             sys.executable, str(loader), "--subject", "accounting", "--mode", "course",
             "--course", str(course_path),
@@ -63,13 +63,13 @@ class LearnerTests(unittest.TestCase):
         self.assertIn("Lead teacher: No assigned teacher", curriculum.read_text())
 
     def test_harness_reports_subject_and_teacher_counts_separately(self):
-        harness = ROOT / "skills/learning/scripts/validate_harness.py"
+        harness = ROOT / "skills/learning-orchestrator/scripts/validate_harness.py"
         result = subprocess.run([sys.executable, str(harness)], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("12 subjects, 6 teachers", result.stdout)
 
     def test_harness_validates_version_two_examples_and_composed_lessons(self):
-        harness = ROOT / "skills/learning/scripts/validate_harness.py"
+        harness = ROOT / "skills/learning-orchestrator/scripts/validate_harness.py"
         result = subprocess.run([sys.executable, str(harness)], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("version-2 courses", result.stdout)
@@ -178,7 +178,7 @@ class LearnerTests(unittest.TestCase):
         self.enroll(plan=first)
         self.enroll(plan=second)
         state_path = self.root / 'alex/state.json'
-        sys.path.insert(0, str(ROOT / 'skills/understanding-user-learning/scripts'))
+        sys.path.insert(0, str(ROOT / 'skills/learner-tracking/scripts'))
         import learner_state
         changed_state = self.state()
         changed_state['profile'] = {'goals': ['Would change first view']}
@@ -270,7 +270,7 @@ class LearnerTests(unittest.TestCase):
 
     def test_portal_evidence_record_requires_enrolled_canonical_course(self):
         self.enroll()
-        sys.path.insert(0, str(ROOT / 'skills/understanding-user-learning/scripts'))
+        sys.path.insert(0, str(ROOT / 'skills/learner-tracking/scripts'))
         import learner_state
         event = dict(id='portal-attempt-fixed', date='2026-01-01', course_id='test-course',
                      covered=['math.derivative'],
@@ -335,7 +335,7 @@ class LearnerTests(unittest.TestCase):
         self.assertEqual(self.call('enroll','alex','--course',str(path)).returncode,0)
         self.call('record','alex','--event',self.event(course_id='test-course',next_step='Resume slope here'))
         self.call('record','alex','--event',self.event(id='other',date='2026-01-02',course_id='history',next_step='Read a diary'))
-        loader=ROOT/'skills/learning/scripts/assemble_context.py'
+        loader=ROOT/'skills/learning-orchestrator/scripts/assemble_context.py'
         result=subprocess.run([sys.executable,str(loader),'--subject','math','--mode','course','--learner','alex',
                                '--learners-root',str(self.root),'--course-id','test-course'],capture_output=True,text=True)
         self.assertEqual(result.returncode,0,result.stderr)
@@ -348,13 +348,13 @@ class LearnerTests(unittest.TestCase):
 
         course_path = self.root / 'course.json'
         course_path.write_text(json.dumps(valid_v2_course()))
-        loader = ROOT / 'skills/learning/scripts/assemble_context.py'
+        loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
         result = subprocess.run([
             sys.executable, str(loader), '--subject', 'math', '--mode', 'course',
             '--course', str(course_path),
         ], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn('skills/course-design/references/adaptive-lifecycle.md', result.stdout)
+        self.assertIn('skills/learner-tracking/references/adaptive-lifecycle.md', result.stdout)
         self.assertIn('skills/course-design/references/lesson-contract.md', result.stdout)
         self.assertIn('skills/subject/subjects/math.md', result.stdout)
         self.assertIn('teachers/math/SOUL.md', result.stdout)
@@ -365,7 +365,7 @@ class LearnerTests(unittest.TestCase):
 
         course_path = self.root / 'course.json'
         course_path.write_text(json.dumps(valid_v2_course()))
-        loader = ROOT / 'skills/learning/scripts/assemble_context.py'
+        loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
         result = subprocess.run([
             sys.executable, str(loader), '--subject', 'physics', '--mode', 'course',
             '--course', str(course_path),
@@ -374,7 +374,7 @@ class LearnerTests(unittest.TestCase):
         self.assertIn('does not match the current course topic', result.stderr)
 
     def test_local_doubt_manifest_does_not_load_course_design(self):
-        loader = ROOT / 'skills/learning/scripts/assemble_context.py'
+        loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
         result = subprocess.run([
             sys.executable, str(loader), '--subject', 'math', '--manifest',
         ], capture_output=True, text=True)

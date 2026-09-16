@@ -9,7 +9,7 @@ from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "skills/course-design/scripts"))
-sys.path.insert(0, str(ROOT / "skills/understanding-user-learning/scripts"))
+sys.path.insert(0, str(ROOT / "skills/learner-tracking/scripts"))
 sys.path.insert(0, str(ROOT / "tests"))
 
 from course_workspace import create_workspace, publish_lesson  # noqa: E402

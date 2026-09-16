@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>course-viewer</title>
+<style>
+:root{
+  --ink:#12161f;
+  --ink-2:#161b27;
+  --panel:#1b2230;
+  --panel-2:#202838;
+  --line:#39435a;
+  --line-soft:#2a3244;
+  --paper:#e6d9b8;
+  --dim:#98a2b3;
+  --faint:#6d7687;
+  --gold:#d4a94e;
+  --watch:#d4a94e;
+  --gen:#8fbf6f;
+  --res:#cf8a5a;
+  --ex:#b78bbf;
+  --planned:#6f9fae;
+  --provisional:#9aa3a8;
+  --retired:#6b6257;
+  --current:#e8dcc0;
+  --accent:#e06c5c;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--ink);
+  color:var(--paper);
+  font-family:"SF Mono","Cascadia Code","JetBrains Mono","Menlo","Consolas","Liberation Mono",monospace;
+  font-size:15px;
+  line-height:1.7;
+}
+a{color:var(--gold);text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+/* top bar */
+.topbar{
+  position:sticky;top:0;z-index:20;
+  background:var(--ink-2);
+  border-bottom:1px solid var(--line);
+  padding:8px 0;
+}
+.topbar .wrap{
+  max-width:78ch;margin:0 auto;padding:0 18px;
+  display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+}
+.topbar .crumb{color:var(--dim);font-size:12px;letter-spacing:.14em;text-transform:uppercase;}
+.topbar nav a{
+  color:var(--paper);border:1px solid var(--line);padding:3px 10px;margin-left:6px;font-size:12px;
+  letter-spacing:.1em;text-transform:uppercase;background:var(--panel);
+}
+.topbar nav a:hover{color:var(--gold);border-color:var(--gold);text-decoration:none;}
+
+/* centered page column */
+.page{
+  max-width:78ch;
+  margin:0 auto;
+  padding:34px 18px 80px;
+}
+.frame{
+  border:1px solid var(--line);
+  outline:4px solid var(--ink-2);
+  outline-offset:6px;
+  background:linear-gradient(180deg,var(--ink-2),var(--ink));
+  padding:38px 34px;
+  position:relative;
+}
+.frame::before{
+  content:"";
+  position:absolute;inset:10px;
+  border:1px solid var(--line-soft);
+  pointer-events:none;
+}
+
+/* header */
+.masthead{text-align:center;margin-bottom:30px;}
+.masthead .course-id{
+  color:var(--faint);font-size:12px;letter-spacing:.34em;text-transform:uppercase;
+}
+.masthead h1{
+  margin:8px 0 6px;
+  font-size:30px;font-weight:600;letter-spacing:.06em;line-height:1.25;
+  color:var(--current);
+  text-transform:uppercase;
+}
+.masthead .goal{color:var(--dim);font-style:italic;max-width:60ch;margin:0 auto;}
+.masthead .vision{color:var(--gold);margin-top:8px;font-size:14px;}
+.masthead .meta{
+  margin-top:14px;color:var(--faint);font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+}
+.masthead .rule{
+  margin:16px auto 0;width:52ch;max-width:100%;
+  border-top:1px solid var(--gold);position:relative;height:9px;
+}
+.masthead .rule::after{
+  content:"";position:absolute;left:0;right:0;top:3px;border-top:1px solid var(--gold);
+  opacity:.5;
+}
+
+/* legend */
+.legend{
+  display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;
+  margin:0 0 30px;padding:12px 10px;border:1px solid var(--line-soft);
+  background:var(--ink-2);color:var(--dim);font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+}
+.legend .dot{display:inline-block;width:10px;height:10px;margin-right:6px;border:1px solid var(--line);vertical-align:-1px;}
+.legend .watch .dot{background:var(--watch);}
+.legend .gen .dot{background:var(--gen);}
+.legend .res .dot{background:var(--res);}
+.legend .ex .dot{background:var(--ex);}
+.legend .now .dot{background:var(--accent);}
+
+/* section headers */
+h2.section{
+  margin:44px 0 14px;
+  font-size:15px;font-weight:600;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--gold);
+  display:flex;align-items:center;gap:14px;
+}
+h2.section::after{content:"";flex:1;border-top:1px solid var(--line);}
+h2.section .no{color:var(--faint);}
+
+/* tables */
+table{
+  width:100%;border-collapse:collapse;font-size:13.5px;margin-bottom:8px;
+}
+th{
+  text-align:left;color:var(--dim);font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;
+  font-weight:600;padding:7px 10px;border-bottom:2px solid var(--line);
+}
+td{padding:8px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top;}
+tr:hover td{background:var(--panel);}
+tr.current-row td{background:var(--panel-2);box-shadow:inset 3px 0 0 var(--accent);}
+tr.current-row td:first-child{color:var(--current);font-weight:600;}
+
+.badge{
+  display:inline-block;padding:1px 9px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  border:1px solid;white-space:nowrap;
+}
+.badge.current{color:var(--accent);border-color:var(--accent);}
+.badge.planned{color:var(--planned);border-color:var(--planned);}
+.badge.provisional{color:var(--provisional);border-color:var(--provisional);}
+.badge.retired,.badge.out-of-scope{color:var(--retired);border-color:var(--retired);text-decoration:line-through;}
+.badge.watch{color:var(--watch);border-color:var(--watch);}
+.badge.gen{color:var(--gen);border-color:var(--gen);}
+.badge.res{color:var(--res);border-color:var(--res);}
+.badge.ex{color:var(--ex);border-color:var(--ex);}
+
+/* lessons */
+.lesson{
+  margin:0 0 40px;padding:22px 22px 26px;
+  border:1px solid var(--line);background:var(--ink-2);position:relative;
+}
+.lesson .lesson-no{
+  position:absolute;top:-13px;left:18px;
+  background:var(--ink-2);color:var(--gold);border:1px solid var(--gold);
+  padding:1px 12px;font-size:12px;letter-spacing:.22em;
+}
+.lesson h3{
+  margin:4px 0 4px;font-size:20px;color:var(--current);letter-spacing:.04em;
+}
+.lesson .purpose{color:var(--dim);font-style:italic;margin-bottom:6px;}
+.lesson .concepts{color:var(--faint);font-size:12px;letter-spacing:.1em;margin-bottom:16px;}
+.lesson .teacher{color:var(--faint);font-size:12px;letter-spacing:.1em;}
+.lesson-nav{
+  display:flex;justify-content:space-between;margin-top:20px;padding-top:10px;
+  border-top:1px solid var(--line-soft);font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+}
+
+.block{margin:16px 0;}
+.block .block-purpose{
+  color:var(--faint);font-size:11px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:5px;
+}
+.block p{margin:8px 0;}
+.block ul{margin:8px 0;padding-left:22px;}
+.block ul li{margin:5px 0;}
+.block pre{
+  background:var(--ink);border:1px solid var(--line-soft);border-left:3px solid var(--gold);
+  padding:14px 16px;overflow-x:auto;font-size:13.5px;line-height:1.6;white-space:pre-wrap;
+  word-break:break-word;
+}
+.block .caption{color:var(--faint);font-size:12px;margin-top:6px;font-style:italic;}
+
+/* media */
+.media{
+  border:1px solid var(--line);background:var(--ink);padding:10px;margin:10px 0;
+}
+.media video{width:100%;display:block;background:#000;}
+.media img{max-width:100%;display:block;margin:0 auto;}
+.media iframe{width:100%;height:420px;border:0;background:#fff;}
+.media .media-title{color:var(--gold);font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin-top:8px;}
+.media .media-purpose{color:var(--dim);font-size:12.5px;font-style:italic;}
+.media .media-meta{color:var(--faint);font-size:11.5px;letter-spacing:.06em;margin-top:2px;}
+.media .missing{color:var(--accent);}
+
+/* source + exercise cards */
+.card{
+  border:1px solid var(--line-soft);border-left:3px solid var(--res);
+  background:var(--panel);padding:12px 16px;margin:10px 0;font-size:13.5px;
+}
+.card .card-title{color:var(--res);letter-spacing:.1em;text-transform:uppercase;font-size:12.5px;}
+.card.src{border-left-color:var(--planned);}
+.card.src .card-title{color:var(--planned);}
+.card.ex{border-left-color:var(--ex);}
+.card.ex .card-title{color:var(--ex);}
+.card .prompt{margin:6px 0;color:var(--paper);}
+.card .meta{color:var(--faint);font-size:12px;letter-spacing:.06em;}
+
+/* artifact gallery */
+.gallery{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;
+}
+.item{
+  border:1px solid var(--line);background:var(--ink-2);padding:14px 16px;
+  display:flex;flex-direction:column;gap:6px;
+}
+.item .kind{font-size:11px;letter-spacing:.18em;text-transform:uppercase;}
+.item .kind.watch{color:var(--watch);}
+.item .kind.gen{color:var(--gen);}
+.item .kind.res{color:var(--res);}
+.item .t{font-size:14.5px;color:var(--current);}
+.item .p{color:var(--dim);font-size:12.5px;flex:1;}
+.item a.open{font-size:12px;letter-spacing:.1em;text-transform:uppercase;}
+
+/* footer */
+.footer{
+  margin-top:40px;padding-top:14px;border-top:1px solid var(--line-soft);
+  color:var(--faint);font-size:12px;letter-spacing:.1em;text-align:center;
+}
+
+@media (max-width:640px){
+  .frame{padding:22px 16px;}
+  .masthead h1{font-size:22px;}
+  .page{padding:20px 10px 60px;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap">
+    <span class="crumb">course-viewer &middot; static page &middot; monospace edition</span>
+    <nav>
+      <a href="#contents">contents</a>
+      <a href="#lessons">lessons</a>
+      <a href="#artifacts">artifacts</a>
+      <a href="#exercises">exercises</a>
+    </nav>
+  </div>
+</div>
+
+<div class="page">
+<div class="frame">
+
+<!--VIEWER_BODY_START-->
+
+  <header class="masthead">
+    <div class="course-id">course &middot; gradient-descent &middot; revision 4</div>
+    <h1>From slope to a working optimizer</h1>
+    <p class="goal">Goal: predict small changes, then derive, implement, and diagnose gradient descent.</p>
+    <p class="vision">Vision: fit a small model by hand and explain every step of the update.</p>
+    <div class="meta">current &middot; chapter 2 &middot; gradient direction &middot; next: predict the sign of a local change</div>
+    <div class="rule"></div>
+  </header>
+
+  <div class="legend">
+    <span class="watch"><span class="dot"></span>watch &middot; video / animation / audio</span>
+    <span class="gen"><span class="dot"></span>generated &middot; diagram / image / simulation</span>
+    <span class="res"><span class="dot"></span>resources &middot; pdf / document / file</span>
+    <span class="ex"><span class="dot"></span>exercises</span>
+    <span class="now"><span class="dot"></span>current topic</span>
+  </div>
+
+  <h2 class="section"><span class="no">01</span> Contents</h2>
+  <table id="contents">
+    <tr><th>chapter</th><th>topic</th><th>outcome</th><th>state</th><th>min</th><th>sources</th></tr>
+    <tr>
+      <td>1 &middot; Local change</td>
+      <td>Slope as local change</td>
+      <td>Predict the sign of a small change</td>
+      <td><span class="badge planned">done</span></td>
+      <td>25</td>
+      <td>openstax-3.5</td>
+    </tr>
+    <tr class="current-row">
+      <td>2 &middot; Gradient</td>
+      <td>Gradient direction</td>
+      <td>Predict which step decreases a local approximation</td>
+      <td><span class="badge current">current</span></td>
+      <td>30</td>
+      <td>mit-1802-sec2</td>
+    </tr>
+    <tr>
+      <td>2 &middot; Gradient</td>
+      <td>Update rule</td>
+      <td>Write the gradient descent update</td>
+      <td><span class="badge planned">planned</span></td>
+      <td>20</td>
+      <td>mit-6390-ch3</td>
+    </tr>
+    <tr>
+      <td>3 &middot; Optimizer</td>
+      <td>Step size</td>
+      <td>Diagnose divergence from step size</td>
+      <td><span class="badge provisional">provisional</span></td>
+      <td>30</td>
+      <td>mit-6390-ch3</td>
+    </tr>
+  </table>
+
+  <h2 class="section"><span class="no">02</span> Sources</h2>
+  <table>
+    <tr><th>id</th><th>title</th><th>sections</th><th>checked</th></tr>
+    <tr><td>openstax-3.5</td><td>Calculus Volume 1</td><td>3.5 The Chain Rule</td><td>2026-09-12</td></tr>
+    <tr><td>mit-1802-sec2</td><td>MIT 18.02 notes</td><td>2. Partial Derivatives</td><td>2026-09-14</td></tr>
+  </table>
+
+  <h2 class="section"><span class="no">03</span> Lessons</h2>
+
+  <section class="lesson" id="lessons">
+    <span class="lesson-no">LESSON 01</span>
+    <h3>What the gradient predicts</h3>
+    <div class="purpose">Predict which small step decreases a local linear approximation.</div>
+    <div class="concepts">concepts &middot; math.gradient &middot; math.directional-derivative</div>
+    <div class="teacher">teacher &middot; math &middot; published 2026-09-14</div>
+
+    <div class="block">
+      <div class="block-purpose">explanation</div>
+      <p>For a small step d, the dot product between the gradient and d predicts the first-order change.</p>
+    </div>
+
+    <div class="block">
+      <div class="block-purpose">watch &middot; voice-animation</div>
+      <div class="media">
+        <video controls preload="metadata" src="../artifacts/videos/gradient-direction.mp4"></video>
+        <div class="media-title">gradient-direction-video</div>
+        <div class="media-purpose">Keep the gradient fixed while comparing two step directions.</div>
+        <div class="media-meta">video/mp4 &middot; 0:42 &middot; captions &middot; transcript</div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-purpose">generated &middot; interactive graph</div>
+      <div class="media">
+        <iframe sandbox="allow-scripts allow-same-origin" src="../artifacts/simulations/direction-simulator.html" title="direction-simulator"></iframe>
+        <div class="media-title">direction-simulator</div>
+        <div class="media-purpose">Rotate the step and inspect the predicted sign.</div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-purpose">bullets</div>
+      <ul>
+        <li>A positive dot product predicts an increase.</li>
+        <li>A negative dot product predicts a decrease.</li>
+        <li>The prediction is local; a large step can leave the region where it is accurate.</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <div class="block-purpose">equation</div>
+      <pre>f(x + d) &asymp; f(x) + &nabla;f(x) &middot; d</pre>
+    </div>
+
+    <div class="card src">
+      <div class="card-title">source &middot; mit-1802-sec2</div>
+      <div class="prompt">MIT 18.02 notes &mdash; section 2, Partial Derivatives.</div>
+      <div class="meta">opened &middot; used for the dot-product definition</div>
+    </div>
+
+    <div class="card ex">
+      <div class="card-title">exercise &middot; predict-direction-sign</div>
+      <div class="prompt">The gradient is (2, 4) and the step is (1, -1). Predict the sign of the local change and justify it.</div>
+      <div class="meta">response &middot; long text &middot; reviewed manually</div>
+    </div>
+  </section>
+
+  <h2 class="section"><span class="no">04</span> Artifacts</h2>
+  <div class="gallery" id="artifacts">
+    <div class="item">
+      <div class="kind watch">watch &middot; video</div>
+      <div class="t">gradient-direction-video</div>
+      <div class="p">Two step directions, one fixed gradient.</div>
+      <a class="open" href="../artifacts/videos/gradient-direction.mp4">open video</a>
+    </div>
+    <div class="item">
+      <div class="kind gen">generated &middot; image</div>
+      <div class="t">slope-annotated-diagram</div>
+      <div class="p">Ink diagram: secant narrowing to the tangent.</div>
+      <a class="open" href="../artifacts/diagrams/slope.png">open image</a>
+    </div>
+    <div class="item">
+      <div class="kind gen">generated &middot; simulation</div>
+      <div class="t">direction-simulator</div>
+      <div class="p">Interactive step-direction lab.</div>
+      <a class="open" href="../artifacts/simulations/direction-simulator.html">run simulation</a>
+    </div>
+    <div class="item">
+      <div class="kind res">resources &middot; pdf</div>
+      <div class="t">gradient-handout</div>
+      <div class="p">Two-page handout with the sign rule.</div>
+      <a class="open" href="../artifacts/documents/gradient-handout.pdf">open pdf</a>
+    </div>
+  </div>
+
+  <h2 class="section"><span class="no">05</span> Exercises</h2>
+  <div id="exercises">
+    <div class="card ex">
+      <div class="card-title">predict-direction-sign &middot; lesson 01</div>
+      <div class="prompt">The gradient is (2, 4) and the step is (1, -1). Predict the sign of the local change and justify it.</div>
+      <div class="meta">long text &middot; 1 attempt &middot; awaiting review</div>
+    </div>
+  </div>
+
+  <div class="footer">rendered by course-viewer &middot; data read from course.json, lessons, and the artifact manifest &middot; private evaluation criteria never appear here</div>
+
+<!--VIEWER_BODY_END-->
+
+</div>
+</div>
+
+<script>
+// prev / next navigation between lesson sections
+document.addEventListener("DOMContentLoaded", function () {
+  var lessons = Array.prototype.slice.call(document.querySelectorAll(".lesson"));
+  var keys = ["ArrowLeft", "ArrowRight"];
+  var prevBtn = document.querySelector("#prev-lesson");
+  var nextBtn = document.querySelector("#next-lesson");
+  var current = 0;
+
+  function show(index) {
+    if (!lessons.length) return;
+    current = Math.max(0, Math.min(lessons.length - 1, index));
+    lessons[current].scrollIntoView({ behavior: "smooth", block: "start" });
+    if (prevBtn) prevBtn.style.opacity = current === 0 ? 0.35 : 1;
+    if (nextBtn) nextBtn.style.opacity = current === lessons.length - 1 ? 0.35 : 1;
+  }
+
+  if (prevBtn) prevBtn.addEventListener("click", function (e) { e.preventDefault(); show(current - 1); });
+  if (nextBtn) nextBtn.addEventListener("click", function (e) { e.preventDefault(); show(current + 1); });
+  document.addEventListener("keydown", function (e) {
+    if (keys.indexOf(e.key) < 0) return;
+    if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+    show(current + (e.key === "ArrowRight" ? 1 : -1));
+  });
+  show(0);
+});
+</script>
+</body>
+</html>

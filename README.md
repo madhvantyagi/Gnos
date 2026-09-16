@@ -17,7 +17,7 @@
 
 ## What it is
 
-GNOS is a file-based teaching harness operated by a capable LLM. A learning skill picks the right teacher, designs a course sized to your question, and teaches from where you actually are — then keeps usable evidence for next time.
+GNOS is a file-based teaching harness operated by a capable LLM. The learning-orchestrator skill picks the right teacher, designs a course sized to your question, and teaches from where you actually are — then keeps usable evidence for next time.
 
 No model server. No background listener. Markdown governs teaching, Python handles records and media.
 
@@ -83,6 +83,22 @@ learners/<learner-id>/courses/<course-id>/
 remain in `learners/<learner-id>/state.json`; the enrollment stores the course
 path, revision, and fingerprint so stale state cannot be updated silently.
 
+## Course viewer
+
+Render the course into one static page the learner reads — lessons, videos,
+images, simulations, sources, exercises, and resources, in a monospace ink
+design:
+
+```bash
+python3 skills/course-viewer/scripts/render_viewer.py learners/<learner-id>/courses/<course-id>
+cd learners/<learner-id>/courses/<course-id> && python3 -m http.server 8080
+# open http://localhost:8080/portal/
+```
+
+See `skills/course-viewer/SKILL.md` and its
+`references/example.html` for the exact look. Only `ready` artifacts from the
+manifest appear; private evaluation criteria never do.
+
 Examples under `examples/courses/` are fictional and safe to inspect. Validate a
 course or lesson directly with:
 
@@ -97,10 +113,10 @@ Use the learner-state migration command explicitly when adopting an old plan;
 validation happens before any learner record is changed:
 
 ```bash
-python3 skills/understanding-user-learning/scripts/learner_state.py \
+python3 skills/learner-tracking/scripts/learner_state.py \
   --root learners migrate-courses <learner-id>
 ```
 
 <p align="center">
-  <sub>Start in any LLM workspace that can read files. See <a href="skills/learning/SKILL.md">skills/learning/SKILL.md</a> for the entry point.</sub>
+  <sub>Start in any LLM workspace that can read files. See <a href="skills/learning-orchestrator/SKILL.md">skills/learning-orchestrator/SKILL.md</a> for the entry point.</sub>
 </p>

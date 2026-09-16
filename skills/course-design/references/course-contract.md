@@ -1,110 +1,94 @@
-# Living course contract
+# Course plan
 
-New persistent courses use `schema_version: 2`. The course file is a living
-table of contents: it records the destination, dependency route, teaching
-assignments, inspected sources, and current frontier. Detailed lessons and
-learner attempts belong elsewhere.
+`course.json` is the map. It says where we go, in what order,
+from which source, and where we are now.
 
-Version 1 remains readable through a deterministic adapter so an enrolled course
-does not break during migration. Do not author new version-1 plans.
+Read it like this: past steps are the topics before `current`,
+now is the one `current` topic, future steps are the topics after it.
+Later work can stay marked `provisional`, which means it may change.
 
-## Course fields
+It does not hold lesson text or scores. Those live in chat and
+in `learners/<id>/state.json`.
 
-Required root fields are:
+New plans use `schema_version: 2`. Do not write new version-1 plans.
 
-- `id`, `title`, `goal`: stable slug and readable destination.
-- `revision`: positive integer.
-- `revision_notes`: ordered objects with that revision, an ISO date, and the
-  concrete reason the route changed.
-- `starting_evidence`: observations already established before enrollment. An
-  empty list means unknown, not beginner.
-- `assumptions`: unverified prerequisites or constraints stated as text.
-- `sources`: source ID to inspected-source record.
-- `current`: `chapter_id`, `topic_id`, and a precise `next_step`.
-- `chapters`: a nonempty ordered list.
+## What to write
 
-The source registry makes the plan portable. Each source contains `title`, an
-HTTPS `url` or safe local path, `type`, `checked_on`, relevant `sections`, and
-`verification_notes`. A search result or plausible title is not an inspected
-source. If access or scope remains uncertain, say so in the notes.
+- `id`, `title`: short name and readable name.
+- `goal`: what the learner will be able to do. Start with a verb:
+  predict, derive, implement, explain.
+- `vision` (optional, one line): what done looks like,
+  for example "Fit a small model and explain each step."
+- `assumptions`: what you did not check yet, in plain words.
+- `starting_evidence`: what the learner already showed. Empty means
+  unknown, not beginner.
+- `chapters`: ordered list. Each chapter holds ordered `topics`.
+  We keep chapters so old lessons and the portal table of contents
+  still find their home.
+- `current`: `{chapter_id, topic_id, next_step}`. Only one current
+  topic at a time.
+- `sources`: starts empty. Search fills it. Each entry has `title`,
+  HTTPS `url` or safe local path, `type`, `checked_on`, `sections`,
+  `verification_notes`. Any subject is allowed.
 
-## Chapters and topics
+## Each topic
 
-Each chapter has a stable `id`, readable `title`, planning `state`, and nonempty
-ordered `topics`. A topic has:
+Each topic has `id`, `title`, `outcome`, `subject`, `teacher`,
+`concepts`, `prerequisites`, `minutes`, `resource_ids`,
+`exercise_ids`, `lesson_ids`, `skill_routes`, `state`,
+and optional `feedback`.
 
-- stable `id`, `title`, and planning `state`;
-- an observable `outcome`;
-- one lead `subject` and an optional `teacher`;
-- `supporting_subjects` and `supporting_teachers` only for named bridges;
-- repository-relative `skill_routes` needed to teach the topic;
-- stable `concepts`;
-- `prerequisites` referring only to earlier topic IDs;
-- a positive `minutes` estimate;
-- `resource_ids`, `exercise_ids`, and `lesson_ids`.
+- `outcome`: what the learner can do after it,
+  for example "Predict the sign of a small change."
+- `prerequisites`: earlier topic IDs only. Step 3 can use step 1,
+  never the other way round.
+- `resource_ids`: which sources this step uses. Every ID here must
+  exist in top-level `sources`. When a source fails, add the new one
+  to `sources`, point the topic at it, and remove the old ID when
+  no topic uses it.
+- `feedback` (optional, only on taught steps): how this step went.
+  ```json
+  "feedback": {
+    "source_results": {"mit-1802-sec2": "too-hard"},
+    "direction": "swap",
+    "note": "asked twice, terms did not match",
+    "repeats": 2
+  }
+  ```
+  `source_results` is `worked`, `did-not-work`, `too-hard`, or
+  `no-access`. `direction` is `keep`, `swap`, or `split`.
+  `note` is one plain line. `repeats` counts asked-again on this step.
+  Full tries stay in the learner record. This is only the short summary.
+- `subject` is one main subject. `teacher` is the same name, or `null`
+  when there is no persona. Do not invent a teacher.
+- `state` tells where the step sits in the route:
+  `current` is now, `planned` is next, `provisional` is later and may
+  change, `retired` and `out-of-scope` stay as history and are not taught.
 
-Use the matching teacher when that subject has an available SOUL and the persona
-helps the course. Otherwise store `teacher: null`; never invent a persona or
-exclude a supported subject because it has no teacher file. Supporting subjects
-may likewise appear without supporting teachers. Every named supporting teacher
-must exist and correspond to one of the named supporting subjects. Teachers do
-not create a panel discussion: one assigned teacher leads, and another appears
-only for a specific conceptual bridge.
+## Revision notes tell what changed and why
 
-Skill routes must resolve inside this repository's `skills/` tree. Use the
-general subject entrypoint and the selected subject file when needed. Add PDF,
-Manim, or another production skill only when the planned representation calls
-for it. A directory name alone does not load or invoke a skill.
+Keep `revision` and `revision_notes`. Each time the route changes,
+keep the same IDs, add 1 to `revision`, and add one note with
+the date, what changed, and what problem the learner had.
 
-## Planning state is not progress
+Good:
+```json
+{"revision": 3, "date": "2026-09-16",
+ "reason": "Swapped openstax-3.5 for MIT 18.02 sec 2 on chain-rule after 2 repeats; terms did not match."}
+```
 
-Chapter and topic `state` is one of:
+Bad: "Updated plan." Say what moved and what was hard.
 
-- `current`: the active teaching frontier;
-- `planned`: committed near-term route;
-- `provisional`: likely later route that evidence may change;
-- `retired`: preserved history no longer on the active route;
-- `out-of-scope`: deliberately omitted from this course goal.
+Writing `feedback` alone does not need a new revision. Changing
+sources, order, or scope does. Then run `validate_course.py` again.
 
-These values describe curriculum decisions. They never mean that the learner
-understands a concept. Exposure, practice, independent success, and later
-retention are derived from learner attempts.
-
-Keep exactly one current topic. `current.chapter_id` and `current.topic_id` must
-resolve to it. If evidence changes the route, preserve stable identifiers,
-increment the revision, append the reason, and update the frontier. Do not edit
-old attempts or rename retired material as completed.
-
-## Initial depth
-
-Research enough at enrollment to produce a defensible chapter-level route and
-identify major prerequisites. Later chapters may remain provisional. Fully
-author only the current topic and its next useful lesson. A complete table of
-contents is not permission to generate every explanation, exercise, and media
-artifact before the learner responds.
-
-`lesson_ids` grows as validated lessons are published. `exercise_ids` expresses
-the topic's assessment intent; the detailed prompts, response formats, private
-criteria, and lesson placement live in lesson files.
-
-## Compatibility
-
-The version-1 adapter preserves the old plan's goal, assumptions, concepts,
-teachers, sources, assessments, order, and dependencies while placing its
-modules into a valid chapter/topic hierarchy. Its output must be deterministic.
-Migration changes storage shape, not evidence. Validate the resulting version-2
-plan before saving it.
-
-## Validation
-
-Run:
+## Check
 
 ```bash
 python3 skills/course-design/scripts/validate_course.py <course.json>
 ```
 
-The validator checks structure, slugs, repository routes, source records,
-optional teacher and subject availability, unique IDs, ordered dependencies, the current
-frontier, and reference integrity. Validation cannot establish that a course is
-well researched or suitable for a particular learner; the course-design skill
-must make those judgments from the current request and evidence.
+The script checks shape: names, links to sources and skill files,
+order, HTTPS sources, one current step. It cannot tell if the plan
+is well taught. You decide that from the research notes and
+what the learner actually did.

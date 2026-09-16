@@ -1,6 +1,6 @@
 ---
 name: pdf
-description: Create GNOS lesson handouts and course PDFs with embedded fonts, equations, images, exercises, and source credits; render and inspect before delivery.
+description: Turn lesson content into a PDF handout; render and check it before delivery.
 ---
 
 # Lesson PDFs
