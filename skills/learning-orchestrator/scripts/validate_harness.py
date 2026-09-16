@@ -32,6 +32,16 @@ def validate():
             name = re.search(r'^name:\s*(\S+)', parts[1], re.M)
             if not name or name.group(1) != path.parent.name:
                 errors.append(f'{path.relative_to(ROOT)}: frontmatter name must match folder')
+    for required in (
+        ('skills/learning-orchestrator/SKILL.md', 'want to see the course now?'),
+        ('skills/course-design/SKILL.md', 'want to see the course now?'),
+        ('skills/course-design/SKILL.md', 'Do not stop at'),
+        ('skills/course-viewer/SKILL.md', 'even with zero lessons'),
+        ('skills/learner-tracking/SKILL.md', 'Never render lessons, viewer pages'),
+    ):
+        path = ROOT / required[0]
+        if path.is_file() and required[1] not in path.read_text():
+            errors.append(f'{required[0]}: missing required workflow sentence')
     for subject in SUBJECTS:
         path = ROOT / f'skills/subject/subjects/{subject}.md'
         if not path.is_file():

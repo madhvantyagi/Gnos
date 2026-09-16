@@ -1,6 +1,6 @@
 ---
 name: course-viewer
-description: Render a learner's course into one static web page with a sidebar, lessons, videos, images, simulations, exercises, and sources.
+description: Render and show the learner's course page. Use when the learner says see, show, or open my course, or after course.json is created, enrolled, or changed; render portal/index.html and return the link.
 ---
 
 # Course viewer
@@ -10,8 +10,12 @@ No app, no build step, no external libraries. One self-contained
 HTML file. White, minimal, full screen: a left sidebar with tabs
 and the lesson list, a main column with the lesson content.
 
-Use this skill after a course exists and lessons or artifacts were
-added. Re-render after every new lesson, video, image, or simulation.
+Use this skill whenever a course plan is created, enrolled, or
+changed — even with zero lessons. A fresh course still renders its
+contents table, sources, and representation plan. Re-render after
+every new lesson, video, image, or simulation. Render only from the
+enrolled workspace at `learners/<learner>/courses/<course-id>`,
+never from a blueprint `outputs/` file.
 
 ## Render
 
@@ -69,4 +73,8 @@ what is coming. Register every artifact with the course-design skill
 - The page references media files in the workspace; it never copies
   or downloads them. Missing files get a visible note, never a crash.
 - Re-render whenever the plan, a lesson, or the manifest changes.
+- If enroll or render fails, say plainly what failed and fix it that
+  turn. Never silently skip the page.
+- If the learner did not answer the show question, ask again on the
+  next course turn.
 - The page is for local viewing. Host it only for the enrolled learner.

@@ -1,6 +1,6 @@
 ---
 name: learning-orchestrator
-description: Entry point. Start every GNOS turn here: read the request, route it to a subject, teacher, course, or learner record, then teach.
+description: Entry point. Start every GNOS turn here: read the request, route it to a subject, teacher, course, or learner record, then teach. After any course build or change, enroll, ask to show it, render the page, and return the link.
 ---
 
 # Learning orchestrator — the entry point
@@ -29,9 +29,14 @@ Paths below are relative to the repository root.
    working context and answer immediately.
 4. Load the PDF, Manim, or image skill only when that representation is
    useful or requested. Read supporting references at the point of use.
-   During course work, load `skills/course-viewer/SKILL.md` and render
-   the viewer page after lessons or artifacts change:
+   During course work, load `skills/course-viewer/SKILL.md`. After a
+   course plan is written or changed, enroll it, then ask verbatim:
+   "want to see the course now?" On yes, render the viewer page and
+   reply with the `portal/` link and what to click:
    `python3 skills/course-viewer/scripts/render_viewer.py learners/<learner>/courses/<course-id>`.
+   Never end a course turn without either rendering the page or asking
+   to render it. Chat teaching or RESEARCH.md is not a substitute for
+   the page.
 
 The explicit loader is `python3 skills/learning-orchestrator/scripts/assemble_context.py --subject math`.
 Use `--learner <id>`, `--course-id <id>` for an enrolled course, or

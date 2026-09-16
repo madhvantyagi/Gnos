@@ -11,7 +11,7 @@ after comparing x(x+1) with x²+1” tells the next teacher what to check.
 
 ## Read and write
 
-For an established learner ID, use the script beside this skill:
+For someone you already know, use the script beside this skill:
 
 ```bash
 python3 skills/learner-tracking/scripts/learner_state.py init alex
@@ -32,6 +32,17 @@ one version silently. For an older record containing embedded plans, run
 `migrate-courses <id>` once. The migration is idempotent and preserves events
 and completion history.
 
+Never render lessons, viewer pages, or progress from a blueprint
+`course.json` alone. First settle who the learner is: if they gave a
+name, turn it into a lowercase folder name and use it without
+explaining; if they did not, proceed automatically as `learner` and
+say one plain line ("I'll save your progress under 'learner' — tell
+me a name anytime to make it yours"). Then run `init <name>` and
+`enroll <name> --course <course.json>`, and confirm
+`learners/<name>/courses/<course-id>/course.json` exists. Only then
+record, summarize, or build views. Never ask the user for a "learner
+ID" — that is our folder name, not their vocabulary.
+
 ## Course and memory categories
 
 Read [references/memory-categories.md](references/memory-categories.md) when
@@ -47,8 +58,8 @@ update the plan when a source fails or the learner is stuck.
 Every recorded attempt or topic transition refreshes profile, course, topic,
 teaching-observation, and next-step memories. Update at meaningful evidence
 changes during the conversation, not only at the end of a course. On resumption,
-use earlier taught topics as explicit bridges into the next topic. Read the
-same learner ID; do not assume unrelated chats have shared memory.
+use earlier taught topics as explicit bridges into the next topic. Keep one
+folder per person; do not assume unrelated chats have shared memory.
 
 Resolve every enrolled plan before changing learner state. If a referenced plan
 is missing, stale, or invalid, fail before recording a new attempt or profile

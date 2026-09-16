@@ -71,4 +71,5 @@ ask the learner which goal to resume rather than choosing silently.
 
 “Real time” here means the host LLM records events during the conversation.
 GNOS has no background listener, cross-app identity discovery, or automatic
-access to past chats. Resume requires the same learner ID and saved files.
+access to past chats. Resume requires the same saved folder (the learner's
+name), not a login — keep one folder per person.

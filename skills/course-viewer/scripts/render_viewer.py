@@ -264,7 +264,7 @@ def render_sidebar(plan, lessons, current_topic):
         + "".join(lesson_buttons) + "</div></aside>")
 
 
-def render_contents(view, course):
+def render_contents(view, course, topic_reps):
     rows = []
     for chapter in view["contents"]:
         for topic in chapter.get("topics", []):
@@ -275,17 +275,20 @@ def render_contents(view, course):
             evidence = esc(progress.get("evidence", "not-started"))
             attempts = progress.get("attempt_count", 0)
             evidence_cell = evidence if not attempts else f"{evidence} · {attempts} tries"
+            plan_cell = render_chips(topic_reps.get(topic["id"], []), None, topic["id"], [])
             rows.append('<tr class="current-row">' if current else "<tr>")
             rows.append(
                 f"<td>{esc(chapter.get('title', ''))}</td>"
                 f"<td>{esc(topic.get('title', ''))}</td>"
                 f"<td>{esc(topic.get('outcome', ''))}</td>"
                 f"<td>{badge(state)}</td>"
+                f"<td>{plan_cell}</td>"
                 f"<td>{evidence_cell}</td>"
                 f"<td>{esc(topic.get('minutes', ''))}</td>"
                 f"<td>{sources}</td></tr>")
     return ("<table><tr><th>chapter</th><th>topic</th><th>outcome</th><th>state</th>"
-            "<th>evidence</th><th>min</th><th>sources</th></tr>" + "".join(rows) + "</table>")
+            "<th>plan</th><th>evidence</th><th>min</th><th>sources</th></tr>"
+            + "".join(rows) + "</table>")
 
 
 def render_sources(course):
@@ -414,7 +417,7 @@ def render_body(view, plan, workspace):
         f'{vision_line}'
         f'<div class="page-meta">current · {esc(current.get("chapter_id", ""))} · {esc(current.get("topic_id", ""))}'
         f' · next: {esc(current.get("next_step", ""))}</div>'
-        f'<h2 class="sec">Contents</h2>{render_contents(view, course)}'
+        f'<h2 class="sec">Contents</h2>{render_contents(view, course, topic_reps)}'
         f'{assumptions_html}</section>',
         f'<section class="tab" id="tab-lessons">'
         + (lesson_html or "<p>No ready lessons yet. Publish a lesson, then render again.</p>")

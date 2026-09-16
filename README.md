@@ -80,5 +80,5 @@ Accounting · Artificial Intelligence · Business · Psychology ·
 Chemical Engineering · Political Science
 
 <p align="center">
-  <sub>Start at <a href="skills/learning-orchestrator/SKILL.md">the orchestrator</a> · design in <a href="docs/design.md">docs/design.md</a></sub>
+  <sub>Start at <a href="skills/learning-orchestrator/SKILL.md">the orchestrator</a> · <a href="docs/flow.html">how it flows</a> · design in <a href="docs/design.md">docs/design.md</a></sub>
 </p>

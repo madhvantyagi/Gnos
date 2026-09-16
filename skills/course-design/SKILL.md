@@ -44,14 +44,18 @@ for example "learn mechanics over six weeks".
    `image`/`diagram` -> image-gen, `simulation` -> a small self-contained
    HTML file registered with `manage_artifact.py`, `pdf` -> pdf,
    `text`/`exercise` -> the subject teacher. Every skill that produces a
-   file registers it in the artifact manifest. After lessons or
-   artifacts exist, render the learner's page:
+   file registers it in the artifact manifest. Do not stop at
+   `outputs/course.json`: enroll the plan that same turn, then ask
+   verbatim "want to see the course now?":
 
    ```bash
+   python3 skills/learner-tracking/scripts/learner_state.py enroll <learner> --course <course.json>
    python3 skills/course-viewer/scripts/render_viewer.py learners/<learner>/courses/<course-id>
    ```
 
-   Re-render after every new lesson, video, image, or simulation.
+   Reply with the `portal/` link and what to click. Re-render after
+   every new lesson, video, image, or simulation — even when the course
+   has zero lessons, the contents page still renders.
 
 [lesson-contract.md](references/lesson-contract.md) is old and optional.
 Teach in chat. Use a formal lesson file only when the portal asks for it.
