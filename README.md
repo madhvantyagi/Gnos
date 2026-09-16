@@ -5,118 +5,44 @@
 <h1 align="center">GNOS</h1>
 
 <p align="center">
-  <strong>A learning harness that designs your course, teaches in real time, and adapts as you learn.</strong>
+  <strong>Learning is built in layers. GNOS gives each layer its own skill.</strong><br>
+  <sub>File-based · Markdown governs · Python handles records and media · no model server</sub>
 </p>
 
-<p align="center">
-  <a href="#what-it-is">What it is</a> &nbsp;·&nbsp;
-  <a href="#what-you-can-do">What you can do</a> &nbsp;·&nbsp;
-  <a href="#subjects">Subjects</a> &nbsp;·&nbsp;
-  <a href="#how-it-works">How it works</a>
-</p>
+## The pillars
 
-## What it is
+People don't learn from playlists. They learn when someone finds the exact
+point where reasoning stopped, teaches in a voice that fits, tracks real
+attempts, and adapts the moment it hurts. GNOS turns each of those into a
+dedicated skill:
 
-GNOS is a file-based teaching harness operated by a capable LLM. The learning-orchestrator skill picks the right teacher, designs a course sized to your question, and teaches from where you actually are — then keeps usable evidence for next time.
+| Pillar | Skill | Solves |
+| --- | --- | --- |
+| **Start** | [learning-orchestrator](skills/learning-orchestrator/SKILL.md) | Reads the request, routes it, teaches from the actual break in reasoning. |
+| **Build** | [course-design](skills/course-design/SKILL.md) | Researches sources, writes the plan, records every route change. |
+| **Track & adapt** | [learner-tracking](skills/learner-tracking/SKILL.md) | Records attempts and stuck points; the course changes in real time. |
+| **Choose** | [subject](skills/subject/SKILL.md) | Picks the subject and the teacher persona that fits the problem. |
+| **Show** | [manim-voice-animation](skills/manim-voice-animation/SKILL.md) · [pdf](skills/pdf/SKILL.md) | Turns words into narrated animations, videos, images, diagrams, handouts. |
 
-No model server. No background listener. Markdown governs teaching, Python handles records and media.
+## Teachers with souls
 
-## What you can do
+Every teacher is a persona with a `SOUL.md` — identity, voice, and judgment
+under pressure. A math topic gets the math soul; a history doubt never hears
+an invented panel. The right teacher is assigned per topic, in real time.
 
-**Answer a focused doubt** — split a small topic into the few useful ideas and
-teach it without manufacturing a permanent syllabus.
+## Media comes from MCP servers
 
-**Design a living course** — when the goal genuinely spans many topics or the
-learner wants sustained study, build a researched table of contents and author
-only the current lesson in detail.
+Visuals are not decoration. Narrated animations, architecture diagrams, and
+images from image models are produced by connected MCP servers, then
+registered into the lesson that needs them.
 
-**Learn adaptively** — GNOS follows your understanding in real time and adjusts pace, depth, and style.
-
-**Route the right expertise** — topics name their subject, teaching skills, and
-an optional teacher persona. Cross-subject courses can use a supporting subject
-without turning the lesson into a panel discussion.
-
-**Fetch what matters** — the harness pulls only the content you need for this step.
-
-**Track evidence, not attendance** — attempts, independent success, retrieval,
-and next steps stay separate from the curriculum's planning state.
-
-**Practice properly** — exercises tuned to your level, scored on independent success not exposure.
-
-**See it, not just read it** — diagrams, simulations, video, and images when they reveal more than text.
-
-## Subjects
-
-<a href="skills/subject/subjects/math.md">Mathematics</a> · <a href="skills/subject/subjects/physics.md">Physics</a> · <a href="skills/subject/subjects/history.md">History</a> · <a href="skills/subject/subjects/biology.md">Biology</a> · <a href="skills/subject/subjects/economics.md">Economics</a> · <a href="skills/subject/subjects/computer-science.md">Computer Science</a> · <a href="skills/subject/subjects/accounting.md">Accounting</a> · <a href="skills/subject/subjects/artificial-intelligence.md">Artificial Intelligence</a> · <a href="skills/subject/subjects/business.md">Business</a> · <a href="skills/subject/subjects/psychology.md">Psychology</a> · <a href="skills/subject/subjects/chemical-engineering.md">Chemical Engineering</a> · <a href="skills/subject/subjects/political-science.md">Political Science</a>
-
-Teachers live in <a href="teachers/">teachers/</a> · subject guides in <a href="skills/subject/subjects/">skills/subject/subjects/</a> · design notes in <a href="docs/design.md">docs/design.md</a>
-
-## How it works
-
-1. **Understand** — establish the learner's goal, prior evidence, constraints,
-   and whether the request needs one focused explanation or a persistent course.
-2. **Map** — for a course, inspect suitable sources and create a version-2 table
-   of contents: chapters, topics, dependencies, teaching routes, exercises, and
-   one current frontier. Later chapters can remain provisional.
-3. **Teach in chat** — compose the next lesson from explanations, examples,
-   exercises, diagrams, simulations, animation, or video. Chat remains the main
-   relationship; generated material supports the lesson instead of fragmenting it.
-4. **Observe and adapt** — record what the learner actually attempted, derive
-   progress from that evidence, and revise future topics only when the evidence
-   or goal changes.
-
-## Course files
-
-A tracked learner's course lives at:
-
-```text
-learners/<learner-id>/courses/<course-id>/
-├── course.json        # living table of contents and current frontier
-├── lessons/           # validated lesson compositions, created gradually
-├── artifacts/         # final diagrams, videos, PDFs, simulations, and files
-├── exercises/         # learner-facing exercise state and submissions
-└── portal/             # generated visual companion when enabled
-```
-
-`course.json` is not a transcript and its `current`, `planned`, and
-`provisional` values are curriculum states—not claims of mastery. Learner events
-remain in `learners/<learner-id>/state.json`; the enrollment stores the course
-path, revision, and fingerprint so stale state cannot be updated silently.
-
-## Course viewer
-
-Render the course into one static page the learner reads — lessons, videos,
-images, simulations, sources, exercises, and resources, in a monospace ink
-design:
+## Quick start
 
 ```bash
-python3 skills/course-viewer/scripts/render_viewer.py learners/<learner-id>/courses/<course-id>
-cd learners/<learner-id>/courses/<course-id> && python3 -m http.server 8080
-# open http://localhost:8080/portal/
-```
-
-See `skills/course-viewer/SKILL.md` and its
-`references/example.html` for the exact look. Only `ready` artifacts from the
-manifest appear; private evaluation criteria never do.
-
-Examples under `examples/courses/` are fictional and safe to inspect. Validate a
-course or lesson directly with:
-
-```bash
-python3 skills/course-design/scripts/validate_course.py path/to/course.json
-python3 skills/course-design/scripts/validate_lesson.py path/to/lesson.json \
-  --course path/to/course.json
-```
-
-Existing version-1 plans remain readable, but new courses use schema version 2.
-Use the learner-state migration command explicitly when adopting an old plan;
-validation happens before any learner record is changed:
-
-```bash
-python3 skills/learner-tracking/scripts/learner_state.py \
-  --root learners migrate-courses <learner-id>
+python3 skills/learning-orchestrator/scripts/validate_harness.py
+python3 -m unittest discover -s tests
 ```
 
 <p align="center">
-  <sub>Start in any LLM workspace that can read files. See <a href="skills/learning-orchestrator/SKILL.md">skills/learning-orchestrator/SKILL.md</a> for the entry point.</sub>
+  <sub>Start at <a href="skills/learning-orchestrator/SKILL.md">the orchestrator</a> · design in <a href="docs/design.md">docs/design.md</a></sub>
 </p>
