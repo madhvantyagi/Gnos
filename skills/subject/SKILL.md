@@ -55,22 +55,28 @@ step across the handoff.
 
 ## Choose the representation by the task
 
-A still diagram helps inspect structure; an animation helps inspect change;
-runnable code tests behavior; a PDF supports review. No subject requires media
-by default.
+A still diagram helps inspect structure; an animation helps inspect
+change; runnable code tests behavior; a simulation hands the learner a
+control; a PDF supports review. Every form is available to every
+subject — choose the one the task earns, and use it without overdoing
+or underdoing:
 
-- For an advanced vector diagram, interactive relation, or animated SVG in
-  computer science, mathematics, physics, economics, or political science,
-  read [the Pinepaper workflow](references/pinepaper.md) and the selected
-  subject's linked reference.
-- For a quick inspectable computer-science canvas, read
-  [the Excalidraw workflow](references/excalidraw.md).
-- For a narrated rendered lesson, use
-  `skills/manim-voice-animation/SKILL.md`; for a handout, use
-  `skills/pdf/SKILL.md`.
+| Task | Use |
+| --- | --- |
+| Something changes over time, or one thing becomes another | Manim (`skills/manim-voice-animation/SKILL.md`) |
+| Compare the parts of a structure | Still image (`skills/image-gen/SKILL.md`) |
+| Polished vector, interactive, or relation-rich diagram | Pinepaper workflow ([references/pinepaper.md](references/pinepaper.md)) |
+| Quick inspectable computer-science sketch | Excalidraw workflow ([references/excalidraw.md](references/excalidraw.md)) |
+| The learner changes a value and predicts the result | Simulation: self-contained HTML, registered with `manage_artifact.py` |
+| Material to keep or print for later study | PDF handout (`skills/pdf/SKILL.md`) |
+| A claim, definition, list, or worked step | Text — stay in chat or the lesson file |
 
-Choose one primary medium. Do not create the same diagram in multiple tools
-unless comparison or export requirements justify it.
+One primary medium per idea. Do not create the same diagram in
+multiple tools unless comparison or export requirements justify it.
+No subject requires media by default, and no course needs media on
+every topic: when nothing meaningful changes, text and a worked
+example are the correct representation, not the lazy one. Order media
+only when a beat fails without it.
 
 For source selection and downloads, read
 [references/source-use.md](references/source-use.md).

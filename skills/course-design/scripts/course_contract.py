@@ -155,6 +155,12 @@ def _validate_v2(data):
         nonempty(data.get(key), key)
     if "vision" in data and data["vision"] is not None:
         nonempty(data.get("vision"), "vision")
+    depth = data.get("depth")
+    if depth is not None:
+        if depth not in ("survey", "working", "mastery"):
+            raise ValueError("depth must be survey, working, or mastery")
+    if "length" in data and data["length"] is not None:
+        nonempty(data.get("length"), "length")
     revision = data.get("revision")
     if type(revision) is not int or revision < 1:
         raise ValueError("revision must be a positive integer")

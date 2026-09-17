@@ -411,7 +411,8 @@ def main():
     commands = parser.add_subparsers(dest='command', required=True)
     for command in ('init', 'summary', 'record', 'profile', 'retract', 'delete', 'enroll', 'complete-course', 'migrate-courses'):
         sub = commands.add_parser(command)
-        sub.add_argument('learner')
+        sub.add_argument('learner', nargs='?', default='learner',
+                         help='Learner folder name; defaults to %(default)s when no name is given')
         if command == 'summary':
             sub.add_argument('--course-id')
         if command == 'record':

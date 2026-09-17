@@ -3,6 +3,21 @@
 Search first. Do not copy the first syllabus you see.
 Use books, course sites, and docs you can open.
 
+## Scale to the agreed depth and length
+
+The `depth` and `length` recorded in `course.json` decide how much to
+search and what to take:
+
+| depth | research effort |
+| --- | --- |
+| `survey` | One main source for the route is enough; take definitions and the step order. |
+| `working` | Main source plus one contrast source that changes or checks a step; take exercise ideas from both. |
+| `mastery` | Two or more sources, including a primary or academic one; take the derivation path, counterexamples, and harder exercises. |
+
+A short length means fewer topics per source and lighter media; a term
+means enough material to fill it honestly. Do not inflate a survey into
+a mastery bibliography, and do not promise a term on one skimmed page.
+
 ## Where to look
 
 - **Books:** open textbook contents, for example `site:openstax.org <topic> contents`.

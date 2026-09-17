@@ -38,7 +38,10 @@ against the still test first.
 Structure does not move. Use an image for: an architecture diagram, a
 labeled anatomy, a pipeline overview, a network or graph layout, a
 geometry figure with givens marked. The learner needs time to compare
-parts; a still image gives that time.
+parts; a still image gives that time. For a polished vector or
+interactive diagram, use the pinepaper workflow; for a quick
+inspectable sketch, use excalidraw — both are chosen through the
+subject skill, and use one tool per idea.
 
 ## Use a simulation instead
 
@@ -60,6 +63,22 @@ or a proof step, a claim and its hypotheses, vocabulary.
    concept before adding a second scene.
 3. Motion must reveal something a still image cannot. If a still frame
    says it, remove the motion.
+4. One medium per idea. Do not restate the same diagram as an image, a
+   pinepaper scene, and an excalidraw sketch.
+
+## Media budget follows depth and length
+
+The course's `depth` and `length` set the ceiling, not a quota:
+
+- `survey` or a short course: mostly text; one medium only where a
+  part needs it.
+- `working`: text plus one earned medium for the key parts that move
+  or show structure.
+- `mastery` or a term: fuller media where each beat passes the rules
+  above — still never on every topic.
+
+No topic needs every kind. If a course plan assigns media to most
+topics, trim it back to the beats that fail without it.
 
 ## Before ordering Manim
 

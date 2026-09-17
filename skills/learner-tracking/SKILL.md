@@ -37,8 +37,9 @@ Never render lessons, viewer pages, or progress from a blueprint
 name, turn it into a lowercase folder name and use it without
 explaining; if they did not, proceed automatically as `learner` and
 say one plain line ("I'll save your progress under 'learner' — tell
-me a name anytime to make it yours"). Then run `init <name>` and
-`enroll <name> --course <course.json>`, and confirm
+me a name anytime to make it yours"). Then run `init` and
+`enroll --course <course.json>`; omitting the name defaults to
+`learner`, so a first course needs no ID at all. Confirm
 `learners/<name>/courses/<course-id>/course.json` exists. Only then
 record, summarize, or build views. Never ask the user for a "learner
 ID" — that is our folder name, not their vocabulary.

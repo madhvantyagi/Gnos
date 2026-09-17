@@ -23,16 +23,24 @@ across subjects by concept ID, so vectors are not re-taught under every label.
 ## Turn flow
 
 1. Read learning. Classify a direct doubt, lesson, course request, or resumption.
-2. Load the relevant learner snapshot if an identity is established. Read only
-   the active course and recent evidence for the concept at hand.
+2. Load the relevant learner snapshot if a record exists. When no identity is
+   established, proceed automatically under the default `learner` folder and say
+   one plain line; an ID is never required to start. Read only the active course
+   and recent evidence for the concept at hand.
 3. Select subject and teacher. Use course design only when a persistent route is
-   justified; a local doubt keeps its small plan in the turn.
+   justified; a local doubt keeps its small plan in the turn. Before designing a
+   course, ask how deep and how long the learner wants to go, and record both in
+   the plan.
 4. For a course, resolve the current chapter/topic and author only the next useful
-   lesson. Teach the missing connection. Choose text, a diagram, an exercise, or motion
-   for what it reveals; a media deliverable is not a prerequisite to answering.
-5. Record observed evidence and a concrete next step, then revise provisional
-   future topics only when that evidence changes the route. Persist only when a
-   learner identity is established and local tracking is wanted.
+   lesson. The taught topic's default record is its formal lesson file; chat
+   carries the live exchange. Teach the missing connection. Choose text, a
+   diagram, an exercise, or motion for what it reveals; a media deliverable is
+   not a prerequisite to answering.
+5. Enroll the plan under the learner's folder the same turn it is written, then
+   offer the portal page. Record observed evidence and a concrete next step,
+   then revise provisional future topics only when that evidence changes the
+   route. Persist under the learner's folder, defaulting to `learner` when no
+   name was given.
 
 `skills/learning-orchestrator/scripts/assemble_context.py` prints this selected context or its file manifest.
 It is an explicit loader for hosts without native skill discovery. It does not
@@ -59,7 +67,8 @@ under the learner course workspace or `output/`; media sources remain editable.
 A topic declares its representations in `course.json` so each part is
 dispatched to the right skill: manim for motion, image-gen for still
 images, pdf for handouts, simulation for interactive parts, text for the
-rest. `representation-choices.md` holds the rules that stop Manim from
+rest. The plan's agreed `depth` and `length` set the media budget;
+`representation-choices.md` holds the rules that stop Manim from
 being ordered for everything.
 
 PDF: structured lesson JSON to ReportLab, with embedded fonts, image captions,

@@ -17,6 +17,11 @@ New plans use `schema_version: 2`. Do not write new version-1 plans.
 - `id`, `title`: short name and readable name.
 - `goal`: what the learner will be able to do. Start with a verb:
   predict, derive, implement, explain.
+- `depth`: `survey`, `working`, or `mastery` — how deep each topic
+  goes, agreed with the learner before designing.
+- `length`: the agreed duration in the learner's words, for example
+  "one session", "six weeks", "a term". It sets the size of the
+  route, the research, and the media budget.
 - `vision` (optional, one line): what done looks like,
   for example "Fit a small model and explain each step."
 - `assumptions`: what you did not check yet, in plain words.
@@ -102,11 +107,17 @@ earn one representation.
 | kind | skill | lesson block type |
 | --- | --- | --- |
 | `manim` | manim-voice-animation | `voice-animation` or `animation` |
-| `image`, `diagram` | image-gen | `diagram` or `artifact` |
+| `image` | image-gen | `diagram` or `artifact` |
+| `diagram` | image-gen, or pinepaper / excalidraw per the subject skill | `diagram` or `artifact` |
 | `simulation` | a small self-contained HTML file, registered with manage_artifact | `interactive-graph` or `simulation` |
 | `pdf` | pdf | `artifact` |
 | `text` | the subject teacher | `explanation`, `bullets`, `equation`, `code` |
 | `exercise` | the subject teacher | `exercise` |
+
+A `diagram` kind uses image-gen for a still picture, pinepaper for a
+polished vector or interactive diagram, or excalidraw for a quick
+inspectable sketch — use one tool per idea. An interactive or animated
+pinepaper result registers like any other artifact so its chip flips.
 
 - The viewer page shows one chip per representation. A chip flips from
   planned to ready when its artifact is registered. Every skill that

@@ -1,8 +1,18 @@
-# Composed lesson contract — optional legacy
+# Composed lesson contract — the taught topic's default record
 
-You usually do not need this file. Teach in chat and save lesson
-notes in the learner folder (`learners/<id>/courses/<course-id>/lessons/`).
-Use this contract only when the portal needs a formal lesson file.
+Author one formal lesson file per taught topic, then publish it into the
+enrolled workspace:
+
+```bash
+python3 skills/course-design/scripts/validate_lesson.py lesson.json \
+  --course learners/<learner>/courses/<course-id>/course.json
+python3 skills/course-design/scripts/course_workspace.py publish \
+  learners/<learner>/courses/<course-id> --lesson lesson.json
+```
+
+Teach in chat while the learner is actively interacting; the lesson file
+still captures the topic for the portal and the next turn. Publish
+`draft` while developing, `ready` when the learner should see it.
 
 ## Lesson fields
 
@@ -49,7 +59,8 @@ Each block comes from the topic's representation plan in `course.json`:
 | representation kind | block type |
 | --- | --- |
 | `manim` | `voice-animation` or `animation` |
-| `image`, `diagram` | `diagram` or `artifact` |
+| `image` | `diagram` or `artifact` |
+| `diagram` | `diagram` or `artifact` |
 | `simulation` | `interactive-graph` or `simulation` |
 | `pdf` | `artifact` |
 | `text` | `explanation`, `bullets`, `equation`, `code` |

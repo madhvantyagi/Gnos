@@ -318,3 +318,28 @@ def publish_lesson(path: Path, lesson: dict) -> str:
                     pass
             raise
         return lesson_fingerprint_value
+
+
+def main():
+    """CLI for the operations a teacher turn needs: publish a formal lesson."""
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    commands = parser.add_subparsers(dest="command", required=True)
+    publish = commands.add_parser("publish", help="validate and publish a lesson into a course workspace")
+    publish.add_argument("workspace", type=Path,
+                         help="course workspace path: learners/<learner>/courses/<course-id>")
+    publish.add_argument("--lesson", type=Path, required=True,
+                         help="lesson JSON file to validate and publish")
+    args = parser.parse_args()
+    try:
+        if args.command == "publish":
+            lesson = json.loads(args.lesson.read_text())
+            fingerprint = publish_lesson(args.workspace, lesson)
+            print(f"Published {lesson['id']} (fingerprint {fingerprint})")
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        parser.exit(1, f"Course workspace error: {exc}\n")
+
+
+if __name__ == "__main__":
+    main()
