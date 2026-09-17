@@ -1,100 +1,145 @@
 # Representation choices
 
-Pick the smallest representation that reveals the idea. Bigger is not
-better. Read this when a topic needs a visual, then pick one and stick
-with it.
+Read the selected subject guide before this file. The subject guide states what
+the field needs learners to inspect. This file chooses the smallest medium that
+does that job.
 
-## Choose by what the learner must inspect
+## Decide from the learner's action
 
-| What the topic-part does | Use this |
+Write one sentence: “The learner must inspect, change, hear, compare, derive, or
+practice ___.” If the sentence does not name an action, the representation has
+no clear job.
+
+| Learner action | Representation |
 | --- | --- |
-| Something changes over time, or one thing becomes another. | Manim animation |
-| The learner must compare parts of a structure. | Static image |
-| The learner changes a value and watches the result. | Simulation |
-| A claim, definition, list, or worked step. | Text |
-| Material to keep or print for later study. | PDF handout |
-| A check of understanding after the teaching. | Exercise |
+| Follow a claim, definition, derivation, list, or worked step | Text, equations, bullets, or code |
+| Compare parts, boundaries, labels, or spatial relations | Still image or diagram |
+| Follow a state, quantity, or object changing over time | Animation |
+| Change an input and inspect the result | Simulation or interactive graph |
+| Listen because a recording is evidence, or narration must track motion | Source block for the recording; Manim voice animation for authored motion |
+| Review a stable packet away from the course page | PDF |
+| Demonstrate understanding under a changed condition | Exercise |
 
-## Motion is earned, not default
+Do not choose a medium from the subject name alone. Physics often earns motion;
+some physics lessons still need only a free-body diagram. History often earns a
+dated source set; a migration sequence may earn motion. Subject guidance is a
+starting point, not a quota.
 
-Order Manim only when one change shows what text and a still frame
-cannot. Earned examples: a vector rotates, a limit shrinks, a wave
-moves, a secant approaches a tangent, a basis transforms a space, a
-force changes motion, an algorithm changes state, a distribution builds
-up from repeated samples.
+## Know the available workflows
 
-Not earned: a definition appears, a list appears, an equation types
-itself, labels fade in around a still diagram, decorative camera moves.
+| Workflow | Use it for | Do not use it for |
+| --- | --- | --- |
+| Subject teacher | Explanations, derivations, examples, code, and exercises | A file that another media skill must produce |
+| Image generation | A still illustration, labeled scene, anatomy, apparatus, or visual analogy | Exact diagrams whose relations must be editable or verifiable |
+| Excalidraw MCP | A quick inspectable CS architecture, pointer, graph, database, network, or trust-boundary sketch | Polished animation or dense paragraphs inside boxes |
+| Pinepaper MCP | Polished vector diagrams, synchronized changes, interactive relations, and animated SVG | A simple sketch or narrated video lesson |
+| Manim voice animation | A narrated rendered sequence where motion carries the explanation | Definitions appearing on screen or decorative camera movement |
+| Self-contained HTML | A simulation or interactive graph controlled by the learner | A fixed diagram with no useful control |
+| PDF skill | A checked handout, source packet, derivation sheet, or review guide | The primary interactive lesson |
 
-## Trigger words
+The selected subject guide decides between ImageGen, Excalidraw, Pinepaper,
+Manim, and a simulation. Read the linked workflow only after that choice. If an
+MCP server is unavailable, use the smallest faithful fallback and report the
+missing capability. Never claim that an unrendered artifact exists.
 
-If the beat uses one of these, motion may be right. If it uses none,
-do not order Manim: changes over time, moves, rotates, shrinks, grows,
-approaches, follows a path. Check "builds up" and "transforms into"
-against the still test first.
+## Choose motion only when change is the idea
 
-## Use a static image instead
+Use animation for motion, transformation, propagation, feedback, accumulation,
+or ordered state change. Keep the governing rule visible and change one thing
+at a time.
 
-Structure does not move. Use an image for: an architecture diagram, a
-labeled anatomy, a pipeline overview, a network or graph layout, a
-geometry figure with givens marked. The learner needs time to compare
-parts; a still image gives that time. For a polished vector or
-interactive diagram, use the pinepaper workflow; for a quick
-inspectable sketch, use excalidraw — both are chosen through the
-subject skill, and use one tool per idea.
+Do not animate a definition, list, claim, static architecture, or equation
+typing effect. If one still frame carries the full explanation, use the still.
 
-## Use a simulation instead
+## Choose a still when comparison needs time
 
-Use a simulation when the learner changes a parameter and predicts the
-result: step size in gradient descent, the direction of a step, a
-probability or sample size, a filter or threshold. If the learner is
-the one changing the value, hand over the control instead.
+Use a still image or diagram for structure: a force balance, anatomy, map,
+pipeline, system boundary, graph layout, geometry figure, or evidence matrix.
+Label the relation the learner must inspect. Do not ask an image model to
+produce exact data, readable source text, or a relation that must be checked
+against code.
 
-## Keep it text
+Use Excalidraw for a fast CS sketch. Use Pinepaper when exact relations,
+interaction, synchronized states, or polished vector export matter. Use one
+tool per idea.
 
-No image and no motion for: definitions, lists of rules, worked algebra
-or a proof step, a claim and its hypotheses, vocabulary.
+## Choose a simulation when the learner controls the test
 
-## Hard rules
+Use a simulation when changing a parameter is part of the reasoning: step size,
+initial condition, probability, threshold, policy rule, force, or sample size.
+Show the model, units, assumptions, and reset state. Ask for a prediction before
+the learner moves the control.
 
-1. Never animate a definition, a list, or a claim. If nothing changes,
-   it is not animation.
-2. One animation per concept, and one change per animation. Split the
-   concept before adding a second scene.
-3. Motion must reveal something a still image cannot. If a still frame
-   says it, remove the motion.
-4. One medium per idea. Do not restate the same diagram as an image, a
-   pinepaper scene, and an excalidraw sketch.
+Do not use a simulation to conceal a formula or to imply that one chosen model
+is empirical evidence.
 
-## Media budget follows depth and length
+## Use narration and source media deliberately
 
-The course's `depth` and `length` set the ceiling, not a quota:
+Narration belongs with an animation when spoken timing helps coordinate several
+changes. When a recording is evidence, use a source block and preserve its
+date, creator, location, and evidentiary limits. Do the same for a video,
+interview, speech, experiment recording, or archival clip.
 
-- `survey` or a short course: mostly text; one medium only where a
-  part needs it.
-- `working`: text plus one earned medium for the key parts that move
-  or show structure.
-- `mastery` or a term: fuller media where each beat passes the rules
-  above — still never on every topic.
+Do not add voice because a visual feels empty. Do not use generated motion as
+documentary footage or measured evidence.
 
-No topic needs every kind. If a course plan assigns media to most
-topics, trim it back to the beats that fail without it.
+## Keep text when text is the clearest tool
 
-## Before ordering Manim
+Keep definitions, hypotheses, proof steps, code contracts, vocabulary, dates,
+and concise comparisons in text. Use bullets only for parallel items. Use a
+table when exact values or repeated fields matter. Use an equation block when
+the learner must inspect notation or derivation.
 
-Write the storyboard beat first: the concept target, the exact
-narration, the visible objects, the one change each cue reveals, the
-success check. Then ask: does the beat use a trigger word? Does the
-change pass the still-frame test? Only then open the scene code.
+Text is not a fallback. It is the correct representation when the reasoning is
+linguistic, symbolic, or exact.
 
-## After choosing
+## Set the media budget
 
-Use one representation per idea. Do not make the same diagram in two
-tools. Keep the same symbol, color, and direction across every block
-in the lesson.
+Depth and length set a ceiling:
 
-The kind-to-skill dispatch lives in
-[course-contract.md](course-contract.md): manim -> manim-voice-animation,
-image/diagram -> image-gen, simulation -> a self-contained HTML file,
-pdf -> pdf, text/exercise -> the subject teacher. Every file-producing
-skill registers its artifact, or the viewer chip stays planned.
+- `survey` or one session: mostly text; add one medium where the lesson fails
+  without it.
+- `working`: add the diagrams, controls, and motion needed for transfer.
+- `mastery` or a term: include multiple earned representations across the
+  course, not multiple versions of one idea.
+
+Cut any representation that repeats the same explanation without giving the
+learner a new action.
+
+## Plan the course representation before the lesson block
+
+Write each approved part in the topic's `representations` list in `course.json`.
+Give it a stable ID, kind, concept, and one-sentence purpose. Then bind each
+`lesson.json` block to that ID through `representation_id`.
+
+The lesson may make the representation concrete. It may not silently change
+the concept, purpose, medium, or skill route. If the plan is wrong, revise
+`course.json`, record the reason, validate it, and only then revise the lesson.
+
+## Prepare delegated blocks
+
+Delegate each file-producing block when multi-agent execution is available.
+Delegate a text or code block only when it needs separate research or a long
+worked construction. Keep short explanations, transitions, and notation with
+the lesson coordinator.
+
+The coordinator writes the ordered lesson skeleton first. Each delegated block
+gets one `production` brief with its approved skill route, exact content,
+continuity rules, dependencies, and acceptance checks. The worker implements
+that block only. It does not edit `course.json`, `lesson.json`, or
+`manifest.json`.
+
+Read [lesson-contract.md](lesson-contract.md) for the block packet and merge
+protocol. Read [artifact-manifest.md](artifact-manifest.md) before publishing a
+file.
+
+## Final checks
+
+- Does the medium expose something the learner must inspect or control?
+- Does it follow the selected subject guide?
+- Does every block point to an approved course representation?
+- Are symbols, colors, direction, units, names, and dates consistent?
+- Does each artifact have one owner and one output path?
+- Did the coordinator inspect the result before registering it?
+
+If any answer is no, fix the plan before producing more media.

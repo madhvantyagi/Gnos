@@ -21,11 +21,26 @@ def plan_with_reps():
     plan = valid_v2_course()
     plan["chapters"][0]["topics"][0]["representations"] = [
         {"id": "m", "kind": "manim", "concept": "math.derivative",
-         "purpose": "Secant motion."},
+         "purpose": "Show slope."},
+        {"id": "m-unbuilt", "kind": "manim", "concept": "math.derivative",
+         "purpose": "A second unbuilt motion."},
         {"id": "t", "kind": "text", "concept": "math.derivative",
-         "purpose": "Definition."},
+         "purpose": "Introduce slope."},
+        {"id": "t-unbuilt", "kind": "text", "concept": "math.derivative",
+         "purpose": "An unbuilt explanation."},
+        {"id": "s", "kind": "simulation", "concept": "math.derivative",
+         "purpose": "Vary slope."},
+        {"id": "e", "kind": "exercise", "concept": "math.derivative",
+         "purpose": "Check prediction."},
     ]
     return plan
+
+
+def lesson_with_reps():
+    lesson = valid_lesson()
+    for block, representation_id in zip(lesson["blocks"], ("t", "m", "s", "e")):
+        block["representation_id"] = representation_id
+    return lesson
 
 
 class ViewerTests(unittest.TestCase):
@@ -50,7 +65,7 @@ class ViewerTests(unittest.TestCase):
         self.assertNotIn("success_criteria", text)
 
     def test_ready_lesson_flips_chips_and_shows_media(self):
-        publish_lesson(self.workspace, valid_lesson())
+        publish_lesson(self.workspace, lesson_with_reps())
         video = self.workspace / "artifacts/videos/slope-video.mp4"
         video.parent.mkdir(parents=True, exist_ok=True)
         video.write_bytes(b"fake")
@@ -65,8 +80,12 @@ class ViewerTests(unittest.TestCase):
             "updated_at": "2026-09-12T16:00:00Z",
         })
         text = self.render()
+        lesson_html = text[text.index('<section class="lesson"'):]
         self.assertIn("<video", text)
-        self.assertIn("chip manim ready", text)
+        self.assertEqual(lesson_html.count('class="chip manim ready"'), 1)
+        self.assertEqual(lesson_html.count('class="chip manim"'), 1)
+        self.assertEqual(lesson_html.count('class="chip text ready"'), 1)
+        self.assertEqual(lesson_html.count('class="chip text"'), 1)
         self.assertNotIn("success_criteria", text)
 
     def test_missing_manifest_still_renders(self):
@@ -129,8 +148,8 @@ class ViewerTests(unittest.TestCase):
         display_row_end = text.index("}", display_row_start)
         display_row_css = text[display_row_start:display_row_end]
 
-        self.assertIn('--title-font:"Montserrat",sans-serif', text)
-        self.assertIn("font-weight:800", title_css)
+        self.assertIn('--title-font:"Oxanium","Montserrat",sans-serif', text)
+        self.assertIn("font-weight:700", title_css)
         self.assertIn(".hero.hero-display{padding-top:64px", text)
         self.assertIn("height:auto", display_row_css)
         self.assertIn("font-size:clamp(72px,6.25vw,150px)", display_css)
@@ -140,8 +159,9 @@ class ViewerTests(unittest.TestCase):
         text = self.render()
 
         self.assertIn("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono", text)
-        self.assertIn("family=Montserrat:wght@800", text)
-        self.assertIn('--title-font:"Montserrat",sans-serif', text)
+        self.assertIn("family=Montserrat:ital,wght@0,100..900;1,100..900", text)
+        self.assertIn("family=Oxanium:wght@200..800", text)
+        self.assertIn('--title-font:"Oxanium","Montserrat",sans-serif', text)
         self.assertIn('--body-font:"IBM Plex Mono",ui-monospace', text)
 
     def test_mobile_editorial_title_remains_bounded(self):

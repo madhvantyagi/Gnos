@@ -4,6 +4,10 @@ Read this reference when a CS lesson needs prerequisite diagnosis, a sustained
 example, source selection, or a substantial diagram or animation. The concise
 route remains in [the subject guide](../subjects/computer-science.md).
 
+Use the guide's representation profile first, then apply
+`skills/course-design/references/representation-choices.md`. This reference
+defines CS content and visual grammar; it does not order media by itself.
+
 ## Prerequisite checks
 
 - Programming: values versus names, mutation, control flow, and input

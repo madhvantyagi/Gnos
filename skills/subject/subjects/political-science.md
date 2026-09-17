@@ -23,11 +23,19 @@ Evidence of progress is an independent explanation or solution under a changed
 condition, with assumptions and limitations stated. A repeated definition alone
 is not evidence of transfer.
 
-## Handoffs and representations
+## Handoffs
 
 History owns chronology and source context; economics supports incentives; psychology supports political behavior; math supports measurement. Political science owns institutional mechanisms and political concepts.
-Use a worked example, diagram, source comparison, or executable model according
-to the reasoning gap. Keep one lead teacher and reuse shared concept IDs.
+
+## Representation profile
+
+Start with jurisdiction, period, actors, formal rules, observed practice, and
+the claim. Use institutional process diagrams, coalition maps, election tables,
+timelines, sourced maps, and data graphs. Use a simulation for seat allocation,
+coalition formation, bargaining, turnout, or policy implementation under a
+changed rule. Use animation for a documented or explicitly hypothetical
+sequence, not to imply that one mechanism caused the outcome. Keep law dates,
+field dates, source notes, and contested categories in text.
 
 For an institutional process, coalition, election mechanism, policy chain, or
 other relation-rich graphic, read

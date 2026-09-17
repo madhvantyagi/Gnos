@@ -22,11 +22,20 @@ Evidence of progress is an independent explanation or solution under a changed
 condition, with assumptions and limitations stated. A repeated definition alone
 is not evidence of transfer.
 
-## Handoffs and representations
+## Handoffs
 
 Computer science owns implementation and system contracts; math supplies shared math.* concepts for optimization and probability. The application subject defines labels and acceptable errors.
-Use a worked example, diagram, source comparison, or executable model according
-to the reasoning gap. Keep one lead teacher and reuse shared concept IDs.
+
+## Representation profile
+
+Start with the task, data, baseline, objective, split, and error that matters.
+Use diagrams for training and inference pipelines, tensor shapes, retrieval,
+tool calls, feedback, and evaluation boundaries. Use code and traces for actual
+model or agent behavior. Use animation for attention flow, optimization,
+search, decoding, or agent state only when intermediate states matter. Use a
+simulation for threshold, sampling, class balance, reward, or policy changes.
+Keep benchmark version, dataset, metric, and date in text. A generated example
+is not an evaluation result.
 
 ## Source selection
 

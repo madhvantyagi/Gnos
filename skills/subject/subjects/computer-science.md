@@ -33,6 +33,19 @@ ownership, containment, direction, or boundaries. For a visual request:
   advanced vector diagram, animated state transition, interactive graph, or
   exported animated SVG.
 
+## Representation profile
+
+Start with the contract, a small input, and code or a state trace. Use
+Excalidraw often for system design, service boundaries, data flow, trust
+boundaries, pointer structure, database relations, and network timelines. Use
+Pinepaper when several states must stay synchronized or the learner should
+interact with the graph. Use animation for an algorithm transition, protocol,
+race, retry, garbage-collection step, or data transformation whose order is the
+lesson. Use a simulation for scheduling, cache behavior, distributed failure,
+or performance trade-offs controlled by the learner. A diagram of intended
+architecture does not prove runtime behavior; pair it with code, logs, tests,
+or a trace when the claim is about the implementation.
+
 Load those references only when the current task needs their detail. Theo owns
 contracts, traces, code, algorithms, systems, and evaluation. A supporting
 subject supplies one named bridge while Theo remains the lesson's voice.

@@ -4,6 +4,11 @@ Treat `manifest.json` as the course portal's publication boundary. Creating a
 file does not publish it. Register an artifact only after its usable output has
 been produced and checked; set it to `ready` only when a learner should see it.
 
+The lesson coordinator is the only manifest writer. A block worker returns a
+finished file and a complete artifact record. It does not run the registration
+command and does not edit `manifest.json`. This prevents concurrent workers
+from overwriting one another or publishing an unchecked result.
+
 ## What belongs in the manifest
 
 Each artifact has a stable ID, type, learner-facing title and purpose, related
@@ -40,6 +45,11 @@ preview must not make the manifest claim disappear or expose neighboring files.
 
 ## Mutation workflow
 
+Before registering a worker result, the coordinator checks that its artifact
+ID matches the lesson block, its concept and placement match `course.json`, its
+path is the worker's assigned path, and its declared metadata is true. Register
+worker results one at a time. Refresh the manifest fingerprint between writes.
+
 Register a finished artifact:
 
 ```bash
@@ -66,3 +76,7 @@ The fingerprint is an optimistic concurrency boundary. If it is stale, refresh
 and decide again; never overwrite a newer manifest silently. Archive is the
 ordinary removal action. Permanent file deletion and learner-evidence
 retraction are separate explicit operations.
+
+Do not ask workers to retry a stale manifest write. They do not own the
+manifest. The coordinator refreshes, checks the returned artifact record
+against the current lesson, and performs the next write.

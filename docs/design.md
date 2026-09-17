@@ -71,6 +71,15 @@ rest. The plan's agreed `depth` and `length` set the media budget;
 `representation-choices.md` holds the rules that stop Manim from
 being ordered for everything.
 
+The selected subject guide supplies the domain-specific representation
+profile. Each lesson block names one approved course representation through
+`representation_id`; the lesson cannot silently introduce a new concept,
+medium, or skill route. A delegated block carries a private production brief.
+Block workers write separate outputs and return block fragments or artifact
+records. The lesson coordinator alone edits `course.json`, `lesson.json`, and
+`manifest.json`, registers checked artifacts sequentially, and publishes the
+assembled lesson.
+
 PDF: structured lesson JSON to ReportLab, with embedded fonts, image captions,
 equation images, page numbering, and source links. Inspect rendered pages.
 Manim: storyboard to narration clips to scenes. Place each clip at the scene's

@@ -23,11 +23,20 @@ Evidence of progress is an independent explanation or solution under a changed
 condition, with assumptions and limitations stated. A repeated definition alone
 is not evidence of transfer.
 
-## Handoffs and representations
+## Handoffs
 
 Math supports differential equations and numerical methods; physics supports energy and transport; CS supports simulation. Chemical engineering owns process assumptions, physical feasibility, and system boundaries.
-Use a worked example, diagram, source comparison, or executable model according
-to the reasoning gap. Keep one lead teacher and reuse shared concept IDs.
+
+## Representation profile
+
+Start with the process boundary, basis, units, streams, and conserved
+quantities. Use flowsheets, control volumes, phase diagrams, equipment sketches,
+and tables of properties. Use animation for transient tanks, transport,
+reaction progress, phase change, or control response. Use a simulation when the
+learner should vary flow, temperature, residence time, kinetics, controller
+settings, or discretization. Keep equations, validity ranges, and safety limits
+visible. A classroom simulation does not validate equipment design or an
+operating procedure.
 
 ## Source selection
 

@@ -157,12 +157,17 @@ def render_block(block, lesson_exercises, sources):
     return f'<div class="block">{header}{body}</div>'
 
 
-def rep_ready(representation, lesson_id, topic_id, artifacts):
+def rep_ready(representation, lesson, artifacts):
     kind = representation.get("kind")
+    blocks = [block for block in lesson.get("blocks", [])
+              if block.get("representation_id") == representation.get("id")]
+    if not blocks:
+        return False
     if kind in ("text", "exercise"):
         return True
+    artifact_ids = {block.get("artifact_id") for block in blocks if block.get("artifact_id")}
     for artifact in artifacts:
-        if artifact.get("lesson_id") != lesson_id:
+        if artifact.get("lesson_id") != lesson.get("id") or artifact.get("id") not in artifact_ids:
             continue
         mime = artifact.get("mime_type", "")
         if kind == "manim" and artifact.get("type") in ("voice-animation", "animation", "video", "audio"):
@@ -176,13 +181,13 @@ def rep_ready(representation, lesson_id, topic_id, artifacts):
     return False
 
 
-def render_chips(representations, lesson_id, topic_id, artifacts):
+def render_chips(representations, lesson, artifacts):
     if not representations:
         return ""
     chips = []
     for representation in representations:
         kind = esc(representation.get("kind", ""))
-        ready = rep_ready(representation, lesson_id, topic_id, artifacts)
+        ready = rep_ready(representation, lesson, artifacts)
         css = f"chip {kind}"
         if ready:
             css += " ready"
@@ -207,7 +212,7 @@ def render_lesson(lesson, index, total, previous_id, next_id, artifacts, sources
             blocks.append(render_block(block, lesson_exercises, sources))
         else:
             blocks.append(render_block(block, lesson_exercises, sources))
-    chips = render_chips(topic_reps.get(topic, []), lesson["id"], topic, list(artifacts.values()))
+    chips = render_chips(topic_reps.get(topic, []), lesson, list(artifacts.values()))
     teacher = esc(lesson.get("teacher")) if lesson.get("teacher") else "no assigned teacher"
     meta = (f'teacher · {teacher} · updated {esc(lesson.get("updated_at", ""))}'
             f' · concepts · {esc(" · ".join(lesson.get("concepts", [])))}')
@@ -507,7 +512,7 @@ def render_contents(view, course, topic_reps):
             reps = topic_reps.get(t_id, [])
             formats = " · ".join(str(r.get("kind", "")).capitalize() for r in reps)
             sources_html, _ = _topic_sources_html(topic, course)
-            chips_hidden = render_chips(reps, None, t_id, [])
+            chips_hidden = render_chips(reps, {}, [])
             parts.append(
                 f'<button type="button" class="{cls}"'
                 f' data-chapter-id="{esc(ch_id)}"'

@@ -28,5 +28,17 @@ and advanced visual patterns, read
 feedback, games, stock-flow systems, or polished vector graphics, also read
 [the Pinepaper workflow](../references/pinepaper.md).
 
+## Representation profile
+
+Start with the decision maker, constraints, held-constant conditions, and a
+small numerical table. Then draw the graph. Use interactive graphs for
+comparative statics, incidence, elasticity, or estimation choices. Use a
+simulation for repeated markets, strategic choices, policy rules, sampling, or
+stock-flow models. Use animation for adjustment over time, feedback, lags,
+games, and movement through an accounting system. Narration is useful when it
+coordinates a changing graph with the mechanism and its assumptions. Keep
+current figures, policy dates, units, and source notes in text. A smooth path is
+the output of a stated model, not a forecast or causal result.
+
 Load those references only when needed. Nadia owns the economic model, estimand,
 evidence, and interpretation; math, CS, or history supplies one bounded bridge.

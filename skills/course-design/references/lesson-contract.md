@@ -23,7 +23,7 @@ A lesson file uses `schema_version: 1` and contains:
 - `concepts` drawn from that topic;
 - the assigned `teacher` or `null`, and repository-relative `skill_routes`;
 - `assumptions`, each supported by learner evidence or marked unverified;
-- ordered `blocks`;
+- ordered `blocks`, each bound to the topic's representation plan;
 - detailed `exercises`;
 - `publication`: `draft`, `ready`, or `archived`;
 - `created_at` and `updated_at` timestamps.
@@ -44,8 +44,10 @@ saved while teaching develops; it must not appear as finished learner material.
 ## Blocks
 
 Every block has a stable `id`, `type`, relevant `concepts`, and a short
-`purpose` stating what the representation should reveal. Type-specific fields
-contain the text or reference it needs.
+`purpose` stating what the representation should reveal. For a topic with a
+representation plan, every block also has `representation_id`. It must name one
+of that topic's entries in `course.json`. Type-specific fields contain the text
+or reference the block needs.
 
 Supported types are:
 
@@ -66,13 +68,86 @@ Each block comes from the topic's representation plan in `course.json`:
 | `text` | `explanation`, `bullets`, `equation`, `code` |
 | `exercise` | `exercise` |
 
-Media blocks refer to registered artifact IDs. Exercise blocks refer to an
-exercise defined by the same lesson. References must resolve; a plausible
-filename is not an artifact.
+The validator checks the representation ID, concept, and kind-to-block mapping.
+A lesson cannot introduce an unplanned medium. If the plan is wrong, revise and
+validate `course.json` before changing the lesson.
+
+Media blocks refer to artifact IDs declared by the lesson. After a worker
+produces and checks the file, the coordinator registers that ID in the artifact
+manifest. Exercise blocks refer to an exercise defined by the same lesson.
+References must resolve; a plausible filename is not an artifact.
 
 Order blocks by reasoning, not by file type. A useful sequence may introduce a
 claim, let the learner inspect its changing parts, and then ask for a prediction.
 Do not require every lesson to contain every block type.
+
+## Production briefs
+
+Add `production` only to a block that will be delegated. It is private planning
+data and is removed from the public lesson projection.
+
+```json
+"production": {
+  "skill_route": "skills/manim-voice-animation/SKILL.md",
+  "brief": "Keep the gradient fixed while two step directions move from the same point.",
+  "must_include": [
+    "The gradient vector",
+    "One positive and one negative dot product",
+    "The local-prediction warning"
+  ],
+  "continuity": [
+    "Use the lesson's gradient symbol and direction colors.",
+    "Keep the graph axes fixed across both comparisons."
+  ],
+  "acceptance_checks": [
+    "Each moving step matches the displayed dot-product sign.",
+    "The final frame remains readable without narration."
+  ],
+  "depends_on_block_ids": ["local-prediction"]
+}
+```
+
+`skill_route` must already be declared by the lesson and its topic. `brief`
+states one bounded job. `must_include`, `continuity`, and `acceptance_checks`
+are nonempty. `depends_on_block_ids` is optional and may name only earlier
+blocks. Do not write “make it clear,” “make it engaging,” or “add context.” Name
+the object, relation, label, control, or check the worker must produce.
+
+## Multi-agent lesson production
+
+The coordinator owns `course.json`, `lesson.json`, and `manifest.json`. Workers
+own only their assigned block output.
+
+1. Read the current topic and its subject representation profile.
+2. Write the full lesson skeleton in reasoning order. Bind every block to its
+   course representation.
+3. Add production briefs. Validate the lesson and publish it as `draft` so the
+   artifact records can use a published lesson ID.
+4. Delegate every file-producing block when multi-agent execution is available.
+   Delegate text or code only when it needs separate research or a long worked
+   construction. Keep short bridges and transitions with the coordinator.
+5. Dispatch blocks with no unmet dependencies in parallel. Give each worker
+   one block, its course representation, selected subject guidance, required
+   sources, and shared notation and visual rules.
+6. Require separate output paths. A worker must not edit the course, lesson, or
+   manifest and must not change the block's concept, purpose, type, or skill
+   route.
+7. A text worker returns one complete block fragment with the same `id`,
+   `representation_id`, `type`, `concepts`, and `purpose`. A media worker returns
+   the checked file, its block ID, and a complete artifact registration payload.
+8. Inspect each result against its acceptance checks. Reject a result that
+   changes the plan or conflicts with the lesson's terms, symbols, colors,
+   direction, units, names, or dates.
+9. Merge block fragments. Register finished artifacts one at a time. Validate
+   the assembled lesson, set it to `ready`, publish it, and render the course.
+
+If multi-agent execution is unavailable, use the same briefs and produce the
+blocks sequentially. Do not weaken the checks.
+
+If a worker discovers that the planned medium cannot teach the stated purpose,
+stop that block. The coordinator revises `course.json`, records the reason,
+validates it, and rebuilds the affected lesson block. A worker never repairs a
+course decision by silently returning a different artifact.
 
 ## One sequence across representations
 
@@ -100,6 +175,7 @@ This example uses prose, media, interaction, and an exercise for one concept:
   "blocks": [
     {
       "id": "local-prediction",
+      "representation_id": "local-prediction-text",
       "type": "explanation",
       "concepts": ["math.directional-derivative"],
       "purpose": "Name the prediction the animation will make visible.",
@@ -107,13 +183,23 @@ This example uses prose, media, interaction, and an exercise for one concept:
     },
     {
       "id": "direction-video",
+      "representation_id": "direction-motion",
       "type": "voice-animation",
       "concepts": ["math.gradient", "math.directional-derivative"],
       "purpose": "Keep the gradient fixed while comparing two step directions.",
-      "artifact_id": "gradient-direction-video"
+      "artifact_id": "gradient-direction-video",
+      "production": {
+        "skill_route": "skills/manim-voice-animation/SKILL.md",
+        "brief": "Animate two step directions from one point while the gradient stays fixed.",
+        "must_include": ["The gradient", "Two step vectors", "Both dot-product signs"],
+        "continuity": ["Reuse the notation and colors from local-prediction."],
+        "acceptance_checks": ["Each direction matches its displayed sign."],
+        "depends_on_block_ids": ["local-prediction"]
+      }
     },
     {
       "id": "connect-sign",
+      "representation_id": "connect-sign-text",
       "type": "bullets",
       "concepts": ["math.directional-derivative"],
       "purpose": "Connect the moving arrow to the sign of the dot product.",
@@ -125,6 +211,7 @@ This example uses prose, media, interaction, and an exercise for one concept:
     },
     {
       "id": "direction-lab",
+      "representation_id": "direction-control",
       "type": "interactive-graph",
       "concepts": ["math.gradient", "math.directional-derivative"],
       "purpose": "Let the learner rotate the step and inspect the predicted sign.",
@@ -132,6 +219,7 @@ This example uses prose, media, interaction, and an exercise for one concept:
     },
     {
       "id": "predict-new-direction",
+      "representation_id": "direction-check",
       "type": "exercise",
       "concepts": ["math.directional-derivative"],
       "purpose": "Test whether the learner can predict before moving the simulator.",
@@ -158,10 +246,12 @@ This example uses prose, media, interaction, and an exercise for one concept:
 }
 ```
 
-The same term, symbol, direction, and color meaning should survive across the
-explanation, narration, graph, and exercise. Add a short transition when the
-reason for changing representation would otherwise be unclear. Do not use
-generic connective language to disguise unrelated artifacts.
+The example assumes the selected course topic declares the five named
+representations and all listed skill routes. The same term, symbol, direction,
+and color meaning must survive across the explanation, narration, graph, and
+exercise. Add a short transition when the reason for changing representation
+would otherwise be unclear. Do not use generic connective language to disguise
+unrelated artifacts.
 
 ## Exercises and evaluation
 
@@ -199,7 +289,8 @@ python3 skills/course-design/scripts/validate_lesson.py \
 ```
 
 Validation checks course placement, teacher and skill routes, concept ownership,
-unique IDs, block types, exercise references, response and evaluation modes,
-timestamps, and publication state. It cannot establish that the chosen sequence
-actually helps this learner; revise from their response rather than treating a
-valid JSON file as evidence of teaching quality.
+representation bindings, production briefs and dependencies, unique IDs, block
+types, exercise references, response and evaluation modes, timestamps, and
+publication state. It cannot establish that the chosen sequence helps this
+learner; revise from their response rather than treating valid JSON as evidence
+of learning.

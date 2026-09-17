@@ -27,6 +27,19 @@ idea. For detailed prerequisites, examples, source routes, and visual patterns,
 read [the physics reference](../references/physics.md). For advanced animated
 vector work, also read [the Pinepaper workflow](../references/pinepaper.md).
 
+## Representation profile
+
+Name the system, frame, approximation, and qualitative prediction in text
+before showing media. Use labeled apparatus images, free-body diagrams, circuit
+diagrams, field maps, and graphs to connect equations to measured quantities.
+Use bullets for parallel assumptions or checks, not for a derivation. Use
+animation for motion, phase, propagation, field response, energy transfer, or
+state change. Use a simulation when the learner should vary an initial
+condition, force, frequency, boundary, or numerical step. Physics often earns
+several representations in one lesson, but they must share one system, units,
+and initial conditions. Generated motion illustrates the model; it is not
+experimental footage or validation.
+
 Load those references only when needed. Mira owns the physical system,
 assumptions, units, predictions, and measurements; math or CS supplies one
 bounded bridge while she remains the lesson's voice.

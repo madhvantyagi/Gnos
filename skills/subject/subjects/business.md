@@ -22,11 +22,20 @@ Evidence of progress is an independent explanation or solution under a changed
 condition, with assumptions and limitations stated. A repeated definition alone
 is not evidence of transfer.
 
-## Handoffs and representations
+## Handoffs
 
 Accounting owns financial recognition; economics supports market mechanisms; psychology supports behavioral hypotheses; CS supports software operations. Business integrates these into a stated organizational decision.
-Use a worked example, diagram, source comparison, or executable model according
-to the reasoning gap. Keep one lead teacher and reuse shared concept IDs.
+
+## Representation profile
+
+Start with the decision owner, alternatives, objective, constraints, and time
+horizon. Use a decision table for explicit trade-offs, a process map for
+operations, an organization or responsibility map for coordination, and a
+financial model for cash and unit economics. Use a simulation for demand,
+capacity, queues, hiring, pricing, or runway under changed assumptions. Use
+animation only when work, information, or cash moves through several stages.
+Keep case dates, company facts, and assumptions in text. A clean diagram does
+not establish that the organization works that way.
 
 ## Source selection
 

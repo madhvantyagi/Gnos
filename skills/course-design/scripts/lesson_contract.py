@@ -16,7 +16,17 @@ BLOCK_TYPES = {
 RESPONSE_TYPES = {"multiple-choice", "short-text", "long-text", "numeric", "code-text"}
 EVALUATION_MODES = {"manual", "choice", "numeric"}
 PUBLIC_BLOCK_FIELDS = {"id", "type", "concepts", "purpose", "text", "items", "equation", "code",
-                       "artifact_id", "source_id", "exercise_id", "options", "caption", "label"}
+                       "artifact_id", "source_id", "exercise_id", "options", "caption", "label",
+                       "representation_id"}
+REPRESENTATION_BLOCK_TYPES = {
+    "manim": {"voice-animation", "animation"},
+    "image": {"diagram", "artifact"},
+    "diagram": {"diagram", "artifact"},
+    "simulation": {"interactive-graph", "simulation"},
+    "pdf": {"artifact"},
+    "text": {"explanation", "bullets", "equation", "code", "source", "feedback"},
+    "exercise": {"exercise"},
+}
 
 
 def _finite_number(value):
@@ -93,6 +103,20 @@ def _validate_evaluation(evaluation, response_type, label):
         raise ValueError(f"{label}: manual evaluation cannot include private answer fields")
 
 
+def _validate_production(production, lesson_routes, label):
+    if not isinstance(production, dict):
+        raise ValueError(f"{label}.production must be an object")
+    route = production.get("skill_route")
+    if route not in lesson_routes:
+        raise ValueError(f"{label}.production.skill_route must be declared by the lesson")
+    nonempty(production.get("brief"), f"{label}.production.brief")
+    for field in ("must_include", "continuity", "acceptance_checks"):
+        _strings(production.get(field), f"{label}.production.{field}", required=True)
+    dependencies = production.get("depends_on_block_ids", [])
+    _strings(dependencies, f"{label}.production.depends_on_block_ids")
+    return dependencies
+
+
 def validate_lesson(data, course):
     """Validate a lesson against an already validated version-two course."""
     if not isinstance(data, dict) or data.get("schema_version") != LESSON_SCHEMA_VERSION:
@@ -163,6 +187,7 @@ def validate_lesson(data, course):
     block_ids = set()
     artifact_ids = _artifact_ids(data)
     source_ids = set(course.get("sources", {}))
+    representations = {item["id"]: item for item in topic.get("representations", [])}
     media_types = {"voice-animation", "animation", "diagram", "interactive-graph", "simulation", "artifact"}
     for block in blocks:
         if not isinstance(block, dict):
@@ -178,6 +203,32 @@ def validate_lesson(data, course):
         if any(c not in lesson_concepts for c in concepts):
             raise ValueError(f"{block_id}: concepts must belong to the lesson")
         nonempty(block.get("purpose"), f"{block_id}.purpose")
+        representation_id = block.get("representation_id")
+        representation = None
+        if representations:
+            if representation_id is None:
+                raise ValueError(f"{block_id}: representation_id is required by the topic plan")
+            slug(representation_id)
+            representation = representations.get(representation_id)
+            if representation is None:
+                raise ValueError(f"{block_id}: unknown representation {representation_id!r}")
+            allowed_types = REPRESENTATION_BLOCK_TYPES[representation["kind"]]
+            if block_type not in allowed_types:
+                raise ValueError(
+                    f"{block_id}: representation {representation_id!r} does not allow block type {block_type!r}")
+            representation_concept = representation.get("concept")
+            if representation_concept is not None and representation_concept not in concepts:
+                raise ValueError(f"{block_id}: concepts must include the representation concept")
+            if block["purpose"] != representation["purpose"]:
+                raise ValueError(f"{block_id}: purpose must match the course representation")
+        elif representation_id is not None:
+            raise ValueError(f"{block_id}: representation_id requires a topic representation plan")
+        if "production" in block:
+            dependencies = _validate_production(block["production"], routes, block_id)
+            if representation is not None and block["production"]["skill_route"] != representation.get("skill_route"):
+                raise ValueError(f"{block_id}.production.skill_route must match the course representation")
+            if any(dependency not in block_ids - {block_id} for dependency in dependencies):
+                raise ValueError(f"{block_id}.production.depends_on_block_ids must name earlier lesson blocks")
         if block_type == "exercise":
             if block.get("exercise_id") not in exercise_ids:
                 raise ValueError(f"{block_id}: unknown exercise reference")

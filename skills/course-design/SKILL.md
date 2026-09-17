@@ -1,6 +1,6 @@
 ---
 name: course-design
-description: Make and update the course plan: ask depth and length, search sources, write course.json, publish formal lessons, and record what changed in the route.
+description: "Make and update the course plan: ask depth and length, search sources, write course.json, publish formal lessons, and record what changed in the route."
 ---
 
 # Course design
@@ -37,6 +37,9 @@ for example "learn mechanics over six weeks".
 2. **Write the plan.** Read [course-contract.md](references/course-contract.md).
    Write `course.json` with title, goal, `depth`, `length`, steps,
    sources, and one current step. Say which source each step uses.
+   Read the selected subject file through `skills/subject/SKILL.md` before
+   choosing media. Its representation profile states what learners in that
+   field need to inspect.
    Split each topic into its representations: which part needs manim
    motion, which needs a still image or vector diagram, which needs a
    simulation, which stays text. Read
@@ -45,13 +48,24 @@ for example "learn mechanics over six weeks".
 
    ```bash
    python3 skills/course-design/scripts/validate_course.py <course.json>
+   python3 skills/learner-tracking/scripts/learner_state.py init <learner>
+   python3 skills/learner-tracking/scripts/learner_state.py enroll <learner> --course <course.json>
    ```
 
-3. **Teach with a formal lesson, then let the learner skill adapt.**
-   A taught topic's default record is its formal lesson file. Author
-   `lesson.json` for the current step — read
-   [lesson-contract.md](references/lesson-contract.md) — validate it,
-   and publish it into the enrolled workspace:
+   Enroll the validated plan in the same turn. Use the learner's name, or the
+   default `learner` when no name was given. Do not stop at
+   `outputs/course.json`; the canonical course workspace must exist before the
+   lesson skeleton is published.
+
+3. **Build the lesson from the course plan.** A taught topic's default
+   record is its formal lesson file. Read
+   [lesson-contract.md](references/lesson-contract.md). Author an ordered
+   `lesson.json` skeleton for the current topic. Every block must point to one
+   of that topic's approved representations through `representation_id`.
+   Do not introduce a new concept, medium, or skill route in the lesson.
+
+   Validate and publish the skeleton as `draft` before producing files. This
+   gives every artifact a real lesson ID:
 
    ```bash
    python3 skills/course-design/scripts/validate_lesson.py lesson.json \
@@ -60,35 +74,40 @@ for example "learn mechanics over six weeks".
      learners/<learner>/courses/<course-id> --lesson lesson.json
    ```
 
-   Publish `draft` while the lesson is developing, `ready` when the
-   learner should see it. Teach directly in chat while the learner is
-   actively interacting (a live question, a small doubt, a quick fix);
-   the chat back-and-forth stays in the learner record, and the formal
-   file still captures the topic for the portal. The learner skill
-   watches what happens and records it. When it tells you the learner is stuck
-   or a source failed, update `course.json`: add the new source, insert
-   a missing step, split, or move `current` forward. Write each change
-   in `revision_notes` with the date, what changed, and what problem
-   the learner had. See `skills/learner-tracking/SKILL.md` for the
-   learner record and its adaptive step.
+   Add a complete `production` brief to every block that will be delegated.
+   When multi-agent execution is available, assign each file-producing block
+   to one worker. Also delegate a text or code block when it needs separate
+   research or a long worked construction. Keep short explanations,
+   transitions, and notation with the coordinator.
 
-4. **Make each representation, then show the course.** Dispatch each
-   topic representation to its skill: `manim` -> manim-voice-animation,
+   Give each worker only its block, its course representation, the selected
+   subject guidance, shared continuity rules, and required source material.
+   Workers write to separate output paths. They return a completed block
+   fragment or artifact plus its registration payload. They never edit
+   `course.json`, `lesson.json`, or `manifest.json`.
+
+   Run blocks with no dependencies in parallel. A block listed in
+   `depends_on_block_ids` starts only after those earlier blocks return. The
+   coordinator checks every result, merges block fragments, registers artifacts
+   one at a time, validates the completed lesson, and publishes it as `ready`.
+   If a worker needs a different concept, medium, or purpose, stop that block
+   and revise `course.json` first.
+
+   Teach directly in chat while the learner is actively interacting. The
+   formal lesson still captures the topic for the portal. The learner skill
+   records the exchange. When evidence changes the route, revise `course.json`
+   and state the change and reason in `revision_notes`. See
+   `skills/learner-tracking/SKILL.md` for the adaptive step.
+
+4. **Route each representation, then show the course.** Dispatch each topic
+   representation to its skill: `manim` -> manim-voice-animation,
    `image` -> image-gen, `diagram` -> image-gen or pinepaper/excalidraw
    per the subject skill, `simulation` -> a small self-contained HTML
-   file registered with `manage_artifact.py`, `pdf` -> pdf,
+   file the coordinator registers with `manage_artifact.py`, `pdf` -> pdf,
    `text`/`exercise` -> the subject teacher. Every skill that produces a
-   file registers it in the artifact manifest. Do not stop at
-   `outputs/course.json`: enroll the plan that same turn. Use the
-   learner's name, or the default `learner` when no name was given —
-   `init` and `enroll` both default to it:
-
-   ```bash
-   python3 skills/learner-tracking/scripts/learner_state.py init <learner>
-   python3 skills/learner-tracking/scripts/learner_state.py enroll <learner> --course <course.json>
-   ```
-
-   Then ask this exact question and wait for the answer:
+   file returns a registration payload to the coordinator. Only the
+   coordinator updates the artifact manifest. Then ask this exact question and
+   wait for the answer:
    "want to see the course now?" On yes, render the page and reply with
    the `portal/` link and what to click:
 

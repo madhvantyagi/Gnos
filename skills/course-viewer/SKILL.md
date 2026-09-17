@@ -22,8 +22,7 @@ never from a blueprint `outputs/` file.
 ```bash
 python3 skills/course-viewer/scripts/render_viewer.py learners/alex/courses/motion
 ```
-
-Add `--summary <file>` to show learner progress beside the topics.
+  
 The script reads `course.json`, published lessons, and the artifact
 manifest, then writes `portal/index.html` inside the course folder.
 

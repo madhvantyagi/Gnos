@@ -4,6 +4,11 @@ Read this reference when a political-science lesson needs a substantial visual,
 comparison design, source route, or worked institutional example. The concise
 route remains in [the subject guide](../subjects/political-science.md).
 
+Use the guide's representation profile first, then apply
+`skills/course-design/references/representation-choices.md`. This reference
+defines political content and visual grammar; it does not order media by
+itself.
+
 ## Frame the claim first
 
 Name the jurisdiction, period, actors, formal rules, observed practice, and

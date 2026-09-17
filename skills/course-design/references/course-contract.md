@@ -73,7 +73,9 @@ Each topic has `id`, `title`, `outcome`, `subject`, `teacher`,
 
 ## Split each topic by representation
 
-When you design a topic, decide which part of it needs which skill.
+Read the topic's subject guide before choosing media. Its representation
+profile states what the field needs learners to inspect. Then decide which part
+of the topic needs which skill.
 Write that into `representations` on the topic:
 
 ```json
@@ -102,6 +104,14 @@ earn one representation.
   stays text. Read
   [representation-choices.md](representation-choices.md) for the rules
   that stop Manim from being ordered for everything.
+- Treat the representation as authorization for the lesson. Every block in a
+  lesson for this topic uses `representation_id` to name one entry here. The
+  lesson may add concrete text, timing, controls, labels, and checks. It may not
+  change the concept, purpose, kind, or skill route.
+- If lesson production exposes a bad choice, revise this plan first. Keep the
+  representation ID when its teaching job remains the same. Add a revision note
+  that states what changed and why. Validate the course before rebuilding the
+  lesson.
 - Dispatch each part to its skill, then to its lesson block:
 
 | kind | skill | lesson block type |
@@ -121,8 +131,9 @@ pinepaper result registers like any other artifact so its chip flips.
 
 - The viewer page shows one chip per representation. A chip flips from
   planned to ready when its artifact is registered. Every skill that
-  produces a file must register it in the artifact manifest, or its
-  chip never flips.
+  produces a file returns the artifact and registration payload to the lesson
+  coordinator. Only the coordinator writes the artifact manifest. Without that
+  registration, the chip stays planned.
 
 ## Revision notes tell what changed and why
 

@@ -266,6 +266,11 @@ def _validate_v2(data):
                         raise ValueError(f"{topic_id}: unknown representation kind {kind!r}")
                     if not representation.get("purpose"):
                         raise ValueError(f"{topic_id}: representation purpose must be nonempty text")
+                    representation_route = representation.get("skill_route")
+                    if representation_route is not None:
+                        nonempty(representation_route, f"{topic_id}: representation skill route")
+                        if representation_route not in routes:
+                            raise ValueError(f"{topic_id}: representation skill route must belong to the topic")
                     concept = representation.get("concept")
                     if concept is not None:
                         if not isinstance(concept, str) or not concept.strip():

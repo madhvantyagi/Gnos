@@ -57,6 +57,151 @@ class LessonContractTests(unittest.TestCase):
         checked = validate_lesson(valid_lesson(), validate_course(valid_v2_course()))
         self.assertEqual([b["type"] for b in checked["blocks"]], ["explanation", "voice-animation", "interactive-graph", "exercise"])
 
+    def test_blocks_follow_the_topic_representation_plan(self):
+        course = valid_v2_course()
+        topic = course["chapters"][0]["topics"][0]
+        topic["representations"] = [
+            {"id": "slope-explanation", "kind": "text", "concept": "math.derivative",
+             "purpose": "Introduce slope.", "skill_route": "skills/subject/SKILL.md"},
+            {"id": "slope-motion", "kind": "manim", "concept": "math.derivative",
+             "purpose": "Show slope.", "skill_route": "skills/manim-voice-animation/SKILL.md"},
+            {"id": "slope-control", "kind": "simulation", "concept": "math.derivative",
+             "purpose": "Vary slope.", "skill_route": "skills/subject/SKILL.md"},
+            {"id": "slope-check", "kind": "exercise", "concept": "math.derivative",
+             "purpose": "Check prediction.", "skill_route": "skills/subject/SKILL.md"},
+        ]
+        topic["skill_routes"].append("skills/manim-voice-animation/SKILL.md")
+        lesson = valid_lesson()
+        lesson["skill_routes"].append("skills/manim-voice-animation/SKILL.md")
+        for block, representation_id in zip(
+                lesson["blocks"],
+                ("slope-explanation", "slope-motion", "slope-control", "slope-check")):
+            block["representation_id"] = representation_id
+        lesson["blocks"][1]["production"] = {
+            "skill_route": "skills/manim-voice-animation/SKILL.md",
+            "brief": "Keep the point fixed while the secant approaches the tangent.",
+            "must_include": ["The secant", "The limiting tangent"],
+            "continuity": ["Use the lesson's x and y labels."],
+            "acceptance_checks": ["The final frame matches the stated limit."],
+        }
+
+        checked = validate_lesson(lesson, validate_course(course))
+
+        self.assertEqual(checked["blocks"][1]["representation_id"], "slope-motion")
+        public_block = public_lesson(lesson)["blocks"][1]
+        self.assertNotIn("production", public_block)
+        self.assertEqual(public_block["representation_id"], "slope-motion")
+
+    def test_planned_topics_reject_blocks_without_representation_ids(self):
+        course = valid_v2_course()
+        course["chapters"][0]["topics"][0]["representations"] = [
+            {"id": "slope-explanation", "kind": "text", "concept": "math.derivative",
+             "purpose": "State what slope predicts."}
+        ]
+
+        with self.assertRaisesRegex(ValueError, "representation_id"):
+            validate_lesson(valid_lesson(), validate_course(course))
+
+    def test_block_rejects_unknown_or_incompatible_representation(self):
+        course = valid_v2_course()
+        course["chapters"][0]["topics"][0]["representations"] = [
+            {"id": "slope-explanation", "kind": "text", "concept": "math.derivative",
+             "purpose": "State what slope predicts."}
+        ]
+        lesson = valid_lesson()
+        for block in lesson["blocks"]:
+            block["representation_id"] = "slope-explanation"
+
+        unknown = copy.deepcopy(lesson)
+        unknown["blocks"][0]["representation_id"] = "missing"
+        with self.assertRaisesRegex(ValueError, "unknown representation"):
+            validate_lesson(unknown, validate_course(course))
+
+        with self.assertRaisesRegex(ValueError, "does not allow block type"):
+            validate_lesson(lesson, validate_course(course))
+
+    def test_block_rejects_malformed_representation_id_and_purpose_drift(self):
+        course = valid_v2_course()
+        course["chapters"][0]["topics"][0]["representations"] = [
+            {"id": "slope-explanation", "kind": "text", "concept": "math.derivative",
+             "purpose": "Introduce slope.", "skill_route": "skills/subject/SKILL.md"}
+        ]
+        lesson = valid_lesson()
+        for block in lesson["blocks"]:
+            block["representation_id"] = "slope-explanation"
+        lesson["blocks"] = [lesson["blocks"][0]]
+        lesson["exercises"] = []
+
+        malformed = copy.deepcopy(lesson)
+        malformed["blocks"][0]["representation_id"] = ["slope-explanation"]
+        with self.assertRaisesRegex(ValueError, "lowercase slug"):
+            validate_lesson(malformed, validate_course(course))
+
+        drifted = copy.deepcopy(lesson)
+        drifted["blocks"][0]["purpose"] = "Explain something else."
+        with self.assertRaisesRegex(ValueError, "purpose must match"):
+            validate_lesson(drifted, validate_course(course))
+
+    def test_production_route_must_match_its_course_representation(self):
+        course = valid_v2_course()
+        topic = course["chapters"][0]["topics"][0]
+        topic["skill_routes"].append("skills/manim-voice-animation/SKILL.md")
+        topic["representations"] = [
+            {"id": "slope-motion", "kind": "manim", "concept": "math.derivative",
+             "purpose": "Show slope.", "skill_route": "skills/manim-voice-animation/SKILL.md"}
+        ]
+        lesson = valid_lesson()
+        lesson["skill_routes"].append("skills/manim-voice-animation/SKILL.md")
+        lesson["blocks"] = [lesson["blocks"][1]]
+        lesson["blocks"][0]["representation_id"] = "slope-motion"
+        lesson["blocks"][0]["production"] = {
+            "skill_route": "skills/subject/SKILL.md",
+            "brief": "Show the secant approaching the tangent.",
+            "must_include": ["secant", "tangent"],
+            "continuity": ["Keep the axes fixed."],
+            "acceptance_checks": ["The final line is tangent."],
+        }
+        lesson["exercises"] = []
+
+        with self.assertRaisesRegex(ValueError, "must match the course representation"):
+            validate_lesson(lesson, validate_course(course))
+
+    def test_production_brief_requires_declared_skill_and_complete_checks(self):
+        lesson = valid_lesson()
+        lesson["blocks"][1]["production"] = {
+            "skill_route": "skills/manim-voice-animation/SKILL.md",
+            "brief": "Show the secant approaching the tangent.",
+            "must_include": ["secant", "tangent"],
+            "continuity": ["Keep the axes fixed."],
+            "acceptance_checks": ["The final line is tangent."],
+        }
+        with self.assertRaisesRegex(ValueError, "skill_route must be declared"):
+            validate_lesson(lesson, validate_course(valid_v2_course()))
+
+        lesson["blocks"][1]["production"]["skill_route"] = "skills/subject/SKILL.md"
+        lesson["blocks"][1]["production"]["acceptance_checks"] = []
+        with self.assertRaisesRegex(ValueError, "acceptance_checks must be a nonempty list"):
+            validate_lesson(lesson, validate_course(valid_v2_course()))
+
+    def test_production_dependencies_must_name_earlier_blocks(self):
+        lesson = valid_lesson()
+        production = {
+            "skill_route": "skills/subject/SKILL.md",
+            "brief": "Build the block from the lesson's established notation.",
+            "must_include": ["The stated concept"],
+            "continuity": ["Reuse the lesson notation."],
+            "acceptance_checks": ["The block answers its purpose."],
+            "depends_on_block_ids": ["intro"],
+        }
+        lesson["blocks"][1]["production"] = production
+        validate_lesson(lesson, validate_course(valid_v2_course()))
+
+        invalid = copy.deepcopy(lesson)
+        invalid["blocks"][0]["production"] = copy.deepcopy(production)
+        invalid["blocks"][0]["production"]["depends_on_block_ids"] = ["video"]
+        with self.assertRaisesRegex(ValueError, "earlier lesson blocks"):
+            validate_lesson(invalid, validate_course(valid_v2_course()))
+
     def test_public_lesson_removes_private_evaluation_data(self):
         exercise = public_lesson(valid_lesson())["exercises"][0]
         self.assertNotIn("success_criteria", exercise)

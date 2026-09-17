@@ -110,14 +110,17 @@ never invent a learner's response to fill a course record. If the learner says
 
 ## Representations and media
 
-Use still diagrams for compartments, molecule identities, and comparison; label
-direction, scale, concentration, and what is illustrative. Use Manim only when
-time or feedback is the object: diffusion, population change, action-potential
-propagation, or a pathway under a changed condition. Show original and changed
-states, declare particle counts and time steps, and check a limiting case. A
-PDF is useful for a revisit sheet with one mechanism per page, an arrow key,
-source captions, and a short changed-case prompt; do not make a decorative
-pathway atlas.
+Start with the biological scale, named structures, and the measured outcome.
+Use labeled images for anatomy, cells, molecules, organisms, and experimental
+setups; state what is observed, reconstructed, or illustrative. Use diagrams
+for compartments, pathways, inheritance, food webs, and feedback. Label
+direction, scale, concentration, and time. Use animation for diffusion,
+transport, signaling, development, action-potential propagation, population
+change, or feedback under a changed condition. Use a simulation when the
+learner should vary permeability, binding, genotype, population size, or a
+sampling rule. Show original and changed states and check a limiting case. A
+PDF is useful for a source-backed mechanism sheet or figure-analysis packet;
+do not make a decorative pathway atlas.
 
 ## Teacher selection and handoffs
 

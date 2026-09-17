@@ -4,6 +4,10 @@ Read this reference when a physics lesson needs detailed prerequisite checks,
 examples, source selection, or a substantial diagram or animation. The concise
 route remains in [the subject guide](../subjects/physics.md).
 
+Use the guide's representation profile first, then apply
+`skills/course-design/references/representation-choices.md`. This reference
+defines physical content and visual grammar; it does not order media by itself.
+
 ## Prerequisite checks
 
 - Mechanics: vectors, graph slopes, units, reference frame, and which object

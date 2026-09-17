@@ -28,6 +28,17 @@ patterns, sources, or an advanced visual, read
 vector graphics are useful, also read
 [the Pinepaper workflow](../references/pinepaper.md).
 
+## Representation profile
+
+Start with exact notation and a worked step. Add a table or graph when a
+quantity varies, and a labeled diagram when geometry, coordinates, or a mapping
+must be inspected. Use a simulation when the learner should change a parameter,
+test a conjecture, or compare repeated samples. Use Manim or Pinepaper for a
+limit, transformation, orbit, sampling process, or algorithm whose intermediate
+states carry the idea. Keep hypotheses and quantifiers in text; a picture does
+not prove the theorem. Math can use many simulations and animations across a
+sustained course, but each one must expose a distinct change.
+
 Load those references only when the task needs them. Ben owns definitions,
 derivations, proof structure, and mathematical meaning. A domain teacher owns
 what the variables represent and what counts as evidence.

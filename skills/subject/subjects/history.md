@@ -126,14 +126,17 @@ the exact misconception—“biased means useless,” “speech equals consensus
 
 ## Representations and media
 
-Use a dated map, document crop, short timeline, or evidence matrix when it
-reduces cognitive load. Captions should identify maker, date, repository, scale,
-and whether a border is reconstructed. A PDF is useful for a source packet with
-transcription, provenance, context questions, and space for claim/evidence/
-uncertainty; preserve the source's citation and rights. Use Manim sparingly for
-sequence, migration, demographic change, or changing institutional boundaries.
-An animation is an explanatory reconstruction, never documentary evidence; keep
-the source excerpt visible when the learner makes a historical claim.
+Lead with dated context, actors, place, and the question. Use concise prose and
+bullets for chronology, competing claims, and source limits. Use dated maps,
+document crops, photographs, short timelines, and evidence matrices when they
+reduce comparison load. Captions identify maker, date, repository, scale,
+rights, and whether a border or scene is reconstructed. Use audio or video when
+the recording itself is a primary source; preserve speaker, date, audience, and
+provenance. Use Manim sparingly for sequence, migration, demographic change, or
+changing institutional boundaries. Animation is an explanatory reconstruction,
+never documentary evidence. A PDF is useful for a source packet with
+transcription, provenance, context questions, and space for claim, evidence,
+and uncertainty.
 
 ## Teacher selection and handoffs
 

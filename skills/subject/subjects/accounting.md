@@ -21,11 +21,20 @@ Evidence of progress is an independent explanation or solution under a changed
 condition, with assumptions and limitations stated. A repeated definition alone
 is not evidence of transfer.
 
-## Handoffs and representations
+## Handoffs
 
 Economics supports incentives; business owns the operating decision; math supports ratios and discounting. Accounting owns recognition and reconciliation.
-Use a worked example, diagram, source comparison, or executable model according
-to the reasoning gap. Keep one lead teacher and reuse shared concept IDs.
+
+## Representation profile
+
+Start with the entity, period, transaction, and accounting equation. Use journal
+entries, ledgers, reconciliation tables, and linked statements for exact work.
+Use a flow diagram when recognition moves through documents, accounts, and
+reports. Use a simulation or executable model for allocation, cash-flow timing,
+ratio sensitivity, or control failure under changed inputs. Use animation only
+when timing across periods is the lesson. Keep reporting framework,
+jurisdiction, and effective date in text. A polished statement is not evidence
+that the recognition rule was applied correctly.
 
 ## Source selection
 

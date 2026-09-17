@@ -23,11 +23,20 @@ Evidence of progress is an independent explanation or solution under a changed
 condition, with assumptions and limitations stated. A repeated definition alone
 is not evidence of transfer.
 
-## Handoffs and representations
+## Handoffs
 
 Biology supports neural mechanisms; math supports statistical inference; history supplies context; business supplies organizational settings. Psychology owns the behavioral construct and its measurement.
-Use a worked example, diagram, source comparison, or executable model according
-to the reasoning gap. Keep one lead teacher and reuse shared concept IDs.
+
+## Representation profile
+
+Start with the construct, operational measure, population, comparison, and
+study design. Use experiment diagrams, timelines, stimulus-response sequences,
+effect plots, distributions, and evidence tables. Use audio, images, or video
+when they are the actual stimulus or observed behavior and their use is
+ethically and contextually appropriate. Use a simulation for sampling,
+measurement error, learning schedules, decision thresholds, or confounding.
+Use animation for a timed cognitive process only when order and delay matter.
+Never turn an illustrative response into a diagnosis or stable trait claim.
 
 ## Source selection
 

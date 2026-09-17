@@ -6,7 +6,7 @@ description: Record what the learner does and adapt the course to it in real tim
 # Understanding the learner
 
 Record what happened precisely enough that another teacher can make the next
-decision. “Bad at math” is useless. “Cancelled x across addition; corrected it
+decision. “Bad at math” is useless. “Cancelled x across addition, corrected it
 after comparing x(x+1) with x²+1” tells the next teacher what to check.
 
 ## Read and write
@@ -19,30 +19,31 @@ python3 skills/learner-tracking/scripts/learner_state.py summary alex
 python3 skills/learner-tracking/scripts/learner_state.py record alex --event session.json
 ```
 
-`init` creates an empty local record; it does not infer a name or ability.
-Use `--root <directory>` before the subcommand for isolated tests or another
-storage location. The default is this repository's ignored `learners/`.
-For schema and update rules, read [references/evidence.md](references/evidence.md).
+`init` creates a blank learner profile (`learners/<name>/state.json`). It
+starts completely empty — do not guess or assume the user's name, background,
+or skill level. By default, profiles are saved in the repository's ignored
+`learners/` directory. Pass `--root <directory>` to use a different folder
+(e.g., in automated tests). For the full schema and update rules, see
+[references/evidence.md](references/evidence.md).
 
-Enrollment writes the validated current plan to
-`learners/<id>/courses/<course-id>/course.json`. Learner state stores its
-relative reference, revision, and fingerprint rather than a second editable
-copy. A mismatch blocks ordinary updates; reconcile the plan instead of choosing
-one version silently. For an older record containing embedded plans, run
-`migrate-courses <id>` once. The migration is idempotent and preserves events
-and completion history.
+When enrolling a learner, the validated course plan is copied to
+`learners/<id>/courses/<course-id>/course.json`. The learner's `state.json`
+only stores a relative path, revision number, and fingerprint (hash) of the
+course plan rather than keeping a duplicate copy. If the course plan changes
+and its hash no longer matches `state.json`, future updates are blocked until
+the plan is reconciled. If you are working with an older record that has an
+embedded plan, run `migrate-courses <id>` once to convert it safely.
 
-Never render lessons, viewer pages, or progress from a blueprint
-`course.json` alone. First settle who the learner is: if they gave a
-name, turn it into a lowercase folder name and use it without
-explaining; if they did not, proceed automatically as `learner` and
-say one plain line ("I'll save your progress under 'learner' — tell
-me a name anytime to make it yours"). Then run `init` and
-`enroll --course <course.json>`; omitting the name defaults to
-`learner`, so a first course needs no ID at all. Confirm
-`learners/<name>/courses/<course-id>/course.json` exists. Only then
-record, summarize, or build views. Never ask the user for a "learner
-ID" — that is our folder name, not their vocabulary.
+Never render lessons, viewer pages, or progress directly from a blueprint
+`course.json`. Always set up the learner first:
+1. **Identify the learner:** If they provide a name, convert it to a lowercase
+   folder name (e.g., `alex`). If they don't, proceed automatically as
+   `learner` and say: *"I'll save your progress under 'learner' — tell me a
+   name anytime to make it yours."* Never ask the user for a "learner ID".
+2. **Initialize and enroll:** Run `init` followed by `enroll --course <course.json>`.
+   Omitting the name defaults to `learner`.
+3. **Verify:** Confirm that `learners/<name>/courses/<course-id>/course.json`
+   exists before recording attempts, summarizing progress, or rendering views.
 
 ## Course and memory categories
 
@@ -69,7 +70,7 @@ override it.
 
 ## Separate the kinds of knowledge
 
-- **Stated preference:** “Use fewer analogies.” Store the wording and date;
+- **Stated preference:** “Use fewer analogies.” Store the wording and date, 
   a current request overrides it.
 - **Observation:** a specific answer, error, hint used, or successful transfer.
 - **Interpretation:** a tentative explanation of the observation. Say “possibly

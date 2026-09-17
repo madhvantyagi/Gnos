@@ -4,6 +4,11 @@ Read this reference when a mathematics lesson needs detailed prerequisite
 checks, examples, source selection, or a substantial diagram or animation. The
 concise route remains in [the subject guide](../subjects/math.md).
 
+Use the guide's representation profile first, then apply
+`skills/course-design/references/representation-choices.md`. This reference
+defines mathematical content and visual grammar; it does not order media by
+itself.
+
 ## Prerequisite checks
 
 - Algebra: equality for all permitted inputs versus equality at one value;

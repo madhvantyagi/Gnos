@@ -260,6 +260,20 @@ class CourseContractV2Tests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 contract.validate_course(bad)
 
+    def test_representation_skill_route_must_be_declared_by_its_topic(self):
+        plan = valid_v2_course()
+        topic = plan["chapters"][0]["topics"][0]
+        topic["representations"] = [
+            {"id": "definition", "kind": "text", "concept": "math.derivative",
+             "purpose": "State the local prediction.",
+             "skill_route": "skills/subject/SKILL.md"}
+        ]
+        contract.validate_course(plan)
+
+        topic["representations"][0]["skill_route"] = "skills/manim-voice-animation/SKILL.md"
+        with self.assertRaisesRegex(ValueError, "skill route must belong to the topic"):
+            contract.validate_course(plan)
+
     def test_topic_feedback_fields_are_validated(self):
         valid = valid_v2_course()
         topic = valid["chapters"][0]["topics"][0]

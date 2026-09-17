@@ -4,6 +4,10 @@ Read this reference when an economics lesson needs deeper branch guidance,
 source selection, a substantial example, or an advanced diagram or animation.
 The concise route remains in [the subject guide](../subjects/economics.md).
 
+Use the guide's representation profile first, then apply
+`skills/course-design/references/representation-choices.md`. This reference
+defines economic content and visual grammar; it does not order media by itself.
+
 ## Branch guidance
 
 **Microeconomics.** Name the agent, feasible alternatives, objective or
