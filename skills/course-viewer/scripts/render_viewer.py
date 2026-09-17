@@ -20,8 +20,26 @@ from portal_views import build_portal_view  # noqa: E402
 from course_workspace import read_plan  # noqa: E402
 
 TEMPLATE = ROOT / "skills/course-viewer/references/example.html"
+LOGO_PNG = ROOT / "skills/course-viewer/references/gnos-logo.png"
 BODY_START = "<!--VIEWER_BODY_START-->"
 BODY_END = "<!--VIEWER_BODY_END-->"
+
+_LOGO_URI = None
+
+
+def logo_img():
+    """Chrome-pixel GNOS wordmark as a data-URI <img>; text fallback."""
+    global _LOGO_URI
+    if _LOGO_URI is None:
+        try:
+            import base64
+            raw = LOGO_PNG.read_bytes()
+            _LOGO_URI = "data:image/png;base64," + base64.b64encode(raw).decode()
+        except OSError:
+            _LOGO_URI = ""
+    if _LOGO_URI:
+        return f'<img src="{_LOGO_URI}" alt="GNOS" width="320" height="107">'
+    return "GNOS"
 
 
 def esc(value):
@@ -237,8 +255,108 @@ def lesson_status(lesson, plan, current_topic):
     return "locked"
 
 
+def _pretty_subject(slug):
+    mapping = {
+        "math": "Mathematics", "mathematics": "Mathematics",
+        "statistics": "Statistics", "stat": "Statistics",
+        "physics": "Physics", "history": "History",
+        "biology": "Biology", "economics": "Economics",
+        "computer-science": "Computer Science", "cs": "Computer Science",
+        "accounting": "Accounting", "ai": "Artificial Intelligence",
+        "artificial-intelligence": "Artificial Intelligence",
+        "business": "Business", "psychology": "Psychology",
+        "chemical-engineering": "Chemical Engineering",
+        "political-science": "Political Science",
+    }
+    if not slug:
+        return ""
+    key = str(slug).strip().lower().replace("_", "-")
+    if key in mapping:
+        return mapping[key]
+    return " ".join(w.capitalize() for w in key.split("-"))
+
+
+def _pretty_evidence(evidence, attempts=0):
+    pretty = str(evidence or "not-started").replace("-", " ").replace("_", " ")
+    pretty = pretty[:1].upper() + pretty[1:] if pretty else "Not started"
+    if attempts:
+        return f"{pretty} · {attempts} tries"
+    return pretty
+
+
+def _topic_sources_html(topic, course):
+    sources = course.get("sources", {})
+    rids = topic.get("resource_ids", [])
+    if not rids:
+        return ("—", "—")
+    bits = []
+    for rid in rids:
+        src = sources.get(rid, {})
+        label = src.get("title") or rid
+        if src.get("url"):
+            bits.append(f'<a href="{esc(src["url"])}">{esc(label)}</a>')
+        else:
+            bits.append(esc(label))
+    return (" / ".join(bits), " / ".join(rids))
+
+
+def _hero_field(plan):
+    if plan.get("field"):
+        return esc(plan["field"])
+    subjects = []
+    seen = set()
+    for chapter in plan.get("chapters", []):
+        for topic in chapter.get("topics", []):
+            subj = topic.get("subject") or ""
+            pretty = _pretty_subject(subj)
+            if pretty and pretty not in seen:
+                seen.add(pretty)
+                subjects.append(pretty)
+    if not subjects:
+        return "General"
+    # Keep it short like "Mathematics / Statistics"
+    return esc(" / ".join(subjects[:2]))
+
+
+def _hero_level(plan):
+    if plan.get("level"):
+        return esc(plan["level"])
+    return "Foundations &#8594; Advanced"
+
+
+def _hero_resources(course):
+    sources = course.get("sources", {})
+    if not sources:
+        return ""
+    items = list(sources.items())[:2]
+    links = []
+    for sid, src in items:
+        title = src.get("title") or sid
+        # Shorten common titles: "MIT 18.05 ..." -> keep short id-like label
+        short = sid
+        # Prefer a compact human label: use title up to first "·" or first 18 chars
+        label = title
+        if len(label) > 28:
+            label = sid
+        # Prettify known ids
+        pretty_ids = {
+            "openstax-calculus-1": "OpenStax Calculus",
+        }
+        label = pretty_ids.get(sid, label)
+        if src.get("url"):
+            links.append(f'<a href="{esc(src["url"])}">{esc(label)}</a>')
+        else:
+            links.append(esc(label))
+    return " &middot; ".join(links)
+
+
+def _display_state(topic_id, raw_state, current_topic_id):
+    if topic_id == current_topic_id or raw_state == "current":
+        return ("Current", "disp-current")
+    return ("Planned", "disp-planned")
+
+
 def render_sidebar(plan, lessons, current_topic):
-    goal = esc(plan.get("goal", ""))
     lesson_buttons = []
     for index, lesson in enumerate(lessons):
         status = lesson_status(lesson, plan, current_topic)
@@ -249,46 +367,170 @@ def render_sidebar(plan, lessons, current_topic):
             f'<button data-lesson="{index}"{extra}><span class="num">{num}</span>'
             f'<span class="dot {status}"></span>{title}</button>')
     return (
-        '<aside class="sidebar">'
-        f'<div class="side-head"><div class="course-title">{esc(plan.get("title", plan["id"]))}</div>'
-        f'<div class="course-id">course · {esc(plan["id"])} · rev {esc(plan.get("revision", ""))}</div>'
-        f'<div class="goal">{goal}</div></div>'
-        '<nav class="tabs" id="tabs">'
-        '<button data-tab="overview" class="active">Overview</button>'
-        '<button data-tab="lessons">Lessons</button>'
-        '<button data-tab="exercises">Exercises</button>'
-        '<button data-tab="sources">Sources</button>'
-        '<button data-tab="artifacts">Artifacts</button>'
-        '</nav>'
-        '<div class="lesson-list" id="lesson-list"><div class="list-label">lessons</div>'
-        + "".join(lesson_buttons) + "</div></aside>")
+        '<header class="topbar">'
+        '<div class="topbar-inner">'
+        f'<a class="gnos-logo" href="#" aria-label="GNOS home">{logo_img()}</a>'
+        '<nav class="top-tabs" aria-label="course sections">'
+        '<ul id="tabs" role="tablist">'
+        '<li><button data-tab="overview" class="active" role="tab" aria-selected="true">Overview</button></li>'
+        '<li><button data-tab="lessons" role="tab" aria-selected="false">Lessons</button></li>'
+        '<li><button data-tab="exercises" role="tab" aria-selected="false">Exercises</button></li>'
+        '<li><button data-tab="sources" role="tab" aria-selected="false">Sources</button></li>'
+        '<li><button data-tab="artifacts" role="tab" aria-selected="false">Artifacts</button></li>'
+        '</ul></nav>'
+        '<a class="all-courses" href="#">All courses &#8594;</a>'
+        '</div></header>'
+        # Keep lesson hooks for existing JS; hidden visually but functional.
+        '<div class="lesson-list" id="lesson-list" aria-label="lessons" style="display:none">'
+        + "".join(lesson_buttons) + "</div>")
+
+
+def render_hero(plan, course):
+    display_title = plan.get("hero_title")
+    use_display_title = isinstance(display_title, str) and bool(display_title.strip())
+    raw_title = display_title if use_display_title else plan.get("title", plan.get("id", "Course"))
+    display_subtitle = plan.get("hero_subtitle")
+    use_display_subtitle = isinstance(display_subtitle, str) and bool(display_subtitle.strip())
+    raw_subtitle = (display_subtitle if use_display_subtitle
+                    else course.get("goal", plan.get("goal", "")))
+    title = esc(raw_title)
+    subtitle = esc(raw_subtitle or "")
+    title_class = "hero-title hero-title-display" if use_display_title else "hero-title"
+    row_class = "hero-title-row is-display" if use_display_title else "hero-title-row"
+    hero_class = "hero hero-display" if use_display_title else "hero"
+    rev = esc(plan.get("revision", ""))
+    rev_html = f'<span class="hero-rev">Rev. {rev}</span>' if rev != "" else ""
+    # Screenshot subtitle has no "Goal:" prefix; keep plain sentence.
+    field = _hero_field(plan)
+    level = _hero_level(plan)
+    resources = _hero_resources(course)
+    resources_row = (f'<div class="meta-row"><dt>Resources</dt><dd>{resources}</dd></div>'
+                     if resources else "")
+    return (
+        f'<section class="{hero_class}" aria-labelledby="course-title">'
+        '<div class="hero-main">'
+        f'<div class="{row_class}"><h1 id="course-title" class="{title_class}">{title}</h1>{rev_html}</div>'
+        + (f'<p class="hero-subtitle">{subtitle}</p>' if subtitle else "") +
+        '</div>'
+        '<dl class="hero-meta">'
+        f'<div class="meta-row"><dt>Field</dt><dd>{field}</dd></div>'
+        f'<div class="meta-row"><dt>Level</dt><dd>{level}</dd></div>'
+        f'{resources_row}'
+        '</dl></section>')
+
+
+def render_topic_details(view, plan, topic_reps):
+    course = view["course"]
+    current_id = course["current"].get("topic_id", "")
+    # Locate current topic + chapter position + global topic number.
+    found = None
+    num = 0
+    for ci, chapter in enumerate(view.get("contents", []), start=1):
+        for ti, topic in enumerate(chapter.get("topics", [])):
+            num += 1
+            if topic.get("id") == current_id:
+                found = (chapter, ci, topic, num)
+    if found is None:
+        # Fallback to first topic so the panel never renders empty.
+        for ci, chapter in enumerate(view.get("contents", []), start=1):
+            topics = chapter.get("topics", [])
+            if topics:
+                found = (chapter, ci, topics[0], 1)
+                break
+    if found is None:
+        return ('<aside class="topic-details" id="topic-details" aria-label="Topic details">'
+                '<h2 class="td-heading">Topic details</h2>'
+                '<p class="td-eyebrow">No topics yet</p></aside>')
+    chapter, ci, topic, n = found
+    # Topic index within chapter for eyebrow is not tracked; use global number.
+    eyebrow = f"Chapter {ci:02d} &middot; Topic {n:02d}"
+    title = esc(topic.get("title", topic.get("id", "")))
+    outcome = esc(topic.get("outcome", "")) or "—"
+    raw_state = topic.get("state", "planned")
+    label, _ = _display_state(topic.get("id", ""), raw_state, current_id)
+    reps = topic_reps.get(topic.get("id", ""), [])
+    if reps:
+        formats = " &middot; ".join(esc(str(r.get("kind", "")).capitalize()) for r in reps)
+    else:
+        formats = "—"
+    progress = topic.get("progress", {})
+    evidence_text = _pretty_evidence(progress.get("evidence", "not-started"),
+                                     progress.get("attempt_count", 0))
+    sources_html, _ = _topic_sources_html(topic, course)
+    return (
+        '<aside class="topic-details" id="topic-details" aria-label="Topic details" aria-live="polite">'
+        '<h2 class="td-heading">Topic details</h2>'
+        f'<p class="td-eyebrow" data-td="eyebrow">{eyebrow}</p>'
+        f'<h3 class="td-title" data-td="title">{title}</h3>'
+        '<dl class="td-fields">'
+        f'<div class="td-field"><dt class="td-label">Outcome</dt><dd class="td-value" data-td="outcome">{outcome}</dd></div>'
+        f'<div class="td-field"><dt class="td-label">State</dt><dd class="td-value td-state" data-td="state">{esc(label)}</dd></div>'
+        f'<div class="td-field"><dt class="td-label">Formats</dt><dd class="td-value" data-td="formats">{formats}</dd></div>'
+        f'<div class="td-field"><dt class="td-label">Evidence</dt><dd class="td-value" data-td="evidence">{evidence_text}</dd></div>'
+        f'<div class="td-field"><dt class="td-label">Sources</dt><dd class="td-value td-sources" data-td="sources">{sources_html}</dd></div>'
+        '</dl></aside>')
 
 
 def render_contents(view, course, topic_reps):
-    rows = []
-    for chapter in view["contents"]:
+    current_topic = course["current"].get("topic_id", "")
+    parts = ['<section class="curriculum" aria-label="Curriculum">',
+             '<h2 class="curriculum-title">Curriculum</h2>']
+    num = 0
+    for ch_index, chapter in enumerate(view.get("contents", []), start=1):
+        ch_id = chapter.get("id", "")
+        ch_title = chapter.get("title", "")
+        parts.append(
+            f'<section class="curr-chapter" data-chapter-id="{esc(ch_id)}">'
+            f'<h3 class="curr-chapter-head">'
+            f'<span class="curr-kicker">Chapter {ch_index:02d}</span> '
+            f'<span class="curr-chapter-title">{esc(ch_title)}</span>'
+            "</h3>"
+            '<div class="curr-topics">'
+        )
         for topic in chapter.get("topics", []):
-            current = topic["id"] == course["current"]["topic_id"]
-            state = topic.get("state", "planned")
-            sources = " · ".join(esc(r) for r in topic.get("resource_ids", []))
+            num += 1
+            t_id = topic.get("id", "")
+            t_title = topic.get("title", "")
+            outcome = topic.get("outcome", "")
+            raw = topic.get("state", "planned")
+            label, disp = _display_state(t_id, raw, current_topic)
+            selected = (t_id == current_topic)
+            cls = "curr-row"
+            if selected:
+                cls += " is-selected"
+            if raw in ("retired", "out-of-scope"):
+                cls += " is-dimmed"
+            aria = ' aria-current="true"' if selected else ""
             progress = topic.get("progress", {})
-            evidence = esc(progress.get("evidence", "not-started"))
-            attempts = progress.get("attempt_count", 0)
-            evidence_cell = evidence if not attempts else f"{evidence} · {attempts} tries"
-            plan_cell = render_chips(topic_reps.get(topic["id"], []), None, topic["id"], [])
-            rows.append('<tr class="current-row">' if current else "<tr>")
-            rows.append(
-                f"<td>{esc(chapter.get('title', ''))}</td>"
-                f"<td>{esc(topic.get('title', ''))}</td>"
-                f"<td>{esc(topic.get('outcome', ''))}</td>"
-                f"<td>{badge(state)}</td>"
-                f"<td>{plan_cell}</td>"
-                f"<td>{evidence_cell}</td>"
-                f"<td>{esc(topic.get('minutes', ''))}</td>"
-                f"<td>{sources}</td></tr>")
-    return ("<table><tr><th>chapter</th><th>topic</th><th>outcome</th><th>state</th>"
-            "<th>plan</th><th>evidence</th><th>min</th><th>sources</th></tr>"
-            + "".join(rows) + "</table>")
+            evidence_text = _pretty_evidence(progress.get("evidence", "not-started"),
+                                             progress.get("attempt_count", 0))
+            reps = topic_reps.get(t_id, [])
+            formats = " · ".join(str(r.get("kind", "")).capitalize() for r in reps)
+            sources_html, _ = _topic_sources_html(topic, course)
+            chips_hidden = render_chips(reps, None, t_id, [])
+            parts.append(
+                f'<button type="button" class="{cls}"'
+                f' data-chapter-id="{esc(ch_id)}"'
+                f' data-topic-id="{esc(t_id)}"'
+                f' data-state="{esc(label)}"'
+                f' data-outcome="{esc(outcome)}"'
+                f' data-eyebrow="Chapter {ch_index:02d} · Topic {num:02d}"'
+                f' data-title="{esc(t_title)}"'
+                f' data-formats="{esc(formats)}"'
+                f' data-evidence="{esc(evidence_text)}"'
+                f' data-sources-html="{esc(sources_html)}"'
+                f' aria-label="{num:02d} {esc(t_title)} — {esc(label)}"{aria}>'
+                f'<span class="curr-num" aria-hidden="true">{num:02d}</span>'
+                f'<span class="curr-name">{esc(t_title)}</span>'
+                f'<span class="curr-state {disp}">{esc(label)}</span>'
+                f'<span class="curr-chev" aria-hidden="true">&#8250;</span>'
+                f'<span class="curr-chips-hidden">{chips_hidden}</span>'
+                f'<span class="sr-only">Outcome: {esc(outcome)}</span>'
+                "</button>"
+            )
+        parts.append("</div></section>")
+    parts.append("</section>")
+    return "".join(parts)
 
 
 def render_sources(course):
@@ -402,24 +644,18 @@ def render_body(view, plan, workspace):
     if question_cards:
         questions_html = '<h2 class="sec">Questions</h2>' + "".join(question_cards)
 
+    curriculum_html = render_contents(view, course, topic_reps)
+    details_html = render_topic_details(view, plan, topic_reps)
+
     parts = [
         render_sidebar(plan, lessons, current["topic_id"]),
-        '<main class="main">',
-        '<header class="main-head"><div class="inner">',
-        f'<div class="head-title"><span>course /</span> {esc(plan.get("title", plan["id"]))}</div>',
-        '<nav><a href="#" id="prev-link" data-disabled="1">← prev</a>'
-        '<a href="#" id="next-link">next →</a></nav>',
-        '</div></header>',
-        '<div class="content">',
-        f'<section class="tab active" id="tab-overview">'
-        f'<h1 class="page-title">{esc(plan.get("title", plan["id"]))}</h1>'
-        f'<p class="page-goal">Goal: {esc(course.get("goal", ""))}</p>'
-        f'{vision_line}'
-        f'<div class="page-meta">current · {esc(current.get("chapter_id", ""))} · {esc(current.get("topic_id", ""))}'
-        f' · next: {esc(current.get("next_step", ""))}</div>'
-        f'<h2 class="sec">Contents</h2>{render_contents(view, course, topic_reps)}'
-        f'{assumptions_html}</section>',
-        f'<section class="tab" id="tab-lessons">'
+        render_hero(plan, course),
+        '<section class="tab active" id="tab-overview">'
+        '<div class="overview-layout">'
+        f'{curriculum_html}'
+        f'{details_html}'
+        '</div></section>',
+        f'<section class="tab" id="tab-lessons"><h2 class="sec">Lessons</h2>'
         + (lesson_html or "<p>No ready lessons yet. Publish a lesson, then render again.</p>")
         + "</section>",
         f'<section class="tab" id="tab-exercises"><h2 class="sec">Exercises</h2>'
@@ -427,7 +663,6 @@ def render_body(view, plan, workspace):
         f'<section class="tab" id="tab-sources"><h2 class="sec">Sources</h2>{render_sources(course)}</section>',
         f'<section class="tab" id="tab-artifacts">{render_artifacts(view, workspace)}</section>',
         '<div class="footer">rendered by course-viewer · private evaluation criteria never appear here</div>',
-        '</div></main>',
     ]
     return "\n".join(parts)
 

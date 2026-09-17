@@ -7,8 +7,8 @@ description: Render and show the learner's course page. Use when the learner say
 
 Turn a course workspace into one static page the learner reads.
 No app, no build step, no external libraries. One self-contained
-HTML file. White, minimal, full screen: a left sidebar with tabs
-and the lesson list, a main column with the lesson content.
+HTML file. Cream editorial page: top bar with GNOS + tabs, hero
+with giant title + field metadata, curriculum list + topic details.
 
 Use this skill whenever a course plan is created, enrolled, or
 changed — even with zero lessons. A fresh course still renders its
@@ -40,16 +40,25 @@ python3 -m http.server 8080
 The design lives in [references/example.html](references/example.html).
 Copy that look exactly:
 
-- white page, near-black text, one accent color, no gradients
-- left sidebar: course title, tabs (Overview, Lessons, Exercises,
-  Sources, Artifacts), lesson list with done / current / locked dots
-- main column scrolls; sticky header shows the course and prev/next
+- cream paper (#F6F1E7), near-black ink, teal links (#155E63),
+  ochre labels (#8A6D3B), plum state/title (#5E2B4D), thin dividers
+- topbar: GNOS logo left, tabs center (Overview, Lessons, Exercises,
+  Sources, Artifacts with teal underline for active), All courses → right
+- hero: giant condensed title + Rev, mono subtitle; right meta block
+  with FIELD / LEVEL / RESOURCES behind a vertical divider
+- overview is Curriculum (left) + Topic details (right):
+  chapters as "Chapter 01 + Title", topics as numbered rows with
+  Current (navy) / Planned (plum) + › chevron; selected row has
+  textured grey fill; clicking a row updates Topic details
+  (eyebrow, plum title, Outcome / State / Formats / Evidence / Sources)
 - lessons show the topic's representation plan as chips: manim,
-  image, simulation, text. A chip turns ready when its artifact is
-  registered
+  image, simulation, text (kept as `chip manim` hooks, hidden in
+  curriculum rows, visible in Lessons). A chip turns ready
+  (`chip manim ready`) when its artifact is registered
 - videos, images, and sandboxed simulations render full width inside
   rounded frames, captions below, never overlapping
-- arrow keys step between lessons
+- arrow keys step between lessons; lesson hooks (`#tabs`, `#lesson-list`,
+  `.lesson`, `#prev-link` / `#next-link`) stay intact
 
 ## Compatibility with other skills
 

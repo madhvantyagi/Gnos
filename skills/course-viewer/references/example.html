@@ -4,456 +4,407 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>course-viewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Oxanium:wght@200..800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#ffffff;
-  --ink:#111113;
-  --ink-soft:#55565c;
-  --ink-faint:#8a8b90;
-  --sidebar:#f7f7f8;
-  --border:#e4e4e7;
-  --border-strong:#d4d4d8;
-  --accent:#4f6df5;
-  --accent-soft:#eef1fe;
-  --done:#2f9e63;
-  --locked:#a0a0a6;
-  --code-bg:#f6f6f7;
-  --warn:#b45309;
+  --paper:#F6F4EE;
+  --paper-deep:#E3DED3;
+  --card:#F2EFE7;
+  --code-bg:#E1DBCE;
+  --row-selected:#E0DFDC;
+  --ink:#111318;
+  --ink-soft:#3F434B;
+  --ink-muted:#5B5850;
+  --ink-faint:#8B867A;
+  --navy:#1A2332;
+  --divider:#C9C3B8;
+  --divider-strong:#B7AFA0;
+  --teal:#155E63;
+  --teal-deep:#0E4A4E;
+  --ochre:#8A6D3B;
+  --plum:#5E2B4D;
+  --plum-soft:#6B2F4A;
+  --done:#2F6B4F;
+  --locked:#A09A8A;
+  --warn:#96590A;
+  --title-font:"Oxanium","Montserrat",sans-serif;
+  --body-font:"IBM Plex Mono",ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
 }
-*{box-sizing:border-box;}
+*,*::before,*::after{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
 body{
-  background:var(--bg);
+  background:var(--paper);
   color:var(--ink);
-  font-family:-apple-system,"SF Pro Text",Inter,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-family:var(--body-font);
   font-size:15px;
   line-height:1.65;
+  -webkit-font-smoothing:antialiased;
 }
-a{color:var(--accent);text-decoration:none;}
-a:hover{text-decoration:underline;}
-pre,code{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;}
+::selection{background:#F2E3C2;color:var(--ink);}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:2px;}
+a{color:var(--teal);text-decoration:none;}
+a:hover{color:var(--teal-deep);text-decoration:underline;}
+pre,code{font-family:var(--body-font);}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
 
-/* app shell: fixed sidebar column + scrolling main column */
-.app{display:grid;grid-template-columns:260px 1fr;height:100vh;overflow:hidden;}
+/* ---- topbar ---- */
+.topbar{
+  background:var(--paper);
+  border-bottom:1px solid var(--divider);
+  position:sticky;top:0;z-index:20;overflow:hidden;
+}
+.topbar-inner{
+  max-width:1500px;margin:0 auto;padding:4px 28px;
+  display:grid;grid-template-columns:320px minmax(0,1fr);align-items:center;
+  gap:clamp(28px,5vw,72px);
+}
+.gnos-logo{
+  display:block;width:320px;height:107px;overflow:hidden;flex:none;
+  line-height:0;text-decoration:none;
+}
+.gnos-logo img{width:320px;height:107px;display:block;object-fit:contain;}
+.gnos-logo:hover{text-decoration:none;filter:brightness(1.04);}
+.top-tabs{
+  width:auto;max-width:100%;min-width:0;justify-self:end;align-self:center;margin-bottom:0;
+  overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--divider-strong) transparent;
+}
+.top-tabs::-webkit-scrollbar{height:4px;}
+.top-tabs::-webkit-scrollbar-track{background:transparent;}
+.top-tabs::-webkit-scrollbar-thumb{background:var(--divider-strong);border-radius:999px;}
+.top-tabs ul{list-style:none;margin:0;padding:0;display:flex;justify-content:flex-start;gap:clamp(22px,3vw,48px);width:max-content;}
+.top-tabs button{
+  appearance:none;background:none;border:0;cursor:pointer;
+  font-family:var(--body-font);font-size:16px;font-weight:400;color:var(--teal);
+  padding:10px 2px 12px;letter-spacing:.01em;border-bottom:2px solid transparent;
+}
+.top-tabs button:hover{color:var(--teal-deep);}
+.top-tabs button.active{color:var(--ink);font-weight:700;border-bottom-color:var(--teal);}
+.all-courses{
+  display:none;font-family:var(--body-font);font-size:18px;color:var(--teal);
+  text-decoration:none;white-space:nowrap;
+}
+.all-courses:hover{color:var(--teal-deep);text-decoration:underline;}
 
-/* sidebar */
-.sidebar{
-  background:var(--sidebar);
-  border-right:1px solid var(--border);
-  overflow-y:auto;
-  padding:28px 20px 40px;
-  z-index:10;
+/* ---- page shell ---- */
+.page{max-width:1560px;margin:0 auto;padding:0 28px 90px;}
+.hero{
+  display:block;padding:64px 0 54px;
 }
-.side-head .course-title{font-size:15px;font-weight:600;line-height:1.35;}
-.side-head .course-id{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
-.side-head .goal{font-size:13px;color:var(--ink-soft);margin-top:10px;}
+.hero.hero-display{padding-top:64px;}
+.hero-title-row{display:flex;align-items:flex-start;gap:20px;min-width:0;}
+.hero-title-row.is-display{height:auto;}
+.hero-title{
+  margin:0;font-family:var(--title-font);
+  font-size:clamp(64px,8.5vw,118px);
+  font-weight:700;letter-spacing:-.03em;line-height:.95;color:#090A0E;
+  font-style:normal;text-rendering:geometricPrecision;
+  overflow-wrap:anywhere;
+  -webkit-font-smoothing:antialiased;
+}
+.hero-title-display{
+  font-size:clamp(72px,6.25vw,150px);
+  letter-spacing:-.045em;line-height:.88;overflow-wrap:normal;
+}
+.hero-rev{
+  flex:none;margin-top:22px;padding-left:18px;border-left:2px solid var(--divider-strong);
+  font-size:15px;color:var(--ink-muted);white-space:nowrap;
+}
+.hero-subtitle{
+  margin:24px 0 0;font-size:18px;line-height:1.6;color:var(--ink);
+}
+.hero-meta{
+  margin:52px 0 0;padding:24px 0 0;border-left:0;border-top:1px solid var(--divider);
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px;align-content:start;
+}
+.meta-row{display:grid;gap:4px;}
+.hero-meta dt{
+  font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ochre);
+}
+.hero-meta dd{margin:0;font-size:14px;line-height:1.5;color:var(--ink);}
+.hero-meta a{color:var(--teal);}
 
-.tabs{display:flex;flex-direction:column;gap:2px;margin-top:22px;}
-.tabs button{
-  text-align:left;border:0;background:none;cursor:pointer;
-  font:inherit;font-size:13px;color:var(--ink-soft);
-  padding:7px 10px;border-radius:6px;
+/* ---- overview layout ---- */
+.overview-layout{
+  display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);
+  gap:48px;align-items:start;margin-top:8px;
 }
-.tabs button:hover{background:#efeff1;color:var(--ink);}
-.tabs button.active{background:var(--accent-soft);color:var(--accent);font-weight:500;}
+.curriculum-title,.td-heading{
+  margin:0 0 20px;font-size:23px;font-weight:700;line-height:1.2;color:var(--navy);
+}
+.curr-chapter{margin:0 0 30px;}
+.curr-chapter-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:0 0 4px;}
+.curr-kicker{
+  font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ochre);
+  white-space:nowrap;
+}
+.curr-chapter-title{font-size:16px;font-weight:700;color:var(--navy);}
+.curr-topics{border-bottom:1px solid var(--divider);}
+.curr-row{
+  display:grid;grid-template-columns:48px minmax(0,1fr) auto 28px;
+  align-items:baseline;gap:12px;width:100%;
+  padding:13px 10px;border:0;border-top:1px solid var(--divider);
+  background:none;cursor:pointer;text-align:left;font:inherit;color:var(--navy);
+}
+.curr-row:hover{background:#EFEAD9;}
+.curr-row:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;}
+.curr-num{font-size:13px;color:#6E6A5E;}
+.curr-name{font-size:14px;font-weight:400;overflow-wrap:anywhere;}
+.curr-state{font-size:13px;font-weight:500;white-space:nowrap;}
+.curr-state.disp-current{color:var(--navy);}
+.curr-state.disp-planned{color:var(--plum-soft);}
+.curr-chev{font-size:20px;line-height:1;text-align:right;color:var(--navy);}
+.curr-row.is-selected{
+  background-color:var(--row-selected);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.58'/%3E%3C/svg%3E"),linear-gradient(135deg,rgba(255,255,255,.34) 0%,rgba(255,255,255,0) 42%,rgba(17,19,24,.10) 75%,rgba(17,19,24,.22) 100%);
+  background-size:180px 180px,cover;
+  background-blend-mode:overlay,normal;
+  border-top-color:#BFB8AA;
+  border-bottom:1px solid #BFB8AA;
+  box-shadow:inset 0 1px rgba(255,255,255,.24),inset 0 -1px rgba(17,19,24,.06);
+}
+.curr-row.is-selected:hover{background-color:#DDDCD9;}
+.curr-row.is-selected .curr-name{color:var(--plum);font-weight:500;}
+.curr-row.is-dimmed{opacity:.6;}
 
-.lesson-list{margin-top:22px;}
-.lesson-list .list-label{
-  font-size:11px;color:var(--ink-faint);text-transform:uppercase;
-  letter-spacing:.08em;margin:0 0 8px 10px;
+/* ---- topic details ---- */
+.topic-details{
+  border-left:1px solid var(--divider);
+  padding:2px 0 12px 32px;
+  position:sticky;top:84px;min-width:0;
 }
-.lesson-list button{
-  display:flex;gap:10px;align-items:baseline;width:100%;
-  border:0;background:none;cursor:pointer;text-align:left;font:inherit;
-  font-size:13px;color:var(--ink-soft);padding:7px 10px;border-radius:6px;
+.td-eyebrow{
+  margin:16px 0 0;font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.14em;color:var(--ochre);
 }
-.lesson-list button:hover{background:#efeff1;}
-.lesson-list button.current{background:var(--accent-soft);color:var(--ink);font-weight:500;}
-.lesson-list button.locked{color:var(--locked);cursor:default;}
-.lesson-list .num{font-size:11px;color:var(--ink-faint);min-width:24px;}
-.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:1px;}
-.dot.done{background:var(--done);}
-.dot.current{background:var(--accent);}
-.dot.locked{background:var(--locked);}
+.td-title{margin:8px 0 0;font-size:23px;font-weight:700;line-height:1.3;color:var(--plum);}
+.td-fields{margin:22px 0 0;}
+.td-field{margin:0 0 20px;}
+.td-label{margin:0 0 4px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--ochre);}
+.td-value{margin:0;font-size:14px;line-height:1.65;color:var(--ink);}
+.td-value.td-state{color:var(--plum-soft);font-weight:500;}
+.td-sources a{color:var(--teal);}
 
-/* main column */
-.main{overflow-y:auto;height:100vh;}
-.main-head{
-  position:sticky;top:0;z-index:5;background:var(--bg);
-  border-bottom:1px solid var(--border);
-  padding:14px 0;
-}
-.main-head .inner{
-  max-width:960px;margin:0 auto;padding:0 32px;
-  display:flex;justify-content:space-between;align-items:center;gap:16px;
-}
-.main-head .head-title{font-size:15px;font-weight:600;}
-.main-head .head-title span{color:var(--ink-faint);font-weight:400;}
-.main-head nav{display:flex;gap:16px;font-size:14px;font-weight:500;}
-.main-head nav a[data-disabled="1"]{color:var(--locked);pointer-events:none;}
-
-.content{max-width:960px;margin:0 auto;padding:40px 32px 120px;}
+/* ---- tabs / lessons / shared (restyled, hooks unchanged) ---- */
 .tab{display:none;}
 .tab.active{display:block;}
-
-/* page header (overview) */
-.page-title{font-size:26px;font-weight:600;line-height:1.25;}
-.page-goal{color:var(--ink-soft);margin-top:6px;}
-.page-vision{color:var(--accent);margin-top:4px;font-size:14px;}
-.page-meta{
-  margin-top:14px;font-size:12px;color:var(--ink-faint);
-  text-transform:uppercase;letter-spacing:.06em;
-}
-
-/* section headings inside content */
 h2.sec{
-  font-size:13px;font-weight:500;color:var(--ink-soft);
-  text-transform:uppercase;letter-spacing:.08em;
-  margin:48px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border);
+  font-size:12px;font-weight:700;color:var(--ink-muted);
+  text-transform:uppercase;letter-spacing:.1em;
+  margin:40px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--divider);
 }
-
-/* tables */
-table{width:100%;border-collapse:collapse;font-size:14px;}
-th{
-  text-align:left;font-size:11px;font-weight:500;color:var(--ink-faint);
-  text-transform:uppercase;letter-spacing:.06em;
-  padding:8px 12px;border-bottom:1px solid var(--border);
-}
-td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
-tr:hover td{background:var(--sidebar);}
-tr.current-row td{background:var(--accent-soft);}
-tr.current-row td:first-child{font-weight:500;}
-
-.badge{
-  display:inline-block;padding:1px 9px;font-size:11px;border:1px solid;
-  border-radius:999px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;
-}
-.badge.current{color:var(--accent);border-color:var(--accent);}
+.curriculum h2.sec:first-child{margin-top:0;}
+.page-title{font-family:var(--title-font);font-size:clamp(40px,5vw,72px);font-weight:700;line-height:.95;margin:0;letter-spacing:-.01em;}
+.page-goal{color:var(--ink);margin:12px 0 0;}
+.page-vision{color:var(--plum);margin:6px 0 0;font-size:14px;}
+.page-meta{margin-top:14px;font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.08em;border-top:1px solid var(--divider);padding-top:12px;}
+table{width:100%;border-collapse:collapse;font-size:13px;background:var(--card);border:1px solid var(--divider);}
+th{text-align:left;font-size:11px;color:var(--ochre);text-transform:uppercase;letter-spacing:.07em;padding:8px 12px;border-bottom:1px solid var(--divider-strong);background:var(--paper);}
+td{padding:10px 12px;border-bottom:1px solid var(--divider);vertical-align:top;}
+tr:hover td{background:#EFEAD9;}
+tr.current-row td{background:var(--row-selected);}
+.badge{display:inline-block;padding:1px 9px;font-size:11px;border:1px solid;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+.badge.current{color:var(--navy);border-color:var(--navy);}
 .badge.done{color:var(--done);border-color:var(--done);}
-.badge.planned,.badge.provisional{color:var(--ink-soft);border-color:var(--border-strong);}
-.badge.retired,.badge.out-of-scope{color:var(--locked);border-color:var(--border);text-decoration:line-through;}
-
-/* lessons */
-.lesson{margin:0 0 72px;scroll-margin-top:72px;}
-.lesson h3{font-size:22px;font-weight:600;line-height:1.3;margin:0;}
-.lesson .purpose{color:var(--ink-soft);margin-top:4px;}
-.lesson .meta{
-  margin-top:10px;font-size:12px;color:var(--ink-faint);
-  text-transform:uppercase;letter-spacing:.06em;
-}
-
-/* representation chips */
+.badge.planned,.badge.provisional{color:var(--plum-soft);border-color:var(--divider-strong);}
+.badge.retired,.badge.out-of-scope{color:var(--locked);border-color:var(--divider);text-decoration:line-through;}
+.lesson{margin:0 0 56px;scroll-margin-top:84px;border-top:1px solid var(--divider);padding-top:24px;}
+.lesson h3{font-size:22px;font-weight:700;line-height:1.3;margin:0;color:var(--navy);}
+.lesson .purpose{color:var(--ink-muted);margin-top:4px;}
+.lesson .meta{margin-top:10px;font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.07em;}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 8px;}
 .chip{
   font-size:11px;text-transform:uppercase;letter-spacing:.05em;
-  border:1px solid var(--border);border-radius:999px;padding:2px 10px;
-  color:var(--ink-soft);display:inline-flex;align-items:center;gap:6px;
+  border:1px solid var(--divider-strong);border-radius:999px;padding:2px 10px;
+  color:var(--ink-muted);display:inline-flex;align-items:center;gap:6px;background:var(--card);
 }
 .chip .status{width:6px;height:6px;border-radius:50%;background:var(--locked);}
-.chip.ready .status{background:var(--done);}
-.chip.ready{color:var(--ink);}
-.chip.manim{color:var(--ink-soft);}
-.chip.manim.ready{border-color:var(--accent);color:var(--accent);}
-
-/* blocks */
-.block{margin:24px 0;}
-.block .block-label{
-  font-size:11px;color:var(--ink-faint);text-transform:uppercase;
-  letter-spacing:.08em;margin-bottom:8px;
-}
+.chip.ready{color:var(--ink);border-color:var(--ink);}
+.chip.ready .status{background:var(--teal);}
+.chip.manim{color:var(--ink-muted);}
+.chip.manim.ready{border-color:var(--plum);color:var(--plum);}
+.chip.manim.ready .status{background:var(--plum);}
+.curr-chips-hidden{display:none;}
+.block{margin:20px 0;}
+.block .block-label{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;border-bottom:1px solid var(--divider);padding-bottom:4px;}
 .block p{margin:8px 0;}
 .block ul{margin:8px 0;padding-left:22px;}
 .block li{margin:5px 0;}
-.block pre{
-  background:var(--code-bg);border:1px solid var(--border);border-radius:8px;
-  padding:16px;font-size:13px;line-height:1.6;overflow-x:auto;
-  white-space:pre-wrap;word-break:break-word;
-}
-
-/* media */
-.media{
-  border:1px solid var(--border-strong);border-radius:10px;overflow:hidden;
-  background:var(--code-bg);margin:10px 0;
-}
+.block pre{background:var(--code-bg);border:1px solid var(--divider-strong);border-radius:6px;padding:14px;font-size:13px;line-height:1.6;overflow-x:auto;white-space:pre-wrap;word-break:break-word;}
+.media{border:1px solid var(--divider-strong);border-radius:8px;overflow:hidden;background:var(--card);margin:10px 0;}
 .media video,.media img{width:100%;display:block;height:auto;}
-.media iframe{width:100%;height:520px;border:0;background:#fff;display:block;}
-.media .media-body{padding:12px 16px;border-top:1px solid var(--border);background:var(--bg);}
-.media .media-title{font-size:13px;font-weight:600;}
-.media .media-purpose{font-size:13px;color:var(--ink-soft);margin-top:2px;}
+.media iframe{width:100%;height:480px;border:0;background:#fff;display:block;}
+.media .media-body{padding:12px 16px;border-top:1px solid var(--divider);background:var(--card);}
+.media .media-title{font-size:13px;font-weight:700;}
+.media .media-purpose{font-size:13px;color:var(--ink-muted);margin-top:2px;}
 .media .media-meta{font-size:12px;color:var(--ink-faint);margin-top:2px;}
-.media .missing{color:var(--warn);font-weight:500;}
-
-/* cards */
-.card{border:1px solid var(--border);border-radius:8px;padding:16px;margin:10px 0;}
-.card .card-title{
-  font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.08em;
-}
+.media .missing{color:var(--warn);font-weight:700;}
+.card{border:1px solid var(--divider);border-left:3px solid var(--navy);border-radius:4px;padding:14px 16px;margin:10px 0;background:var(--card);}
+.card .card-title{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.08em;}
 .card .prompt{margin:6px 0;font-size:14px;}
 .card .meta{font-size:12px;color:var(--ink-faint);margin-top:4px;}
 .card ul{margin:6px 0;padding-left:20px;font-size:14px;}
-
-/* gallery */
 .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;}
-.item{border:1px solid var(--border);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:6px;}
+.item{border:1px solid var(--divider);border-radius:6px;padding:14px;background:var(--card);display:flex;flex-direction:column;gap:6px;}
 .item .kind{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;}
-.item .t{font-size:14px;font-weight:500;}
-.item .p{font-size:13px;color:var(--ink-soft);flex:1;}
-.item a{font-size:13px;font-weight:500;}
-
-/* prev/next footer */
-.lesson-nav{
-  display:flex;justify-content:space-between;align-items:center;
-  border-top:1px solid var(--border);padding-top:16px;margin-top:8px;
-  font-size:14px;font-weight:500;
-}
+.item .t{font-size:14px;font-weight:700;}
+.item .p{font-size:13px;color:var(--ink-muted);flex:1;}
+.lesson-nav{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--divider);padding-top:14px;margin-top:8px;font-size:14px;font-weight:500;}
 .lesson-nav span{color:var(--ink-faint);font-size:12px;}
 .lesson-nav a[data-disabled="1"]{color:var(--locked);pointer-events:none;}
+.lesson-list{display:flex;flex-direction:column;gap:2px;margin-top:16px;}
+.lesson-list button{display:flex;gap:10px;align-items:baseline;width:100%;border:0;background:none;cursor:pointer;text-align:left;font:inherit;font-size:13px;color:var(--ink-muted);padding:7px 10px;border-radius:6px;}
+.lesson-list button:hover{background:#EFEAD9;}
+.lesson-list button.current{background:var(--row-selected);color:var(--ink);font-weight:700;}
+.lesson-list button.locked{color:var(--locked);cursor:default;}
+.lesson-list .num{font-size:11px;color:var(--ink-faint);min-width:24px;}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;}
+.dot.done{background:var(--done);}
+.dot.current{background:var(--teal);}
+.dot.locked{background:var(--locked);}
+.footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--divider);font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.07em;}
 
-.footer{
-  margin-top:48px;padding-top:16px;border-top:1px solid var(--border);
-  font-size:12px;color:var(--ink-faint);text-align:center;
+@media (min-width:1101px) and (max-width:1300px){
+  .hero-rev{display:none;}
 }
-
-@media (max-width:800px){
-  .app{display:block;overflow:auto;}
-  .sidebar{border-right:0;border-bottom:1px solid var(--border);padding:16px 16px 8px;}
-  .tabs{flex-direction:row;overflow-x:auto;gap:4px;margin-top:10px;}
-  .tabs button{white-space:nowrap;}
-  .lesson-list{display:none;}
-  .content{padding:24px 16px 80px;}
-  .main-head .inner{padding:0 16px;}
+@media (max-width:1100px){
+  .topbar-inner{grid-template-columns:1fr auto;padding:10px 16px;gap:12px;}
+  .gnos-logo{width:220px;height:74px;}
+  .gnos-logo img{width:220px;height:74px;}
+  .top-tabs{grid-column:1 / -1;grid-row:2;width:100%;justify-self:stretch;align-self:auto;margin-bottom:0;overflow-x:auto;transform:none;}
+  .top-tabs ul{justify-content:flex-start;gap:22px;}
+  .top-tabs button{font-size:14px;padding:8px 2px 10px;white-space:nowrap;border-bottom-width:2px;}
+  .all-courses{font-size:13px;}
+  .page{padding:0 16px 60px;}
+  .hero,.hero.hero-display{grid-template-columns:1fr;gap:24px;padding:28px 0 24px;}
+  .hero-title-row.is-display{height:auto;}
+  .hero-title{font-size:clamp(48px,14vw,92px);line-height:.9;letter-spacing:-.04em;transform:none;}
+  .hero-title-display{font-size:clamp(48px,6.5vw,86px);line-height:.86;letter-spacing:-.05em;}
+  .hero-rev{margin-top:12px;}
+  .hero-subtitle{margin-top:14px;font-size:15px;}
+  .hero-meta{grid-template-columns:1fr;border-left:0;border-top:1px solid var(--divider);margin-top:26px;padding:20px 0 0;}
+  .overview-layout{grid-template-columns:1fr;gap:28px;}
+  .topic-details{border-left:0;border-top:1px solid var(--divider);padding:20px 0 0;position:static;}
+  .curr-row{grid-template-columns:36px minmax(0,1fr) auto 24px;gap:8px;}
+  .media iframe{height:300px;}
+  table{display:block;overflow-x:auto;}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto !important;transition:none !important;}
 }
 </style>
 </head>
 <body>
 
-<div class="app">
+<div class="page">
 <!--VIEWER_BODY_START-->
 
-<aside class="sidebar">
-  <div class="side-head">
-    <div class="course-title">From slope to a working optimizer</div>
-    <div class="course-id">course · gradient-descent · rev 4</div>
-    <div class="goal">Predict small changes, then derive and diagnose gradient descent.</div>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="gnos-logo" href="#" aria-label="GNOS home"><img src="gnos-logo.png" alt="GNOS" width="320" height="107"></a>
+    <nav class="top-tabs" aria-label="course sections">
+      <ul id="tabs" role="tablist">
+        <li><button data-tab="overview" class="active" role="tab" aria-selected="true">Overview</button></li>
+        <li><button data-tab="lessons" role="tab" aria-selected="false">Lessons</button></li>
+        <li><button data-tab="exercises" role="tab" aria-selected="false">Exercises</button></li>
+        <li><button data-tab="sources" role="tab" aria-selected="false">Sources</button></li>
+        <li><button data-tab="artifacts" role="tab" aria-selected="false">Artifacts</button></li>
+      </ul>
+    </nav>
+    <a class="all-courses" href="#">All courses &#8594;</a>
   </div>
-  <nav class="tabs" id="tabs" role="tablist" aria-label="course sections">
-    <button data-tab="overview" class="active" role="tab" aria-selected="true">Overview</button>
-    <button data-tab="lessons" role="tab" aria-selected="false">Lessons</button>
-    <button data-tab="exercises" role="tab" aria-selected="false">Exercises</button>
-    <button data-tab="sources" role="tab" aria-selected="false">Sources</button>
-    <button data-tab="artifacts" role="tab" aria-selected="false">Artifacts</button>
-  </nav>
-  <div class="lesson-list" id="lesson-list">
-    <div class="list-label">lessons</div>
-    <button data-lesson="0"><span class="num">01</span><span class="dot done"></span>What the gradient predicts</button>
-    <button data-lesson="1" class="current"><span class="num">02</span><span class="dot current"></span>Simulation lab</button>
-    <button data-lesson="2" class="locked"><span class="num">03</span><span class="dot locked"></span>Update rule</button>
-  </div>
-</aside>
+</header>
 
-<main class="main">
-  <header class="main-head">
-    <div class="inner">
-      <div class="head-title"><span>course /</span> From slope to a working optimizer</div>
-      <nav>
-        <a href="#" id="prev-link" data-disabled="1">← prev</a>
-        <a href="#" id="next-link">next →</a>
-      </nav>
+<section class="tab active" id="tab-overview">
+  <section class="hero hero-display" aria-labelledby="course-title">
+    <div class="hero-main">
+      <div class="hero-title-row is-display">
+        <h1 id="course-title" class="hero-title hero-title-display">Probability</h1>
+        <span class="hero-rev">Rev. 1</span>
+      </div>
+      <p class="hero-subtitle">For prediction, algorithms, and quantitative finance.</p>
     </div>
-  </header>
+    <dl class="hero-meta">
+      <div class="meta-row"><dt>Field</dt><dd>Mathematics / Statistics</dd></div>
+      <div class="meta-row"><dt>Level</dt><dd>Undergraduate &#8594; Advanced</dd></div>
+      <div class="meta-row"><dt>Resources</dt><dd><a href="#">MIT 18.05</a> &middot; <a href="#">Harvard Stat 110</a></dd></div>
+    </dl>
+  </section>
 
-  <div class="content">
-
-    <section class="tab active" id="tab-overview">
-      <h1 class="page-title">From slope to a working optimizer</h1>
-      <p class="page-goal">Goal: predict small changes, then derive, implement, and diagnose gradient descent.</p>
-      <p class="page-vision">Vision: fit a small model by hand and explain every step of the update.</p>
-      <div class="page-meta">current · gradient · gradient-direction · next: predict the sign of a local change</div>
-
-      <h2 class="sec">Contents</h2>
-      <table>
-        <tr><th>chapter</th><th>topic</th><th>outcome</th><th>state</th><th>plan</th><th>evidence</th><th>min</th><th>sources</th></tr>
-        <tr>
-          <td>1 · Local change</td><td>Slope as local change</td>
-          <td>Predict the sign of a small change</td>
-          <td><span class="badge done">done</span></td>
-          <td><div class="chips"><span class="chip ready"><span class="status"></span>text</span></div></td>
-          <td>not-started</td><td>25</td><td>openstax-3.5</td>
-        </tr>
-        <tr class="current-row">
-          <td>2 · Gradient</td><td>Gradient direction</td>
-          <td>Predict which step decreases a local approximation</td>
-          <td><span class="badge current">current</span></td>
-          <td><div class="chips"><span class="chip manim ready"><span class="status"></span>manim</span><span class="chip ready"><span class="status"></span>simulation</span><span class="chip"><span class="status"></span>image</span></div></td>
-          <td>practicing · 2 tries</td><td>30</td><td>mit-1802-sec2</td>
-        </tr>
-        <tr>
-          <td>2 · Gradient</td><td>Update rule</td>
-          <td>Write the gradient descent update</td>
-          <td><span class="badge planned">planned</span></td>
-          <td><div class="chips"><span class="chip"><span class="status"></span>text</span></div></td>
-          <td>not-started</td><td>20</td><td>mit-6390-ch3</td>
-        </tr>
-      </table>
-
-      <h2 class="sec">Assumptions</h2>
-      <div class="card">
-        <div class="prompt">Derivative fluency is unverified — add a bridge at first use.</div>
-      </div>
-    </section>
-
-    <section class="tab" id="tab-lessons">
-      <section class="lesson" id="lesson-0">
-        <h3>What the gradient predicts</h3>
-        <div class="purpose">Predict which small step decreases a local linear approximation.</div>
-        <div class="meta">teacher · math · updated 2026-09-14 · concepts · math.gradient · math.directional-derivative</div>
-        <div class="chips">
-          <span class="chip manim ready"><span class="status"></span>manim · gradient motion</span>
-          <span class="chip ready"><span class="status"></span>simulation · step lab</span>
-          <span class="chip ready"><span class="status"></span>text · definition</span>
-        </div>
-
-        <div class="block">
-          <div class="block-label">explanation</div>
-          <p>For a small step d, the dot product between the gradient and d predicts the first-order change.</p>
-        </div>
-
-        <div class="block">
-          <div class="block-label">manim · voice-animation</div>
-          <div class="media">
-            <video controls preload="metadata" src="../artifacts/videos/gradient-direction.mp4"></video>
-            <div class="media-body">
-              <div class="media-title">gradient-direction-video</div>
-              <div class="media-purpose">Keep the gradient fixed while comparing two step directions.</div>
-              <div class="media-meta">video/mp4 · 0:42 · captions · transcript</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="block">
-          <div class="block-label">simulation · interactive</div>
-          <div class="media">
-            <iframe sandbox="allow-scripts" src="../artifacts/simulations/direction-simulator.html" title="direction-simulator"></iframe>
-            <div class="media-body">
-              <div class="media-title">direction-simulator</div>
-              <div class="media-purpose">Rotate the step and inspect the predicted sign.</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="block">
-          <div class="block-label">bullets</div>
-          <ul>
-            <li>A positive dot product predicts an increase.</li>
-            <li>A negative dot product predicts a decrease.</li>
-            <li>The prediction is local; a large step can leave the region where it is accurate.</li>
-          </ul>
-        </div>
-
-        <div class="block">
-          <div class="block-label">equation</div>
-          <pre>f(x + d) ≈ f(x) + ∇f(x) · d</pre>
-        </div>
-
-        <div class="block">
-          <div class="block-label">exercise</div>
-          <div class="card">
-            <div class="card-title">exercise · predict-direction-sign</div>
-            <div class="prompt">The gradient is (2, 4) and the step is (1, -1). Predict the sign of the local change and justify it.</div>
-            <div class="meta">response · long text · reviewed manually</div>
-          </div>
-        </div>
-
-        <div class="lesson-nav">
-          <a href="#" class="goto" data-index="1">next · simulation lab →</a>
-          <span>01 / 03</span>
+  <div class="overview-layout">
+    <section class="curriculum" aria-label="Curriculum">
+      <h2 class="curriculum-title">Curriculum</h2>
+      <section class="curr-chapter" data-chapter-id="model">
+        <h3 class="curr-chapter-head"><span class="curr-kicker">Chapter 01</span><span class="curr-chapter-title">Probability as a model</span></h3>
+        <div class="curr-topics">
+          <button type="button" class="curr-row" data-topic-id="outcomes" aria-label="01 Outcomes, events, and probability models — Current">
+            <span class="curr-num">01</span><span class="curr-name">Outcomes, events, and probability models</span><span class="curr-state disp-current">Current</span><span class="curr-chev">&#8250;</span>
+          </button>
+          <button type="button" class="curr-row is-selected" data-topic-id="bayes" aria-current="true" aria-label="02 Conditioning, independence, and Bayes — Planned">
+            <span class="curr-num">02</span><span class="curr-name">Conditioning, independence, and Bayes</span><span class="curr-state disp-planned">Planned</span><span class="curr-chev">&#8250;</span>
+          </button>
+          <button type="button" class="curr-row" data-topic-id="rvexp" aria-label="03 Random variables and expected value — Planned">
+            <span class="curr-num">03</span><span class="curr-name">Random variables and expected value</span><span class="curr-state disp-planned">Planned</span><span class="curr-chev">&#8250;</span>
+          </button>
+          <button type="button" class="curr-row" data-topic-id="joint" aria-label="04 Joint distributions, covariance, and total expectation — Planned">
+            <span class="curr-num">04</span><span class="curr-name">Joint distributions, covariance, and total expectation</span><span class="curr-state disp-planned">Planned</span><span class="curr-chev">&#8250;</span>
+          </button>
         </div>
       </section>
-
-      <section class="lesson" id="lesson-1">
-        <h3>Simulation lab</h3>
-        <div class="purpose">Rotate the step and predict before moving the simulator.</div>
-        <div class="meta">teacher · math · updated 2026-09-15 · concepts · math.directional-derivative</div>
-        <div class="chips">
-          <span class="chip ready"><span class="status"></span>simulation · step lab</span>
-        </div>
-
-        <div class="block">
-          <div class="block-label">simulation · interactive</div>
-          <div class="media">
-            <iframe sandbox="allow-scripts" src="../artifacts/simulations/direction-simulator.html" title="direction-simulator"></iframe>
-            <div class="media-body">
-              <div class="media-title">direction-simulator</div>
-              <div class="media-purpose">Predict the sign, then move the simulator to check.</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="lesson-nav">
-          <a href="#" class="goto" data-index="0">← prev · what the gradient predicts</a>
-          <span>02 / 03</span>
+      <section class="curr-chapter" data-chapter-id="prediction">
+        <h3 class="curr-chapter-head"><span class="curr-kicker">Chapter 02</span><span class="curr-chapter-title">Prediction from information and data</span></h3>
+        <div class="curr-topics">
+          <button type="button" class="curr-row" data-topic-id="likelihood" aria-label="05 Likelihood, priors, and posterior prediction — Planned">
+            <span class="curr-num">05</span><span class="curr-name">Likelihood, priors, and posterior prediction</span><span class="curr-state disp-planned">Planned</span><span class="curr-chev">&#8250;</span>
+          </button>
+          <button type="button" class="curr-row" data-topic-id="loss" aria-label="06 Expected loss, thresholds, and calibration — Planned">
+            <span class="curr-num">06</span><span class="curr-name">Expected loss, thresholds, and calibration</span><span class="curr-state disp-planned">Planned</span><span class="curr-chev">&#8250;</span>
+          </button>
         </div>
       </section>
-    </section>
-
-    <section class="tab" id="tab-exercises">
-      <h2 class="sec">Exercises</h2>
-      <div class="card">
-        <div class="card-title">predict-direction-sign · lesson 01</div>
-        <div class="prompt">The gradient is (2, 4) and the step is (1, -1). Predict the sign of the local change and justify it.</div>
-        <div class="meta">long text · 1 attempt · awaiting review</div>
+      <div class="lesson-list" id="lesson-list" aria-label="lessons" style="display:none">
+        <button data-lesson="0" class="current"><span class="num">01</span><span class="dot current"></span>Outcomes, events, and probability models</button>
       </div>
     </section>
 
-    <section class="tab" id="tab-sources">
-      <h2 class="sec">Sources</h2>
-      <table>
-        <tr><th>id</th><th>title</th><th>sections</th><th>checked</th></tr>
-        <tr><td>openstax-3.5</td><td><a href="https://openstax.org/details/books/calculus-volume-1">Calculus Volume 1</a></td><td>3.5 The Chain Rule</td><td>2026-09-12</td></tr>
-        <tr><td>mit-1802-sec2</td><td><a href="https://ocw.mit.edu/courses/18-02sc-multivariable-calculus-fall-2010/pages/2.-partial-derivatives/">MIT 18.02 notes</a></td><td>2. Partial Derivatives</td><td>2026-09-14</td></tr>
-      </table>
-    </section>
-
-    <section class="tab" id="tab-artifacts">
-      <h2 class="sec">Watch</h2>
-      <div class="gallery">
-        <div class="item">
-          <div class="kind">watch · video</div>
-          <div class="t">gradient-direction-video</div>
-          <div class="p">Two step directions, one fixed gradient.</div>
-          <a href="../artifacts/videos/gradient-direction.mp4">open video</a>
-        </div>
-      </div>
-      <h2 class="sec">Generated</h2>
-      <div class="gallery">
-        <div class="item">
-          <div class="kind">generated · image</div>
-          <div class="t">slope-annotated-diagram</div>
-          <div class="p">Secant narrowing to the tangent.</div>
-          <a href="../artifacts/generated/slope-annotated.png">open image</a>
-        </div>
-        <div class="item">
-          <div class="kind">generated · simulation</div>
-          <div class="t">direction-simulator</div>
-          <div class="p">Interactive step-direction lab.</div>
-          <a href="../artifacts/simulations/direction-simulator.html">run</a>
-        </div>
-      </div>
-      <h2 class="sec">Resources</h2>
-      <div class="gallery">
-        <div class="item">
-          <div class="kind">resources · pdf</div>
-          <div class="t">gradient-handout</div>
-          <div class="p">Two-page handout with the sign rule.</div>
-          <a href="../artifacts/documents/gradient-handout.pdf">open pdf</a>
-        </div>
-      </div>
-    </section>
-
-    <div class="footer">rendered by course-viewer · private evaluation criteria never appear here</div>
-
+    <aside class="topic-details" id="topic-details" aria-label="Topic details" aria-live="polite">
+      <h2 class="td-heading">Topic details</h2>
+      <p class="td-eyebrow" data-td="eyebrow">Chapter 01 &middot; Topic 02</p>
+      <h3 class="td-title" data-td="title">Conditioning, independence, and Bayes</h3>
+      <dl class="td-fields">
+        <div class="td-field"><dt class="td-label">Outcome</dt><dd class="td-value" data-td="outcome">Update probabilities with new information. Distinguish dependence from coincidence.</dd></div>
+        <div class="td-field"><dt class="td-label">State</dt><dd class="td-value td-state" data-td="state">Planned</dd></div>
+        <div class="td-field"><dt class="td-label">Formats</dt><dd class="td-value" data-td="formats">Diagram &middot; Exercise</dd></div>
+        <div class="td-field"><dt class="td-label">Evidence</dt><dd class="td-value" data-td="evidence">Not started</dd></div>
+        <div class="td-field"><dt class="td-label">Sources</dt><dd class="td-value td-sources" data-td="sources"><a href="#">MIT 18.05</a> / <a href="#">Harvard Stat 110</a></dd></div>
+      </dl>
+    </aside>
   </div>
-</main>
+</section>
+
+<section class="tab" id="tab-lessons">
+  <h2 class="sec">Lessons</h2>
+  <p>No ready lessons yet. Publish a lesson, then render again.</p>
+</section>
+
+<section class="tab" id="tab-exercises">
+  <h2 class="sec">Exercises</h2>
+  <p>No exercises yet.</p>
+</section>
+
+<section class="tab" id="tab-sources">
+  <h2 class="sec">Sources</h2>
+  <table><tr><th>id</th><th>title</th><th>sections</th><th>checked</th></tr></table>
+</section>
+
+<section class="tab" id="tab-artifacts">
+  <h2 class="sec">Watch</h2>
+  <p>No ready artifacts yet.</p>
+</section>
+
+<div class="footer">rendered by course-viewer &middot; private evaluation criteria never appear here</div>
 
 <!--VIEWER_BODY_END-->
 </div>
@@ -465,7 +416,6 @@ document.addEventListener("DOMContentLoaded", function () {
   tabs.forEach(function (button) {
     sections[button.getAttribute("data-tab")] = document.getElementById("tab-" + button.getAttribute("data-tab"));
   });
-
   function activate(name) {
     tabs.forEach(function (button) {
       var on = button.getAttribute("data-tab") === name;
@@ -473,56 +423,71 @@ document.addEventListener("DOMContentLoaded", function () {
       button.setAttribute("aria-selected", on ? "true" : "false");
     });
     Object.keys(sections).forEach(function (key) {
-      sections[key].classList.toggle("active", key === name);
+      if (sections[key]) sections[key].classList.toggle("active", key === name);
     });
   }
   tabs.forEach(function (button) {
     button.addEventListener("click", function () { activate(button.getAttribute("data-tab")); });
   });
 
+  // Curriculum rows -> topic details panel
+  var panel = document.getElementById("topic-details");
+  var rows = Array.prototype.slice.call(document.querySelectorAll(".curr-row"));
+  function selectRow(row, focusPanel) {
+    if (!row) return;
+    rows.forEach(function (r) {
+      var on = r === row;
+      r.classList.toggle("is-selected", on);
+      if (on) r.setAttribute("aria-current", "true");
+      else r.removeAttribute("aria-current");
+    });
+    if (!panel) return;
+    var d = row.dataset || {};
+    function set(name, val) {
+      var el = panel.querySelector('[data-td="' + name + '"]');
+      if (el && val) el.textContent = val;
+    }
+    if (d.eyebrow) set("eyebrow", d.eyebrow);
+    if (d.title) set("title", d.title);
+    if (d.outcome) set("outcome", d.outcome);
+    if (d.state) set("state", d.state);
+    if (d.formats) set("formats", d.formats);
+    if (d.evidence) set("evidence", d.evidence);
+    var srcEl = panel.querySelector('[data-td="sources"]');
+    if (srcEl && d.sourcesHtml) srcEl.innerHTML = d.sourcesHtml;
+    else if (d.sourcesText) set("sources", d.sourcesText);
+  }
+  rows.forEach(function (row) {
+    row.addEventListener("click", function () { selectRow(row, false); });
+    row.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectRow(row, false); }
+    });
+  });
+
+  // Lessons pager (kept for compatibility with rendered lessons)
   var lessons = Array.prototype.slice.call(document.querySelectorAll(".lesson"));
   var lessonButtons = Array.prototype.slice.call(document.querySelectorAll("#lesson-list button"));
-  if (!lessons.length) return;
-
+  var current = 0;
   var startButton = document.querySelector("#lesson-list button.current");
-  var current = startButton ? Number(startButton.getAttribute("data-lesson")) : 0;
-  if (!Number.isFinite(current)) current = 0;
-
+  if (startButton) {
+    current = Number(startButton.getAttribute("data-lesson")) || 0;
+  }
   function goLesson(index) {
     if (!lessons.length) return;
-    index = Number(index);
-    if (!Number.isFinite(index)) return;
-    index = Math.max(0, Math.min(lessons.length - 1, index));
-    if (lessonButtons[index] && lessonButtons[index].classList.contains("locked")) {
-      var dir = index > current ? 1 : -1;
-      var next = index + dir;
-      if (next < 0 || next >= lessons.length) return;
-      index = next;
-    }
+    index = Math.max(0, Math.min(lessons.length - 1, Number(index) || 0));
     current = index;
     activate("lessons");
-    lessons[current].scrollIntoView({ behavior: "smooth", block: "start" });
+    if (lessons[current]) lessons[current].scrollIntoView({ behavior: "smooth", block: "start" });
     lessonButtons.forEach(function (button, i) {
       button.classList.toggle("current", i === current);
     });
     updateNav();
   }
   function updateNav() {
-    if (!lessons.length) return;
     var prev = document.getElementById("prev-link");
     var next = document.getElementById("next-link");
-    if (prev) {
-      prev.setAttribute("data-disabled", current === 0 ? "1" : "0");
-      prev.textContent = current === 0 ? "← prev" : "← prev · " + lessonShort(current - 1);
-    }
-    if (next) {
-      next.setAttribute("data-disabled", current === lessons.length - 1 ? "1" : "0");
-      next.textContent = current === lessons.length - 1 ? "next →" : "next · " + lessonShort(current + 1) + " →";
-    }
-  }
-  function lessonShort(index) {
-    var title = lessons[index] ? lessons[index].querySelector("h3") : null;
-    return title ? title.textContent.slice(0, 28) : "";
+    if (prev) prev.setAttribute("data-disabled", current === 0 ? "1" : "0");
+    if (next) next.setAttribute("data-disabled", lessons.length && current === lessons.length - 1 ? "1" : "0");
   }
   lessonButtons.forEach(function (button) {
     button.addEventListener("click", function () {
@@ -530,23 +495,19 @@ document.addEventListener("DOMContentLoaded", function () {
       goLesson(Number(button.getAttribute("data-lesson")));
     });
   });
-  document.getElementById("prev-link").addEventListener("click", function (e) {
-    e.preventDefault(); if (current > 0) goLesson(current - 1);
-  });
-  document.getElementById("next-link").addEventListener("click", function (e) {
-    e.preventDefault(); if (current < lessons.length - 1) goLesson(current + 1);
-  });
+  var prevLink = document.getElementById("prev-link");
+  var nextLink = document.getElementById("next-link");
+  if (prevLink) prevLink.addEventListener("click", function (e) { e.preventDefault(); if (current > 0) goLesson(current - 1); });
+  if (nextLink) nextLink.addEventListener("click", function (e) { e.preventDefault(); if (current < lessons.length - 1) goLesson(current + 1); });
   document.addEventListener("keydown", function (e) {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
     if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+    if (!lessons.length) return;
     goLesson(current + (e.key === "ArrowRight" ? 1 : -1));
   });
   document.addEventListener("click", function (e) {
     var link = e.target.closest ? e.target.closest("a.goto") : null;
-    if (link) {
-      e.preventDefault();
-      goLesson(Number(link.getAttribute("data-index")));
-    }
+    if (link) { e.preventDefault(); goLesson(Number(link.getAttribute("data-index"))); }
   });
   updateNav();
 });
