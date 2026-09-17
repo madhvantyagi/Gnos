@@ -24,6 +24,8 @@
       "Help me understand this computer-science concept with a useful diagram.",
       "Build a course around what I want to be able to do."
     ],
-    "brandColor": "#2F5D50"
+    "brandColor": "#2F5D50",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png"
   }
 }
