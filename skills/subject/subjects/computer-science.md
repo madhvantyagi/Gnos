@@ -49,3 +49,28 @@ or a trace when the claim is about the implementation.
 Load those references only when the current task needs their detail. Theo owns
 contracts, traces, code, algorithms, systems, and evaluation. A supporting
 subject supplies one named bridge while Theo remains the lesson's voice.
+
+## What each area earns
+
+First write what the learner must inspect, change, compare, or work out
+in one sentence, and pick the smallest medium that lets them do it. Only
+then check this table for what computer science usually needs. Never use
+the table as a reason to order its favorite medium. Depth and length
+still cap the media: a survey earns mostly text plus one medium.
+
+| Area | Lead with | Then earn, only when | Exercise |
+| --- | --- | --- | --- |
+| Programming | Contract, small input, code and trace in text | Nothing else for a boundary fix | Code text: predict and repair the changed boundary case |
+| Data structures and algorithms | Invariant and complexity in text | Manim, only when the order of the state transition is the lesson | Code text: keep the invariant on a new input |
+| Systems and operating systems | Failing layer named in text, with logs | Simulation, only when the learner controls scheduling, cache, or concurrency | Code text with logs: explain the failure at its layer |
+| Networks and distributed systems | Messages, time, and failure model in text | Excalidraw sketch of the timeline, only for a static message order | Short text: state the guarantee under delay, loss, or crash |
+| Databases | Schema, keys, and code in text | Excalidraw sketch, only for a static relation picture | Code text: predict the outcome under an interleaving |
+| Theory and languages | Logic, grammar, and proof in text | Nothing else; the derivation is words and symbols | Long text: derive an accepted case and a near-miss |
+| AI and machine learning | Data splits, shapes, objective, and baseline in text | Simulation, only when the learner varies the split or threshold | Code text: compare against the baseline |
+| Software engineering and security | Interface and trust boundary named in text | Excalidraw sketch of the boundary, paired with code or logs | Code text: reproduce the issue and bound the defense |
+
+Use multiple-choice only for recognition and prediction verbs, never
+for prove, repair, reproduce, or derive. Use Pinepaper instead of
+Excalidraw when several states must stay synchronized or the learner
+interacts with the graph. Never draw the same idea in two diagram
+tools.

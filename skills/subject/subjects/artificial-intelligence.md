@@ -40,6 +40,22 @@ is not an evaluation result.
 ## Source selection
 
 Use original papers, official model or dataset documentation, and inspected textbook chapters. Recheck versions and evaluation conditions for benchmark claims; a demo is not a reliability estimate.
+
+## What each area earns
+
+First write what the learner must inspect, change, compare, or work out
+in one sentence, and pick the smallest medium that lets them do it. Only
+then check this table for what AI work usually needs. Never use the table
+as a reason to order its favorite medium. Depth and length still cap the
+media: a survey earns mostly text plus one medium.
+
+| Area | Lead with | Then earn, only when | Exercise |
+| --- | --- | --- | --- |
+| Search and planning | States, actions, costs, and heuristics in text | Manim, only when the intermediate search states and costs are the idea | Code text: trace the search and check completeness and cost |
+| Knowledge and reasoning | Inference rules stated in text | Nothing else unless a rule must be tested against a case | Code text: state the rules and test a counterexample |
+| Machine learning | Data, baseline, objective, and split in text | Simulation, only when the learner varies the threshold or class balance | Numeric: compute the metric under the changed split |
+| Deep learning and language models | Tensor shapes and the train/inference split in text | Pinepaper pipeline diagram, only to keep shapes and stages visible together | Code text: trace training and inference separately |
+| Agents and robotics | Observations, actions, and feedback in text | Simulation, only when the learner varies the reward, policy, or tool failure | Code text: evaluate the trajectory and the recovery |
 No curated source entries are supplied specifically for this subject yet.
 Inspect suitable sources before assigning a sustained course; follow
 [the source-use guide](../references/source-use.md).

@@ -12,7 +12,8 @@ automatic assessment service hidden behind these files.
 | Learning | Turn routing, teaching loop, load order | Teacher biographies |
 | Teacher SOUL | Identity, voice, judgment under pressure | Course state |
 | Subject | Subfields, prerequisites, representations, sources | General tutor rules |
-| Course design | Outcomes, sequence, teacher assignments, assessments | Evidence of progress |
+| Course design | Outcomes, sequence, teacher assignments, assessments | Lesson blocks and files |
+| Lesson design | One lesson's blocks, briefs, workers, and finished files | Route order and sources |
 | Learner model | Dated observations, attempts, preferences, next step | Fixed labels of ability |
 | PDF / Manim / Image | Artifact construction and verification | Whether the learner understood |
 
@@ -65,7 +66,7 @@ under the learner course workspace or `output/`; media sources remain editable.
 ## Media choices
 
 A topic declares its representations in `course.json` so each part is
-dispatched to the right skill: manim for motion, image-gen for still
+dispatched to the right skill: manim for motion, the host's image generation for still
 images, pdf for handouts, simulation for interactive parts, text for the
 rest. The plan's agreed `depth` and `length` set the media budget;
 `representation-choices.md` holds the rules that stop Manim from
@@ -76,9 +77,9 @@ profile. Each lesson block names one approved course representation through
 `representation_id`; the lesson cannot silently introduce a new concept,
 medium, or skill route. A delegated block carries a private production brief.
 Block workers write separate outputs and return block fragments or artifact
-records. The lesson coordinator alone edits `course.json`, `lesson.json`, and
-`manifest.json`, registers checked artifacts sequentially, and publishes the
-assembled lesson.
+records. The lesson coordinator alone registers checked artifacts one by one,
+and publishes the assembled lesson. It never edits the route to fix a bad
+block; it sends the fix back to course design.
 
 PDF: structured lesson JSON to ReportLab, with embedded fonts, image captions,
 equation images, page numbering, and source links. Inspect rendered pages.

@@ -54,6 +54,20 @@ Every such change goes into `revision_notes` on the plan with the
 date, what changed, and what problem the learner had. That keeps
 the contract honest about why the route moved.
 
+## Send small fixes to the right skill
+
+Not every fix needs a new plan version.
+
+- The fix stays inside one block: the words are wrong, a label is
+  wrong, or the same picture needs a second try. Tell the lesson
+  skill to fix the block. No new `revision` is needed.
+- The fix changes the plan: a new concept, a new medium, a new
+  skill route, a new order, a new source, or less scope. Tell the
+  course skill to update `course.json` with `revision` + 1 and a
+  `revision_notes` reason. The lesson skill then rebuilds the blocks
+  that changed. A lesson worker never changes `course.json` on its
+  own.
+
 ## Simple rules
 
 - one repeat: rephrase in chat, no change to the map

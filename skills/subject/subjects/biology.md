@@ -141,3 +141,23 @@ review, textbook model, database record, and primary experiment. For a specialty
 not listed here, search PubMed or NCBI Bookshelf for the field's review and then
 the cited primary study; do not imply that OpenStax Biology 2e covers advanced
 immunology, structural biology, ecology, or genomics in sufficient depth.
+
+## What each route earns
+
+First write what the learner must inspect, change, compare, or work out
+in one sentence, and pick the smallest medium that lets them do it. Only
+then check this table for what biology usually needs. Never use the table
+as a reason to order its favorite medium. Depth and length still cap the
+media: a survey earns mostly text plus one medium.
+
+| Route | Lead with | Then earn, only when | Exercise |
+| --- | --- | --- | --- |
+| Cell structure and transport | Compartments, barriers, and gradients in text | Excalidraw sketch, only for a static membrane picture | Multiple-choice: label the membrane and predict one blocked step |
+| Molecular biology / biochemistry | Substrate, enzyme, product, and energy in text | Excalidraw pathway sketch, only to trace matter through the mechanism | Short text: trace the matter from substrate to product |
+| Genetics and genomics | Ploidy and segregation assumptions in text | Excalidraw cross or pedigree sketch | Numeric: interpret the small cross |
+| Physiology | Regulated variable, sensor, and controller in text | Simulation, only when the learner perturbs one variable | Short text: predict the compensation |
+| Evolution | Variation, heritability, and generations in text | Simulation, only when the learner varies selection or drift across generations | Short text: explain the frequency change |
+| Ecology | Boundary, units, and sampling frame in text | Simulation, only when the learner adds a predator or removes a resource | Numeric: predict what the measured series would do |
+| Development and cell differentiation | Signal and time scale in text | Manim, only when the signal-to-state change over time is the idea | Short text: link the signal to the changed state |
+| Microbiology and host interaction | Exposure, infection, growth, and disease defined in text | Labeled image, and say whether it is observed, reconstructed, or illustrative | Multiple-choice: separate exposure from infection from disease |
+| Experimental / quantitative biology | Variables, controls, and stopping rule in text | PDF packet, only for a source-backed design with a competing hypothesis | Long text: design the experiment and name the result that would change your mind |

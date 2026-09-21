@@ -8,6 +8,25 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Oxanium:wght@200..800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  if (window.renderMathInElement) {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: "$$", right: "$$", display: true},
+        {left: "\\[", right: "\\]", display: true},
+        {left: "\\(", right: "\\)", display: false},
+        {left: "$", right: "$", display: false}
+      ],
+      throwOnError: false
+    });
+  }
+});
+</script>
 <style>
 :root{
   --paper:#F6F4EE;
@@ -31,7 +50,8 @@
   --locked:#A09A8A;
   --warn:#96590A;
   --title-font:"Oxanium","Montserrat",sans-serif;
-  --body-font:"IBM Plex Mono",ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --body-font:"Source Serif 4",Georgia,"Times New Roman","STIX Two Text",serif;
+  --mono-font:"IBM Plex Mono",ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
 }
 *,*::before,*::after{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
@@ -47,7 +67,7 @@ body{
 :focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:2px;}
 a{color:var(--teal);text-decoration:none;}
 a:hover{color:var(--teal-deep);text-decoration:underline;}
-pre,code{font-family:var(--body-font);}
+pre,code{font-family:var(--mono-font);}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
 
 /* ---- topbar ---- */
@@ -77,7 +97,7 @@ pre,code{font-family:var(--body-font);}
 .top-tabs ul{list-style:none;margin:0;padding:0;display:flex;justify-content:flex-start;gap:clamp(22px,3vw,48px);width:max-content;}
 .top-tabs button{
   appearance:none;background:none;border:0;cursor:pointer;
-  font-family:var(--body-font);font-size:16px;font-weight:400;color:var(--teal);
+  font-family:var(--mono-font);font-size:16px;font-weight:400;color:var(--teal);
   padding:10px 2px 12px;letter-spacing:.01em;border-bottom:2px solid transparent;
 }
 .top-tabs button:hover{color:var(--teal-deep);}
@@ -233,6 +253,9 @@ tr.current-row td{background:var(--row-selected);}
 .block ul{margin:8px 0;padding-left:22px;}
 .block li{margin:5px 0;}
 .block pre{background:var(--code-bg);border:1px solid var(--divider-strong);border-radius:6px;padding:14px;font-size:13px;line-height:1.6;overflow-x:auto;white-space:pre-wrap;word-break:break-word;}
+.math{font-family:Georgia,'Times New Roman','STIX Two Text',serif;color:var(--ink);line-height:1.55;word-break:break-word;}
+.math-display{display:block;text-align:center;font-size:1.2em;padding:16px 14px;margin:12px 0;background:var(--card);border:1px solid var(--divider);border-radius:6px;overflow-x:auto;}
+.math-empty{display:none;}
 .media{border:1px solid var(--divider-strong);border-radius:8px;overflow:hidden;background:var(--card);margin:10px 0;}
 .media video,.media img{width:100%;display:block;height:auto;}
 .media iframe{width:100%;height:480px;border:0;background:#fff;display:block;}
@@ -246,6 +269,15 @@ tr.current-row td{background:var(--row-selected);}
 .card .prompt{margin:6px 0;font-size:14px;}
 .card .meta{font-size:12px;color:var(--ink-faint);margin-top:4px;}
 .card ul{margin:6px 0;padding-left:20px;font-size:14px;}
+.exercise-form{margin-top:10px;display:grid;gap:8px;}
+.exercise-label{display:grid;gap:6px;font-size:13px;color:var(--ink-muted);}
+.exercise-form input[type="text"],.exercise-form input[type="number"],.exercise-form textarea{width:100%;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1px solid var(--divider-strong);border-radius:6px;padding:8px 10px;}
+.exercise-form textarea{min-height:88px;resize:vertical;}
+.exercise-options{display:grid;gap:6px;margin:8px 0;}
+.exercise-options label{display:flex;gap:8px;align-items:baseline;font-size:14px;background:#fff;border:1px solid var(--divider);border-radius:6px;padding:8px 10px;cursor:pointer;}
+.exercise-actions button{appearance:none;border:1px solid var(--teal);background:var(--teal);color:#fff;font:inherit;font-size:13px;font-weight:600;border-radius:999px;padding:6px 16px;cursor:pointer;}
+.exercise-actions button:hover{background:var(--teal-deep);}
+.exercise-status{font-size:12px;color:var(--done);margin-top:6px;min-height:1.2em;}
 .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;}
 .item{border:1px solid var(--divider);border-radius:6px;padding:14px;background:var(--card);display:flex;flex-direction:column;gap:6px;}
 .item .kind{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;}
@@ -510,6 +542,87 @@ document.addEventListener("DOMContentLoaded", function () {
     if (link) { e.preventDefault(); goLesson(Number(link.getAttribute("data-index"))); }
   });
   updateNav();
+
+  // Exercises: capture answers locally, persist to localStorage, never grade.
+  (function initExercises() {
+    if (document.documentElement.getAttribute("data-gnos-exercises") === "1") return;
+    document.documentElement.setAttribute("data-gnos-exercises", "1");
+    function storageKey(courseId, exerciseId) {
+      if (courseId) return "gnos:exercise:" + courseId + ":" + exerciseId;
+      return "gnos:exercise:" + exerciseId;
+    }
+    function getAnswer(form) {
+      var checked = form.querySelector('input[type="radio"][name="answer"]:checked');
+      if (checked) return checked.value;
+      var field = form.querySelector('textarea[name="answer"], input[name="answer"]');
+      if (field) return field.value;
+      return "";
+    }
+    function setAnswer(card, answer) {
+      var form = card.querySelector(".exercise-form");
+      if (!form) return;
+      var radios = form.querySelectorAll('input[type="radio"][name="answer"]');
+      if (radios && radios.length) {
+        Array.prototype.forEach.call(radios, function (r) { r.checked = (r.value === answer); });
+        return;
+      }
+      var field = form.querySelector('textarea[name="answer"], input[name="answer"]');
+      if (field) field.value = answer;
+    }
+    function setStatus(card, message) {
+      var el = card.querySelector(".exercise-status");
+      if (el) el.textContent = message;
+    }
+    function restoreCard(card) {
+      var exId = card.getAttribute("data-exercise-id") || "";
+      if (!exId) return;
+      var courseId = card.getAttribute("data-course-id") || "";
+      var raw = null;
+      try { raw = window.localStorage.getItem(storageKey(courseId, exId)); } catch (e) { raw = null; }
+      if (raw === null || raw === undefined || raw === "") return;
+      var answer = "";
+      try {
+        var parsed = JSON.parse(raw);
+        if (parsed && typeof parsed.answer === "string") answer = parsed.answer;
+        else if (typeof parsed === "string") answer = parsed;
+        else return;
+      } catch (e) { answer = raw; }
+      if (!answer) return;
+      setAnswer(card, answer);
+      setStatus(card, "Saved \u2713 Your answer was recorded locally. You can change it and save again.");
+    }
+    function syncCards(courseId, exId, answer, sourceCard) {
+      Array.prototype.forEach.call(document.querySelectorAll(".card.exercise"), function (card) {
+        if (card === sourceCard) return;
+        if ((card.getAttribute("data-exercise-id") || "") !== exId) return;
+        if ((card.getAttribute("data-course-id") || "") !== courseId) return;
+        setAnswer(card, answer);
+        setStatus(card, "Saved \u2713 Your answer was recorded locally. You can change it and save again.");
+      });
+    }
+    Array.prototype.forEach.call(document.querySelectorAll(".card.exercise"), restoreCard);
+    document.addEventListener("submit", function (e) {
+      var form = e.target;
+      if (!form || !form.classList || !form.classList.contains("exercise-form")) return;
+      e.preventDefault();
+      var card = form.closest ? form.closest(".card.exercise") : null;
+      if (!card) return;
+      var exId = card.getAttribute("data-exercise-id") || "";
+      var courseId = card.getAttribute("data-course-id") || "";
+      var answer = getAnswer(form);
+      var isChoice = !!form.querySelector('input[type="radio"][name="answer"]');
+      if (typeof answer === "string" && !isChoice) answer = answer.trim();
+      if (!answer) {
+        setStatus(card, "Please enter or choose an answer before saving.");
+        return;
+      }
+      try {
+        window.localStorage.setItem(storageKey(courseId, exId), JSON.stringify({ answer: answer, savedAt: new Date().toISOString() }));
+      } catch (err) { /* storage unavailable; still show recorded state */ }
+      setStatus(card, "Saved \u2713 Your answer was recorded locally. You can change it and save again.");
+      syncCards(courseId, exId, answer, card);
+    });
+  })();
 });
 </script>
 </body>

@@ -155,14 +155,18 @@ class ViewerTests(unittest.TestCase):
         self.assertIn("font-size:clamp(72px,6.25vw,150px)", display_css)
         self.assertNotIn("scaleY", display_css)
 
-    def test_rendered_course_loads_display_and_monospace_fonts(self):
+    def test_rendered_course_loads_display_and_text_fonts(self):
         text = self.render()
 
+        self.assertIn("https://fonts.googleapis.com/css2?family=Source+Serif+4", text)
         self.assertIn("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono", text)
         self.assertIn("family=Montserrat:ital,wght@0,100..900;1,100..900", text)
         self.assertIn("family=Oxanium:wght@200..800", text)
         self.assertIn('--title-font:"Oxanium","Montserrat",sans-serif', text)
-        self.assertIn('--body-font:"IBM Plex Mono",ui-monospace', text)
+        # Prose is serif; monospace survives only for code and tabs.
+        self.assertIn('--body-font:"Source Serif 4"', text)
+        self.assertIn('--mono-font:"IBM Plex Mono",ui-monospace', text)
+        self.assertIn("pre,code{font-family:var(--mono-font);}", text)
 
     def test_mobile_editorial_title_remains_bounded(self):
         text = self.render()

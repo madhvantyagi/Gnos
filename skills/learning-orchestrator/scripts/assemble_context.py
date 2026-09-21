@@ -25,8 +25,8 @@ def media_paths(media):
     mapping = {
         'pdf': ['skills/pdf/SKILL.md'],
         'manim': ['skills/manim-voice-animation/SKILL.md'],
-        'image': ['skills/image-gen/SKILL.md'],
-        'diagram': ['skills/image-gen/SKILL.md'],
+        'image': ['skills/subject/SKILL.md'],
+        'diagram': ['skills/subject/SKILL.md'],
         'simulation': [
             'skills/course-design/references/representation-choices.md',
             'skills/course-design/references/artifact-manifest.md',
@@ -63,9 +63,16 @@ def selected_paths(subject, mode='lesson', media=None, course=None):
             'skills/course-design/references/course-contract.md',
             'skills/course-design/references/course-research.md',
             'skills/course-design/references/representation-choices.md',
-            'skills/course-design/references/lesson-contract.md',
             'skills/learner-tracking/SKILL.md',
             'skills/learner-tracking/references/adaptive-lifecycle.md',
+            'skills/course-viewer/SKILL.md',
+        ]
+    if mode == 'lesson' and course is not None:
+        paths += [
+            'skills/lesson-design/SKILL.md',
+            'skills/lesson-design/references/lesson-contract.md',
+            'skills/course-design/references/representation-choices.md',
+            'skills/course-design/references/artifact-manifest.md',
             'skills/course-viewer/SKILL.md',
         ]
     if media:

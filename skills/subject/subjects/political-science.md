@@ -47,6 +47,23 @@ definition or source comparison.
 ## Source selection
 
 Use constitutional and legislative texts, official election data, original research, and inspected theory texts. Verify current laws and officeholders; distinguish what a rule says from evidence about enforcement.
+
+## What each area earns
+
+First write what the learner must inspect, change, compare, or work out
+in one sentence, and pick the smallest medium that lets them do it. Only
+then check this table for what political science usually needs. Never use
+the table as a reason to order its favorite medium. Depth and length still
+cap the media: a survey earns mostly text plus one medium.
+
+| Area | Lead with | Then earn, only when | Exercise |
+| --- | --- | --- | --- |
+| Political theory | Arguments and normative premises in text | Nothing else; the work is claim against objection | Long text: compare the claim with its strongest objection |
+| Comparative politics | Institutions and cases in text | Pinepaper institutional map, only while checking case selection | Long text: compare the mechanisms and defend the case choice |
+| International relations | Actors and interests in text | Nothing else unless competing explanations need side-by-side layout | Long text: state the competing explanations and their observable implications |
+| Public policy and administration | Implementation chain stated in text | Excalidraw sketch, only to trace design through implementation to effects | Short text: trace the policy through implementation to its effects |
+| Political behavior | Surveys and turnout stated in text | Simulation, only when the learner varies the rule or turnout | Short text: inspect the measurement and name the uncertainty |
+| Research methods | Descriptive or causal claim stated in text | Nothing else; the work is matching evidence to the claim | Long text: match the evidence to the claim and defend the match |
 No curated source entries are supplied specifically for this subject yet.
 Inspect suitable sources before assigning a sustained course; follow
 [the source-use guide](../references/source-use.md).

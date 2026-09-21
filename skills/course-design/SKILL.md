@@ -1,123 +1,91 @@
 ---
 name: course-design
-description: "Make and update the course plan: ask depth and length, search sources, write course.json, publish formal lessons, and record what changed in the route."
+description: "Design and revise a course's progression, outcomes, sources, and representations. Record depth and duration, validate and enroll course.json, then hand the current topic to lesson-design. Does not author lessons."
 ---
 
 # Course design
 
-Make a course only when the goal needs it. Most questions do not.
+Use this skill when a learning goal needs several sessions or a sequence of
+prerequisites. Answer a small local question directly in chat. For a course,
+design the progression from the learner's starting point to the agreed goal.
+Lesson design develops each topic into a complete lesson.
 
-Answer in chat when the learner has one small target,
-for example "why can we divide by x here?". Make a course when
-the goal takes several sessions or needs steps in order,
-for example "learn mechanics over six weeks".
+## Establish depth and duration
 
-## How it works
+Before designing, establish how deeply the learner wants to study and how
+much time they have. Ask for whichever information they have not already
+provided. Record both in `course.json`:
 
-0. **Ask depth and length before designing.** When a course is
-   justified, ask the learner how deep and how long they want to go:
+- `depth`: `survey` for understanding the central ideas and connections,
+  `working` for applying them independently, or `mastery` for justifying
+  methods and examining their limits.
+- `length`: the learner's intended duration, such as one session, six weeks,
+  or a term.
 
-   - `depth`: `survey` (see the landscape, connect the ideas),
-     `working` (be able to use the ideas on real problems), or
-     `mastery` (defend, derive, and teach the ideas back).
-   - `length`: one session, a few weeks, a term, or longer.
+Use these answers to choose the scope, pace, research, and useful media.
+A shorter course should cover fewer ideas well rather than abbreviating every
+explanation.
 
-   The answers decide the size of the route: how many topics, how
-   much research, how fine to cut each lesson, and how much media
-   is earned. Record both in `course.json` and follow them during
-   research — a survey does not need two contrasting textbooks, and
-   a term-long mastery route should not be compressed into five chat
-   turns.
+## Research and plan the course
 
-1. **Search.** Read [course-research.md](references/course-research.md).
-   Look in books, course sites, and docs. Take definitions,
-   step order, and exercise ideas. Write down what you opened.
-   Scale the search to the agreed depth and length.
+Read [course-research.md](references/course-research.md). Consult accessible
+books, course materials, or documentation to check prerequisites, definitions,
+and suitable exercises. Record what you actually opened and which sections
+the course will use.
 
-2. **Write the plan.** Read [course-contract.md](references/course-contract.md).
-   Write `course.json` with title, goal, `depth`, `length`, steps,
-   sources, and one current step. Say which source each step uses.
-   Read the selected subject file through `skills/subject/SKILL.md` before
-   choosing media. Its representation profile states what learners in that
-   field need to inspect.
-   Split each topic into its representations: which part needs manim
-   motion, which needs a still image or vector diagram, which needs a
-   simulation, which stays text. Read
-   [representation-choices.md](references/representation-choices.md)
-   for the rules. Check the plan with:
+Read [course-contract.md](references/course-contract.md) and write
+`course.json`. Organize chapters and topics so their outcomes build toward the
+course goal. Identify the current topic and leave uncertain later topics
+provisional.
 
-   ```bash
-   python3 skills/course-design/scripts/validate_course.py <course.json>
-   python3 skills/learner-tracking/scripts/learner_state.py init <learner>
-   python3 skills/learner-tracking/scripts/learner_state.py enroll <learner> --course <course.json>
-   ```
+Read the selected subject guide through `skills/subject/SKILL.md` and its
+assigned teacher's `SOUL.md` when one exists. Use the subject's representation
+profile with [representation-choices.md](references/representation-choices.md)
+to choose the topic's representations. Give each a specific teaching purpose,
+including the text and exercises needed to connect media into a lesson.
+Leave the detailed explanations, examples, and block order to lesson design.
 
-   Enroll the validated plan in the same turn. Use the learner's name, or the
-   default `learner` when no name was given. Do not stop at
-   `outputs/course.json`; the canonical course workspace must exist before the
-   lesson skeleton is published.
+## Validate and enroll
 
-3. **Build the lesson from the course plan.** A taught topic's default
-   record is its formal lesson file. Read
-   [lesson-contract.md](references/lesson-contract.md). Author an ordered
-   `lesson.json` skeleton for the current topic. Every block must point to one
-   of that topic's approved representations through `representation_id`.
-   Do not introduce a new concept, medium, or skill route in the lesson.
+Validate the plan and enroll it in the same turn:
 
-   Validate and publish the skeleton as `draft` before producing files. This
-   gives every artifact a real lesson ID:
+```bash
+python3 skills/course-design/scripts/validate_course.py <course.json>
+python3 skills/learner-tracking/scripts/learner_state.py init <learner>
+python3 skills/learner-tracking/scripts/learner_state.py enroll <learner> --course <course.json>
+```
 
-   ```bash
-   python3 skills/course-design/scripts/validate_lesson.py lesson.json \
-     --course learners/<learner>/courses/<course-id>/course.json
-   python3 skills/course-design/scripts/course_workspace.py publish \
-     learners/<learner>/courses/<course-id> --lesson lesson.json
-   ```
+Use the learner's name, or `learner` when no name was given. Confirm that the
+canonical workspace at `learners/<learner>/courses/<course-id>/course.json`
+exists before handing the topic to lesson design. Do not stop at saving a plan
+under `outputs/`; enroll it so lesson design can use the canonical course.
 
-   Add a complete `production` brief to every block that will be delegated.
-   When multi-agent execution is available, assign each file-producing block
-   to one worker. Also delegate a text or code block when it needs separate
-   research or a long worked construction. Keep short explanations,
-   transitions, and notation with the coordinator.
+Briefly explain the course goal, agreed depth and duration, and current topic.
+Describe what the selected representations will help the learner understand.
+Use enough detail to make the plan understandable without reciting its fields.
 
-   Give each worker only its block, its course representation, the selected
-   subject guidance, shared continuity rules, and required source material.
-   Workers write to separate output paths. They return a completed block
-   fragment or artifact plus its registration payload. They never edit
-   `course.json`, `lesson.json`, or `manifest.json`.
+## Show the course and hand off the lesson
 
-   Run blocks with no dependencies in parallel. A block listed in
-   `depends_on_block_ids` starts only after those earlier blocks return. The
-   coordinator checks every result, merges block fragments, registers artifacts
-   one at a time, validates the completed lesson, and publishes it as `ready`.
-   If a worker needs a different concept, medium, or purpose, stop that block
-   and revise `course.json` first.
+Follow the orchestrator's course-viewer step: ask “want to see the course now?”
+unless the learner has already requested or approved it. On yes, render the
+page and return its `portal/` link with what to open:
 
-   Teach directly in chat while the learner is actively interacting. The
-   formal lesson still captures the topic for the portal. The learner skill
-   records the exchange. When evidence changes the route, revise `course.json`
-   and state the change and reason in `revision_notes`. See
-   `skills/learner-tracking/SKILL.md` for the adaptive step.
+```bash
+python3 skills/course-viewer/scripts/render_viewer.py learners/<learner>/courses/<course-id>
+```
 
-4. **Route each representation, then show the course.** Dispatch each topic
-   representation to its skill: `manim` -> manim-voice-animation,
-   `image` -> image-gen, `diagram` -> image-gen or pinepaper/excalidraw
-   per the subject skill, `simulation` -> a small self-contained HTML
-   file the coordinator registers with `manage_artifact.py`, `pdf` -> pdf,
-   `text`/`exercise` -> the subject teacher. Every skill that produces a
-   file returns a registration payload to the coordinator. Only the
-   coordinator updates the artifact manifest. Then ask this exact question and
-   wait for the answer:
-   "want to see the course now?" On yes, render the page and reply with
-   the `portal/` link and what to click:
+The contents page can render before any lessons exist. Use
+[lesson-design](../lesson-design/SKILL.md) to develop the enrolled current
+topic. That skill writes the lesson, coordinates production, registers checked
+artifacts, and publishes the finished lesson. Re-render the page after a new
+lesson or artifact is published. Course design does not write `lesson.json`,
+production briefs, or block content.
 
-   ```bash
-   python3 skills/course-viewer/scripts/render_viewer.py learners/<learner>/courses/<course-id>
-   ```
+If lesson design discovers a missing concept or an unsuitable representation,
+revise that part of the course first. Record the reason in `revision_notes`,
+validate and enroll the revised plan, then return to lesson design. More
+explanation within an existing representation does not require a course change.
 
-   Re-render after every new lesson, video, image, or simulation — even
-   when the course has zero lessons, the contents page still renders.
-
-You only need `validate_course.py`, `validate_lesson.py`, and
-`course_workspace.py publish` for normal work. Other files in
-`scripts/` are for the portal and old plans.
+Use learner evidence to revise future topics as the course progresses. Preserve
+stable IDs and record why the sequence, sources, or scope changed, following
+[course-contract.md](references/course-contract.md).

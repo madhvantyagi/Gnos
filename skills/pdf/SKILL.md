@@ -9,6 +9,11 @@ Build a document the learner can return to without the conversation. Keep the
 teaching sequence visible: question, explanation, worked example, changed case.
 Use headings to mark conceptual changes rather than decorating every paragraph.
 
+Run the commands below with the project's `.venv/bin/python` when that
+environment is present. Check that interpreter before treating a missing
+package in the system Python as a missing PDF capability. For a fresh
+environment, install `skills/pdf/requirements.txt` there.
+
 1. Select the lesson's outcome and audience. Read only the necessary teacher and
    subject context. Do not print internal learner records or hidden assessment
    criteria in a handout unless requested.

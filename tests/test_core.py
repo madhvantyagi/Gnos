@@ -31,7 +31,7 @@ class LearnerTests(unittest.TestCase):
         loader = ROOT / "skills/learning-orchestrator/scripts/assemble_context.py"
         result = subprocess.run([
             sys.executable, str(loader), "--subject", "accounting", "--mode", "course",
-            "--course", str(course_path),
+            "--course", str(course_path), "--learners-root", str(self.root),
         ], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("skills/subject/subjects/accounting.md", result.stdout)
@@ -351,15 +351,30 @@ class LearnerTests(unittest.TestCase):
         loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
         result = subprocess.run([
             sys.executable, str(loader), '--subject', 'math', '--mode', 'course',
-            '--course', str(course_path),
+            '--course', str(course_path), '--learners-root', str(self.root),
         ], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn('skills/learner-tracking/references/adaptive-lifecycle.md', result.stdout)
-        self.assertIn('skills/course-design/references/lesson-contract.md', result.stdout)
+        self.assertNotIn('skills/course-design/references/lesson-contract.md', result.stdout)
         self.assertIn('skills/course-design/references/representation-choices.md', result.stdout)
         self.assertIn('skills/course-viewer/SKILL.md', result.stdout)
         self.assertIn('skills/subject/subjects/math.md', result.stdout)
         self.assertIn('teachers/math/SOUL.md', result.stdout)
+        self.assertIn('--- COURSE DATA:', result.stdout)
+
+    def test_lesson_mode_with_course_loads_lesson_design(self):
+        from tests.test_course_contract_v2 import valid_v2_course
+
+        course_path = self.root / 'course.json'
+        course_path.write_text(json.dumps(valid_v2_course()))
+        loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
+        result = subprocess.run([
+            sys.executable, str(loader), '--subject', 'math',
+            '--course', str(course_path), '--learners-root', str(self.root),
+        ], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('skills/lesson-design/SKILL.md', result.stdout)
+        self.assertIn('skills/lesson-design/references/lesson-contract.md', result.stdout)
         self.assertIn('--- COURSE DATA:', result.stdout)
 
     def test_course_mode_rejects_subject_mismatch(self):
@@ -370,7 +385,7 @@ class LearnerTests(unittest.TestCase):
         loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
         result = subprocess.run([
             sys.executable, str(loader), '--subject', 'physics', '--mode', 'course',
-            '--course', str(course_path),
+            '--course', str(course_path), '--learners-root', str(self.root),
         ], capture_output=True, text=True)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('does not match the current course topic', result.stderr)
@@ -384,14 +399,19 @@ class LearnerTests(unittest.TestCase):
         self.assertNotIn('skills/course-design/SKILL.md', result.stdout)
         self.assertNotIn('skills/course-design/references/', result.stdout)
 
-    def test_media_image_loads_image_gen_skill(self):
+    def test_image_and_diagram_context_load_without_a_local_image_skill(self):
         loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
-        result = subprocess.run([
-            sys.executable, str(loader), '--subject', 'math', '--media', 'image',
-            '--manifest',
-        ], capture_output=True, text=True)
-        self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn('skills/image-gen/SKILL.md', result.stdout)
+        for media in ('image', 'diagram'):
+            with self.subTest(media=media):
+                command = [sys.executable, str(loader), '--subject', 'math',
+                           '--media', media, '--learners-root', str(self.root)]
+                result = subprocess.run(command, capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn((ROOT / 'skills/subject/SKILL.md').read_text(), result.stdout)
+                manifest = subprocess.run(command + ['--manifest'], capture_output=True, text=True)
+                self.assertEqual(manifest.returncode, 0, manifest.stderr)
+                for path in manifest.stdout.splitlines():
+                    self.assertTrue((ROOT / path).is_file(), path)
 
 
 class CourseTests(unittest.TestCase):

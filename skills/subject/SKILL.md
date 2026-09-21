@@ -95,17 +95,26 @@ machinery?” Read both, in that order.
 | Workflow | What it produces | Route |
 | --- | --- | --- |
 | Subject teacher | Explanation, derivation, code, bullets, and exercises | This skill and the selected subject guide |
-| Image generation | Still illustration or labeled image | `skills/image-gen/SKILL.md` |
+| Image generation | Still illustration or labeled image | The host's existing image-generation skill or tool, following the instructions below |
 | Manim voice animation | Narrated rendered motion with subtitles | `skills/manim-voice-animation/SKILL.md` |
 | PDF | Rendered and inspected handout or source packet | `skills/pdf/SKILL.md` |
 | Excalidraw MCP | Quick inspectable CS relationship or boundary diagram | [Excalidraw workflow](references/excalidraw.md) through the CS guide |
 | Pinepaper MCP | Polished vector, interactive relation, or animated SVG | [Pinepaper workflow](references/pinepaper.md) and a linked subject reference |
 | Simulation | Learner-controlled graph or model | Self-contained HTML registered through `manage_artifact.py` |
 
-The MCP references are workflows under the subject route, not standalone lesson
-skills. The topic still declares the subject skill and selected subject guide.
-Add a producing `SKILL.md` route when ImageGen, Manim, or PDF will create a
-file.
+For generated images, invoke the host's existing image-generation skill
+(such as Codex's `imagegen`) and follow its instructions. Give it the lesson's
+visual brief and keep the returned image with the course artifacts. Inspect
+the result before the lesson coordinator registers it. GNOS does not need a
+separate image-generation skill. If the host has no image-generation capability,
+report that and revise the representation rather than claiming an image exists.
+
+Image generation and the MCP references use the subject route. Declare
+`skills/subject/SKILL.md` and the selected subject guide in the topic's
+`skill_routes`; use `skills/subject/SKILL.md` for an image representation's
+production route. The host skill is invoked from these instructions, so its
+installation path does not belong in `course.json`. Add a producing `SKILL.md`
+route for GNOS's Manim or PDF skill when it will create a file.
 
 Apply these tests:
 

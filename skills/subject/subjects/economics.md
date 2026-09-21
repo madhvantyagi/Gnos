@@ -42,3 +42,25 @@ the output of a stated model, not a forecast or causal result.
 
 Load those references only when needed. Nadia owns the economic model, estimand,
 evidence, and interpretation; math, CS, or history supplies one bounded bridge.
+
+## What each area earns
+
+First write what the learner must inspect, change, compare, or work out
+in one sentence, and pick the smallest medium that lets them do it. Only
+then check this table for what economics usually needs. Never use the
+table as a reason to order its favorite medium. Depth and length still
+cap the media: a survey earns mostly text plus one medium.
+
+| Area | Lead with | Then earn, only when | Exercise |
+| --- | --- | --- | --- |
+| Microeconomics | Decision maker, constraints, and a small numerical table in text | Simulation, only when the learner varies a constraint and watches incidence or elasticity move | Numeric: predict the changed choice |
+| Macroeconomics | Stocks, flows, horizon, and accounting in text | Manim, only when the adjustment over time is the lesson | Numeric: separate nominal, real, per-person, and aggregate |
+| Econometrics | Estimand and comparison stated in text | Simulation, only when the learner varies the sample or specification | Short text: state what makes the estimate interpretable |
+| Game theory | Players, timing, information, and payoffs in text | Simulation, only when one condition changes and best responses must be recomputed | Numeric: find the best response after the change |
+| Labor, public, development | Institutions and distribution in text | Simulation, only when the learner varies the policy rule | Numeric: compare totals and say who gains or pays |
+| Behavioral economics | Baseline model and treatment in text | Simulation, only when the learner varies the framing | Multiple-choice: separate preference, belief, attention, and framing |
+| Economic history | Dated institutions and sources in text | Nothing else; the argument is mechanism beside evidence | Long text: put the mechanism beside the historical evidence |
+| Finance, money, environment | Timing, risk, and accounting in text | Manim, only when claims move through time and the path matters | Numeric: track the claims and units without calling price welfare |
+
+Draw the graph only after the table and the held-constant conditions.
+Keep current figures, policy dates, units, and source notes in text.

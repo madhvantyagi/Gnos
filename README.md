@@ -35,9 +35,10 @@ attempts, and adapts the moment it hurts. Each pillar is its own skill:
 | --- | --- | --- |
 | **Start** | [learning-orchestrator](skills/learning-orchestrator/SKILL.md) | Reads the request, routes it, teaches from the actual break in reasoning. |
 | **Build** | [course-design](skills/course-design/SKILL.md) | Researches sources, writes the plan, records every route change. |
+| **Lesson** | [lesson-design](skills/lesson-design/SKILL.md) | Builds one lesson from the current topic, block by block. |
 | **Track & adapt** | [learner-tracking](skills/learner-tracking/SKILL.md) | Records attempts and stuck points; the course changes in real time. |
 | **Choose** | [subject](skills/subject/SKILL.md) | Picks the subject and the teacher persona that fits the problem. |
-| **Show** | [manim-voice-animation](skills/manim-voice-animation/SKILL.md) · [image-gen](skills/image-gen/SKILL.md) · [pdf](skills/pdf/SKILL.md) | Turns words into narrated animations, images, diagrams, handouts. |
+| **Show** | [manim-voice-animation](skills/manim-voice-animation/SKILL.md) · host image generation · [pdf](skills/pdf/SKILL.md) | Turns words into narrated animations, images, diagrams, handouts. |
 | **View** | [course-viewer](skills/course-viewer/SKILL.md) | Renders the course into one static page: videos, images, simulations, exercises. |
 
 ## Teachers with souls
@@ -46,20 +47,32 @@ Every teacher is a persona with a `SOUL.md` — identity, voice, and judgment
 under pressure. A math topic gets the math soul; a history doubt never hears
 an invented panel. The right teacher is assigned per topic, in real time.
 
-## Media comes from MCP servers
+## Media production
 
-Visuals are not decoration. Narrated animations, architecture diagrams, and
-images from image models are produced by connected MCP servers, then
-registered into the lesson that needs them.
+Use the host's existing image-generation skill or tool for generated images.
+GNOS supplies the lesson brief and registers the checked output. Its Manim and
+PDF skills build videos and handouts; the subject guides route diagram work
+to the appropriate connected tool.
 
 ## Use it
 
-Start at the orchestrator, then validate everything:
+Start at the orchestrator. Use the project's Python environment for validation
+so the PDF and video checks run too:
 
 ```bash
-python3 skills/learning-orchestrator/scripts/validate_harness.py
-python3 -m unittest discover -s tests
+.venv/bin/python skills/learning-orchestrator/scripts/validate_harness.py
+.venv/bin/python -m unittest discover -s tests -v
 ```
+
+For a fresh checkout, create that environment with `python3 -m venv .venv`,
+then install the existing requirements:
+
+```bash
+.venv/bin/python -m pip install -r skills/pdf/requirements.txt -r skills/manim-voice-animation/requirements.txt
+```
+
+Use this interpreter for PDF and media scripts as well. An unrelated system
+Python may lack these packages even when they are installed in `.venv`.
 
 Design and check a course, then render the learner's page:
 

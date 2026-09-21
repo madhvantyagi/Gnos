@@ -1,133 +1,153 @@
-# Course contract — design a course that builds
+# Course contract
 
-`course.json` is the map. It says where the learner goes, in what order,
-from which source, and where they stand right now. Past topics sit before
-`current`, the `current` topic is now, and later topics may stay
-`provisional` until evidence firms them up.
+Use this reference to design the progression of a course and record it in
+`course.json`. Decide what the learner should understand at each stage, what
+that stage depends on, and how it prepares them for the next one. Lesson design
+uses those decisions to write the explanations, examples, and activities.
 
-It never holds lesson text or scores. Lesson text lives in the lesson
-files, and scores live in chat and `learners/<id>/state.json`.
+Create new plans with `schema_version: 2`. Keep lesson content in lesson files
+and learner attempts in `learners/<id>/state.json`.
 
-New plans use `schema_version: 2`. Do not write new version-1 plans.
+## Establish the goal and starting point
 
-## Build the course in order
+Write a course `goal` that describes what the learner will be able to do.
+“Derive and implement gradient descent” gives the course a clearer destination
+than “Learn optimization.” Use `starting_evidence` for abilities the learner
+has demonstrated. Put unverified prerequisites in `assumptions`; an empty
+record does not establish that someone is a beginner.
 
-This is the most important rule. Design the route so each topic needs
-only what earlier topics already taught.
+Use the agreed `depth` to decide how far the course develops its ideas. A
+`survey` should explain the central ideas and their connections. A `working`
+course should prepare the learner to apply them independently. A `mastery`
+course should also develop their ability to justify the methods and examine
+their limits. Each depth needs complete explanations within its chosen scope.
 
-Order every chapter and topic so a later step never introduces what an
-earlier step assumes. List only earlier topic IDs in `prerequisites`.
-If step 3 needs step 5, reorder the course instead of reaching forward.
+Use `length` to set a realistic scope and pace. Estimate topic `minutes` for
+explanation, examples, practice, and reflection together. If that work exceeds
+the available time, narrow the course or discuss a longer duration. Do not fit
+the schedule by removing the reasoning that makes a topic understandable.
 
-Start from the learner, not from the textbook. Record what they already
-showed in `starting_evidence`, and write what you have not checked yet in
-`assumptions` in plain words. An empty `starting_evidence` means unknown,
-never beginner.
+## Build the progression
 
-Give every topic an `outcome` that starts with a verb, such as predict,
-derive, implement, or explain. The outcomes should read as a staircase
-toward the course `goal`. Group them into chapters only where the group
-marks a real stage in that staircase, so the portal table of contents
-still finds its home.
+Arrange topics so each one uses knowledge established earlier or explicitly
+identified as a starting prerequisite. List only earlier topic IDs in
+`prerequisites`. If an early topic depends on a later one, repair the order.
 
-Explain the whole idea in simple language before you formalize it. Each
-lesson must leave the learner able to say what the topic is about as a
-whole, not just repeat one formula. Build from the familiar case to the
-general case, and return to the whole before you close.
+Give each topic an observable `outcome`, such as explaining a distinction,
+predicting a result, or implementing a method. Check how those outcomes
+contribute to the course goal. Group related topics into a chapter when they
+develop a larger idea or capability; name the chapter so that progression is
+visible in the contents page.
 
-Plan every topic to sustain at least four lesson sections that develop
-the idea, and it can be more, for example naming the claim, working it through, varying or testing it, and practicing it. Never approve a topic that is only one
-definition plus a quiz. Depth sets how far each section goes: a `survey`
-still finishes the idea, `working` adds the diagrams, controls, and
-motion needed for transfer, and `mastery` defends, derives, and teaches
-it back. Thin skim is never acceptable at any depth.
+Choose topic boundaries that support a complete lesson. A topic should give
+lesson design room to explain the idea, develop an example, examine what
+changes in another case, and provide useful practice. These are reasons to
+develop the topic, not mandatory section headings or a section count. Split a
+topic when it contains several outcomes that need separate development.
 
-## Keep one teacher per topic
+Plan the whole course, but leave uncertain future topics `provisional`. Develop
+them further as learner evidence establishes what is needed. The position of
+a topic in the plan does not prove that the learner has understood it.
 
-Assign one lead `subject` and its matching `teacher` to every topic, and
-read `teachers/<subject>/SOUL.md` with
-`skills/subject/subjects/<subject>.md` before you plan that topic. Write
-in that teacher's voice all the way through. Do not invent a teacher.
-Set `teacher` to `null` when the subject has none. Add a supporting
-subject only for a named bottleneck, give it one bounded bridge through
-`supporting_subjects` and `supporting_teachers`, then return the lesson
-to the lead teacher.
+## Assign the subject and teacher
 
-## Write `course.json` without the noise
+Read the selected subject guide through `skills/subject/SKILL.md` and its
+matching `teachers/<subject>/SOUL.md` when one exists. Use the subject guide to
+check prerequisites, likely misconceptions, and suitable evidence of learning.
+Assign one lead `subject` and its matching `teacher` to each topic. Use `null`
+for a subject with no teacher; do not invent a persona.
 
-Keep these fields short and exact:
+Add `supporting_subjects` and `supporting_teachers` only when a specific
+connection requires them. Identify what the supporting subject contributes
+and where its contribution ends. Lesson design keeps the lead teacher's voice
+through that explanation.
 
-- `id`, `title` (1-3 words), `goal` (starts with a verb, for example
-  "Explain, implement, and diagnose gradient descent"), optional one-line
-  `vision` (what done looks like), `depth` (`survey`, `working`, or
-  `mastery`, agreed with the learner), `length` (their words, such as
-  "six weeks"), `assumptions`, `starting_evidence`, ordered `chapters`
-  with ordered `topics`, one `current` (`chapter_id`, `topic_id`,
-  `next_step`), `revision` and `revision_notes`, and `sources`.
-- Each topic carries `title`, `outcome`, `subject`, `teacher`,
-  `supporting_subjects`, `supporting_teachers`, `concepts` (unique IDs
-  like `math.derivative`), `prerequisites` (earlier topics only),
-  `minutes` (positive integer), `resource_ids` (every ID must exist in
-  top-level `sources`), `skill_routes` (nonempty, beneath `skills/`),
-  `exercise_ids`, `lesson_ids`, `state`, and optional `feedback` and
-  `representations`.
-- Each source carries `title`, exactly one of HTTPS `url` or safe
-  repository-relative `local_path`, `type`, `checked_on`, `sections`,
-  and `verification_notes`.
-- `state` is one of `current`, `planned`, `provisional`, `retired`, or
-  `out-of-scope`. Keep exactly one `current` chapter and one `current`
-  topic, and keep them pointing at each other. Retired history stays for
-  the record and is never taught.
+## Plan what each representation contributes
 
-## Split each topic into representations
+Read [representation-choices.md](representation-choices.md) alongside the
+subject guide. Give each topic a `representations` list that covers the
+explanation and practice as well as any useful media. For each entry, record
+a stable `id`, a `kind`, and a sentence stating its `purpose`. The supported
+kinds are `text`, `manim`, `image`, `simulation`, `diagram`, `pdf`, and `exercise`.
+Use `concept` to identify the relevant topic concept and `skill_route` to name
+the production skill; include the route for any representation that will have
+a production brief.
 
-Give each topic its `representations` list, where each entry is a
-different part of the topic with its own `id`, `kind` (`text`, `manim`,
-`image`, `simulation`, `diagram`, `pdf`, `exercise`), one-line
-`purpose`, and optional `concept` and `skill_route`. Do not teach the
-same idea twice in two tools.
+Choose complementary representations. Text might explain a geometric relation
+while a diagram lets the learner inspect it. That pairing serves one
+explanation. Two artifacts that repeat the same demonstration without adding
+anything useful should be combined or removed.
+
+For example, a topic about local slope might include:
 
 ```json
 "representations": [
+  {"id": "slope-explanation", "kind": "text",
+   "purpose": "Explain local slope through a worked example."},
   {"id": "secant-motion", "kind": "manim",
-   "purpose": "Animate secant lines converging to the tangent."},
-  {"id": "slope-lab", "kind": "simulation",
-   "purpose": "Drag x and watch the predicted sign change."}
+   "purpose": "Show how secant slopes approach a tangent slope."},
+  {"id": "slope-practice", "kind": "exercise",
+   "purpose": "Predict and justify the slope in a changed example."}
 ]
 ```
 
- Read
-[representation-choices.md](representation-choices.md) for which medium
-each part earns and how it dispatches to its skill and lesson block.
-Treat the representation as authorization: the lesson binds each block
-through `representation_id` and may add concrete text, timing, controls,
-labels, and checks, but it may not change the concept, purpose, kind, or
-skill route. If the lesson exposes a bad choice, revise this plan first
-and validate before rebuilding the lesson.
+Lesson design may expand an approved representation into several blocks and
+choose the examples, wording, and transitions. Each block refers to its
+representation through `representation_id`. A new concept, changed purpose,
+different medium, or different skill route requires a course revision first.
+Adding detail within the approved scope does not.
 
-## Revise from what the learner actually did
+## Record the plan
 
-Keep `feedback` on taught steps short: `source_results` (`worked`,
-`did-not-work`, `too-hard`, `no-access`), `direction` (`keep`, `swap`,
-or `split`), one plain `note`, and a `repeats` count. Full attempts stay
-in the learner record.
+Keep the fields below concise enough to use during lesson design. Write
+decisions in complete sentences where an explanation is needed.
 
-```json
-{"revision": 3, "date": "2026-09-16",
- "reason": "Swapped openstax-3.5 for MIT 18.02 sec 2 on chain-rule after 2 repeats; terms did not match."}
-```
+| Part | What to record |
+| --- | --- |
+| Course identity | A stable `id`, a short descriptive `title`, the `goal`, and an optional one-line `vision` of the finished capability. |
+| Scope | Agreed `depth` and `length`, supported `starting_evidence`, and unverified `assumptions`. |
+| Structure | Ordered `chapters` containing ordered `topics`. Give each chapter and topic a stable ID and a readable title. |
+| Current position | One `current` object with `chapter_id`, `topic_id`, and a concrete `next_step`. |
+| History | `revision` and `revision_notes` explaining changes to the plan. |
+| Sources | A `sources` record containing the references the course actually uses. |
 
-Keep IDs stable, add 1 to `revision`, and write what changed and what the
-learner struggled with. Never write "Updated plan." Writing `feedback`
-alone needs no new revision. Changing sources, order, or scope does, and
-then you validate again.
+Each topic records its `outcome`, `subject`, and `teacher`, together with any
+`supporting_subjects` and `supporting_teachers`. Use unique concept IDs in
+`concepts`, earlier topic IDs in `prerequisites`, and a positive integer for
+`minutes`. Its `resource_ids` must refer to top-level `sources`. Keep
+`skill_routes` nonempty and beneath `skills/`. Include `exercise_ids`,
+`lesson_ids`, `state`, and the planned `representations`; add `feedback` when
+there is evidence to record.
 
-## Check
+For each source, provide `title`, `type`, `checked_on`, `sections`, and
+`verification_notes`. Supply exactly one location: an HTTPS `url` or a safe
+repository-relative `local_path`.
+
+Use the states `current`, `planned`, `provisional`, `retired`, and
+`out-of-scope`. Keep exactly one current chapter and one current topic, aligned
+with the `current` object. Retain retired topics as history rather than
+including them in active teaching.
+
+## Revise from learner evidence
+
+Keep topic `feedback` brief. Record `source_results` as `worked`, `did-not-work`,
+`too-hard`, or `no-access`; set `direction` to `keep`, `swap`, or `split`.
+Include a plain `note` and a `repeats` count. Full attempts belong in the
+learner record.
+
+Preserve IDs when revising. Increase `revision` by one when sources, sequence,
+scope, or representation decisions change, and add a dated `revision_notes`
+entry explaining the decision. For example, say that a topic was split because
+the learner could compute a derivative but could not interpret its sign.
+“Updated plan” does not explain a decision. Recording feedback alone does not
+require a new revision.
+
+Validate after creating or revising the plan:
 
 ```bash
 python3 skills/course-design/scripts/validate_course.py <course.json>
 ```
 
-The script checks shape only: names, links, order, sources, one current
-step. Whether the course builds well is your judgment, from the research
-notes and what the learner actually did.
+The validator checks structure and references. Review the progression yourself:
+can the learner reach each outcome using the earlier topics and stated starting
+knowledge, within the agreed scope and time?

@@ -31,7 +31,9 @@ Paths below are relative to the repository root.
 3. For a new goal, first tell apart a small local target from study that
    lasts weeks or depends on a chain of prerequisites. Use
    `skills/course-design/SKILL.md` only when a persistent route is
-   justified. For a local doubt, keep the small plan inside this
+   justified. It writes the route and enrolls it. Then use
+   `skills/lesson-design/SKILL.md` to build the lesson at the current
+   step. For a local doubt, keep the small plan inside this
    conversation and answer right away. Before designing a course, ask
    how deep and how long the learner wants to go; the course design
    skill records the answers and uses them to size the route.
@@ -40,6 +42,8 @@ Paths below are relative to the repository root.
    `simulation`. Read supporting references at the point of use. Media
    is earned, not default: no subject requires it, and no course needs
    it on every topic.
+   For generated images, use the host's existing image-generation skill or
+   tool as directed by the subject skill; there is no local GNOS image skill.
    During course work, load `skills/course-viewer/SKILL.md`. After a
    course plan is written or changed, enroll it under the learner's name
    (or the default `learner`) that same turn, then ask this exact
@@ -106,10 +110,12 @@ events. At a useful stopping point, leave the precise next step and any unresolv
 doubt. Do not append a compulsory quiz or summary to every answer. A changed
 goal can replace the plan; say what moves and why.
 
-For a persistent course, load its chapter route but author only the lesson needed
-at the current frontier. A taught topic's default record is its formal lesson
+For a persistent course, load its chapter route but build only the lesson needed
+at the current frontier. Do that work with `skills/lesson-design/SKILL.md`.
+A taught topic's default record is its formal lesson
 file, published to the course workspace; teach directly in chat while the
-learner is actively interacting. After a learner response, use course design to
+learner is actively interacting. After a learner response, use lesson design to
+fix blocks inside the current topic. Use course design to
 keep, repair, reorder, expand, or retire future topics. Planning states never
 substitute for evidence states. Resume from the saved next step and a concrete
 earlier attempt instead of replaying the table of contents.

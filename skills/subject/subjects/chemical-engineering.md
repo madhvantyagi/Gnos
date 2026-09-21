@@ -41,6 +41,23 @@ operating procedure.
 ## Source selection
 
 Use inspected engineering textbooks, property references, and official safety documentation. Record units and validity ranges for property data. Classroom calculations do not validate operating procedures or equipment safety.
+
+## What each area earns
+
+First write what the learner must inspect, change, compare, or work out
+in one sentence, and pick the smallest medium that lets them do it. Only
+then check this table for what chemical engineering usually needs. Never
+use the table as a reason to order its favorite medium. Depth and length
+still cap the media: a survey earns mostly text plus one medium.
+
+| Area | Lead with | Then earn, only when | Exercise |
+| --- | --- | --- | --- |
+| Material and energy balances | Boundary, basis, units, and streams in text | Excalidraw control-volume sketch, only for a static flowsheet | Numeric: track accumulation, flows, generation, and consumption |
+| Thermodynamics | State variables and equilibrium stated in text | Pinepaper phase diagram, only with its validity range shown | Numeric: state the model and its conditions, then calculate |
+| Transport phenomena | Gradients and boundary conditions in text | Manim, only when the flux evolution over space or time is the idea | Numeric: connect the flux law to its boundary conditions |
+| Reaction engineering | Kinetics and residence time in text | Simulation, only when the learner varies kinetics or residence time | Numeric: compare the reactor assumptions and conversion |
+| Separations | Phase behavior stated in text | Pinepaper stage diagram, only against equilibrium and rate limits | Numeric: connect the target to the equilibrium and rate limits |
+| Process design and control | Flowsheet and feedback stated in text | Simulation, only when the learner varies a disturbance or controller setting | Short text: trace the disturbance through constraints and safeguards |
 No curated source entries are supplied specifically for this subject yet.
 Inspect suitable sources before assigning a sustained course; follow
 [the source-use guide](../references/source-use.md).

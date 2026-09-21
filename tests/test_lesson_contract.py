@@ -106,7 +106,7 @@ class LessonContractTests(unittest.TestCase):
         course = valid_v2_course()
         course["chapters"][0]["topics"][0]["representations"] = [
             {"id": "slope-explanation", "kind": "text", "concept": "math.derivative",
-             "purpose": "State what slope predicts."}
+             "purpose": "Introduce slope."}
         ]
         lesson = valid_lesson()
         for block in lesson["blocks"]:

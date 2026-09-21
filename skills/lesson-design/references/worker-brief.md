@@ -114,9 +114,11 @@ The coordinator picks one drawing tool for each image, and the brief
 names that tool. Each tool has its own instructions the worker reads
 before drawing:
 
-- Image generation, described in `skills/image-gen/SKILL.md`, makes a
-  labeled scene or a visual analogy, such as an apparatus, an anatomy
-  view, or a landscape that carries the idea.
+- Use the host's existing image-generation skill or tool to make a labeled
+  scene or visual analogy, such as an apparatus or anatomy view. Follow the
+  image-generation instructions in `skills/subject/SKILL.md`, then read the
+  host skill if it provides one. Do not create or look for a separate GNOS
+  image-generation skill.
 - Pinepaper, which runs through the `pinepaper` MCP server defined in
   `.mcp.json` and follows the workflow in
   `skills/subject/references/pinepaper.md`, draws exact relations that

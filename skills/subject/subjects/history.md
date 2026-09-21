@@ -147,3 +147,29 @@ hand to math for a technical series or uncertainty question. A geography or CS
 bridge may operate a map or dataset, but it cannot supply historical meaning.
 One teacher speaks at a time, and every handoff carries the question, period,
 source set, learner's last sound inference, and unresolved uncertainty.
+
+## What each route earns
+
+First write what the learner must inspect, change, compare, or work out
+in one sentence, and pick the smallest medium that lets them do it. Only
+then check this table for what history usually needs. Never use the table
+as a reason to order its favorite medium. Depth and length still cap the
+media: a survey earns mostly text plus one medium.
+
+| Route | Lead with | Then earn, only when | Exercise |
+| --- | --- | --- | --- |
+| Political / institutional | Dated sequence, actors, and law in text | Nothing else unless two records must sit side by side | Long text: compare the decision with the options open at that moment |
+| Social / cultural | Place, group, and vocabulary in text | Captioned document crop or photograph, only when comparing two situated voices | Long text: compare the voices without generalizing one |
+| Economic / labor | Production and institutions in text | Small table, only when a series must sit beside its collection rules | Short text: pair the pattern with how its records were made |
+| Intellectual / religious | Terms in period usage in text | Short excerpt, only for close reading | Long text: separate the author's claim from its later reception |
+| Global / comparative | Regional chronologies in text | Dated Pinepaper map, only when connection must be seen, and name what the map omits | Short text: map the connection and its limits |
+| Environmental / medical | Ecology and measurement history in text | Dated image, only when material and documentary evidence must appear together | Short text: explain the change with both kinds of evidence |
+| Gender / race / empire | Category history and archive survival in text | Nothing else; the analysis is how classification shaped records | Long text: analyze how the categories shaped options and records |
+| Historiography / methods | Provenance and argument in text | PDF source packet with an evidence matrix, only for comparing interpretations | Long text: revise a thesis after a new source |
+
+Use Manim sparingly, only for a migration, demographic change, or moving
+boundary — and say it is a reconstruction, never evidence. Use audio or
+video only when the recording itself is the primary source. Memorized
+dates and a fluent story prove exposure only; the check must place,
+corroborate, compare, or argue. Caption every image with maker, date,
+repository, scale, rights, and whether anything in it is reconstructed.

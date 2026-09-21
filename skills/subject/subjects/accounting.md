@@ -39,6 +39,21 @@ that the recognition rule was applied correctly.
 ## Source selection
 
 Use the applicable standard setter, regulator, and inspected textbook chapter. Verify framework, jurisdiction, and effective date; do not treat an illustrative entry as current tax advice.
+
+## What each area earns
+
+First write what the learner must inspect, change, compare, or work out
+in one sentence, and pick the smallest medium that lets them do it. Only
+then check this table for what accounting usually needs. Never use the
+table as a reason to order its favorite medium. Depth and length still
+cap the media: a survey earns mostly text plus one medium.
+
+| Area | Lead with | Then earn, only when | Exercise |
+| --- | --- | --- | --- |
+| Financial accounting | Entity, period, and the accounting equation in text | Linked journal, ledger, and statement tables for the exact work | Code text: trace recognition, entry, ledger, and statements |
+| Managerial and cost accounting | Cost behavior and the decision stated in text | Simulation, only when the learner varies cost, volume, or allocation | Numeric: compare the relevant costs for the stated decision |
+| Audit and controls | Assertions and evidence in text | Excalidraw sketch, only to connect one risk to its control and procedure | Multiple-choice: match the risk to the control and procedure |
+| Tax and reporting | Entity, jurisdiction, and reporting period in text | Nothing else; the dated rule is checked before it is applied | Short text: check the applicable rule before applying it |
 No curated source entries are supplied specifically for this subject yet.
 Inspect suitable sources before assigning a sustained course; follow
 [the source-use guide](../references/source-use.md).

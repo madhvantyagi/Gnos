@@ -42,6 +42,10 @@ Manim, and a simulation. Read the linked workflow only after that choice. If an
 MCP server is unavailable, use the smallest faithful fallback and report the
 missing capability. Never claim that an unrendered artifact exists.
 
+For ImageGen, follow the subject skill's instruction to invoke the host's
+existing image-generation capability. Use `skills/subject/SKILL.md` as the
+course production route; do not add a local image-generation skill.
+
 ## Choose motion only when change is the idea
 
 Use animation for motion, transformation, propagation, feedback, accumulation,
@@ -95,16 +99,19 @@ linguistic, symbolic, or exact.
 
 ## Set the media budget
 
-Depth and length set a ceiling:
+Use depth and duration to keep media production proportionate to the course:
 
-- `survey` or one session: mostly text; add one medium where the lesson fails
-  without it.
-- `working`: add the diagrams, controls, and motion needed for transfer.
-- `mastery` or a term: include multiple earned representations across the
-  course, not multiple versions of one idea.
+- For a survey or short course, choose only the media needed to explain the
+  central ideas. A concise course can still need a diagram or demonstration.
+- For a working course, use representations that help the learner apply the
+  ideas under changed conditions.
+- For a mastery course, support deeper examination of assumptions and limits.
+  A longer duration does not by itself justify more media.
 
 Cut any representation that repeats the same explanation without giving the
-learner a new action.
+learner a new action. Keep text that introduces or interprets a visual; those
+parts develop one explanation together. Include time to inspect and use the
+media when estimating lesson duration.
 
 ## Plan the course representation before the lesson block
 

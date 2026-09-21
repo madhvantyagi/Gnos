@@ -1,9 +1,8 @@
-# Lesson contract — design the topic in depth
+# Lesson contract
 
-Build one in-depth lesson for the current topic. Go deeper than the
-`course.json` skeleton. Decide where to elaborate, where to let the
-learner inspect, where to let them change inputs, and where to ask
-for practice. This file is the rulebook for that lesson.
+Use this reference for the structure and publication requirements of
+`lesson.json`. Read [lesson-design.md](lesson-design.md) for how to develop
+the explanation, examples, and teaching sequence within that structure.
 
 ## Lesson shape
 
@@ -29,8 +28,8 @@ representation skill route.
 
 Use the mapping in `skills/lesson-design/SKILL.md`. If the plan is
 wrong, revise and validate `course.json` first. Never add an
-unapproved medium to fix a weak block. You may use fewer blocks than
-the plan lists.
+unapproved medium to fix a weak block. One representation may support several
+blocks; unused representations need not become blocks.
 
 Choose each block by what the learner must do:
 
@@ -38,11 +37,11 @@ Choose each block by what the learner must do:
 - To show change over time, use motion. Keep one thing fixed while one thing moves.
 - To let comparison take time, use a still. Label the relation to inspect.
 - To let the learner change an input and see the result, use simulation. Show controls, units, and reset.
-- To test transfer, use an exercise. Ask for the same idea under new numbers.
+- To test transfer, use an exercise that applies the idea to a changed case or condition.
 
-One idea earns one primary medium. Never show the same idea twice in
-two tools. Order blocks by reasoning: name the claim, make its
-changing parts visible, then ask for a prediction.
+Order blocks so the learner can follow the reasoning across them. Text and
+media may explain one idea together. Remove repetition that contributes no
+new explanation, observation, or practice.
 
 ## Teamwork and briefs
 
@@ -80,11 +79,11 @@ object and the check.
 These rules apply to text, narration, labels, prompts, and controls.
 They keep every representation consistent.
 
-- State the exact claim, number, date, or code contract. Keep one idea per sentence.
+- State claims precisely and explain how they follow. Keep sentences readable without breaking connected reasoning into fragments.
 - Use bullets only for parallel items. Use an equation block when the learner must inspect notation.
 - Write math as LaTeX for KaTeX: inline `$...$`, display `$$...$$`. Never leave bare ASCII like `R^(m x n)` or `1/2`.
 - Keep terms, symbols, colors, direction, units, names, and dates identical across explanation, motion, graph, and exercise.
-- Ask exercises under a changed condition with new numbers. Keep success criteria and answers private. Choice options stay public because the learner needs them. Everything else private stays out of the public projection.
+- Ask exercises under a changed condition, such as new inputs or evidence. Keep success criteria and answers private. Choice options stay public because the learner needs them. Everything else private stays out of the public projection.
 - Add a short transition only when the reason to change medium is unclear. Never hide unrelated artifacts behind generic connectors.
 
 ## Validation

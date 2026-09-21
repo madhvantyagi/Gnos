@@ -6,8 +6,7 @@ description: Render and show the learner's course page. Use when the learner say
 # Course viewer
 
 Turn a course workspace into one static page the learner reads.
-No app, no build step, no external libraries. One self-contained
-HTML file. Cream editorial page: top bar with GNOS + tabs, hero
+No app, no build step. One self-contained page + one CDN exception for math (KaTeX). Cream editorial page: top bar with GNOS + tabs, hero
 with giant title + field metadata, curriculum list + topic details.
 
 Use this skill whenever a course plan is created, enrolled, or
@@ -65,14 +64,14 @@ The viewer renders whatever is registered in the course artifact
 manifest, whatever made it:
 
 - manim-voice-animation videos -> watch, inline `<video>`
-- image-gen images -> generated, inline `<img>`
+- host-generated images -> generated, inline `<img>`
 - interactive simulations (HTML) -> sandboxed `<iframe>`
 - pdf handouts and documents -> resources, open links
 
 The topic's `representations` in `course.json` say which parts need
 which skill. The page shows that plan as chips, so the learner sees
-what is coming. Register every artifact with the course-design skill
-(`manage_artifact.py`) before rendering; only `ready` artifacts appear.
+what is coming. The lesson coordinator registers every artifact with
+`manage_artifact.py` before rendering; only `ready` artifacts appear.
 
 ## Rules
 
@@ -81,6 +80,12 @@ what is coming. Register every artifact with the course-design skill
 - The page references media files in the workspace; it never copies
   or downloads them. Missing files get a visible note, never a crash.
 - Re-render whenever the plan, a lesson, or the manifest changes.
+- Math renders with KaTeX (CDN, the one network exception). Lesson text
+  must already delimit math as LaTeX (`$...$`, `$$...$$`); the renderer
+  additionally normalises bare ASCII idioms (`R^(m x n)` →
+  `\mathbb{R}^{m \times n}`, `P^(-1)` → `P^{-1}`) as a safety net, never
+  as the authorised notation. Body prose is serif; monospace is only
+  for code.
 - If enroll or render fails, say plainly what failed and fix it that
   turn. Never silently skip the page.
 - If the learner did not answer the show question, ask again on the

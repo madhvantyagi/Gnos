@@ -10,6 +10,7 @@ fields are rendered; private evaluation criteria never appear.
 import argparse
 import html
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -44,6 +45,651 @@ def logo_img():
 
 def esc(value):
     return html.escape(str(value), quote=True)
+
+
+_MATH_CSS = (
+    ".math{font-family:Georgia,'Times New Roman','STIX Two Text',serif;"
+    "color:var(--ink);line-height:1.55;word-break:break-word;}"
+    ".math-display{display:block;text-align:center;font-size:1.2em;"
+    "padding:16px 14px;margin:12px 0;background:var(--card);"
+    "border:1px solid var(--divider);border-radius:6px;overflow-x:auto;}"
+    ".math-empty{display:none;}"
+)
+
+
+def tex_to_html(tex):
+    """Escape TeX source for KaTeX passthrough. Keeps backslashes; escapes <>&."""
+    s = "" if tex is None else str(tex)
+    return html.escape(s, quote=True)
+
+
+def math_display_html(tex, tag="div"):
+    raw = "" if tex is None else str(tex)
+    label = html.escape(raw, quote=True)
+    tag = "div" if tag not in ("div", "span") else tag
+    if raw.strip() == "":
+        return f'<{tag} class="math math-display math-empty" role="math" aria-label="{label}"></{tag}>'
+    inner = html.escape(normalize_ascii_math(raw), quote=True)
+    return f'<{tag} class="math math-display" role="math" aria-label="{label}">$${inner}$$</{tag}>'
+
+
+def math_inline_html(tex):
+    raw = "" if tex is None else str(tex)
+    label = html.escape(raw, quote=True)
+    if raw.strip() == "":
+        return f'<span class="math math-inline math-empty" role="math" aria-label="{label}"></span>'
+    inner = html.escape(normalize_ascii_math(raw), quote=True)
+    return f'<span class="math math-inline" role="math" aria-label="{label}">${inner}$</span>'
+
+
+def _math_paren_inline_html(tex):
+    raw = "" if tex is None else str(tex)
+    label = html.escape(raw, quote=True)
+    if raw.strip() == "":
+        return f'<span class="math math-inline math-empty" role="math" aria-label="{label}"></span>'
+    inner = html.escape(normalize_ascii_math(raw), quote=True)
+    return f'<span class="math math-inline" role="math" aria-label="{label}">\\({inner}\\)</span>'
+
+
+def _math_bracket_display_html(tex):
+    raw = "" if tex is None else str(tex)
+    label = html.escape(raw, quote=True)
+    if raw.strip() == "":
+        return f'<span class="math math-display math-empty" role="math" aria-label="{label}"></span>'
+    inner = html.escape(normalize_ascii_math(raw), quote=True)
+    return f'<span class="math math-display" role="math" aria-label="{label}">\\[{inner}\\]</span>'
+
+
+def _count_preceding_backslashes(s, idx):
+    count = 0
+    k = idx - 1
+    while k >= 0 and s[k] == "\\":
+        count += 1
+        k -= 1
+    return count
+
+
+def _is_mathy_token(tok):
+    """True if a whitespace-separated token looks like math, not English.
+
+    Structural signals only (operators, fractions, calls, hats) — no word lists.
+    Brackets and bare numbers are included so vectors (``[1, 2]``) and
+    matrices (``[[1, 1], [0, 1]]``) stay inside equality runs.
+    """
+    t = tok.strip(".,;:!?\"'")
+    if not t:
+        # A lone operator/dot never wraps on its own (_looks_like_math says
+        # no) but it keeps expressions such as "(q . k)/sqrt(2)" in one run.
+        return bool(re.fullmatch(r"[+\-*/×·.]", tok))
+    if "=" in t:
+        return True
+    if "<" in t or ">" in t:
+        # Comparisons (x>0, y-hat>t) are mathematics; the math-look check
+        # downstream decides whether the run is wrapped.
+        return True
+    if "[" in t or "]" in t:
+        return True
+    if "(" in t or ")" in t:
+        # Either half of a call, tuple, or coordinate already signals math;
+        # the math-look check downstream decides whether the run is wrapped.
+        return True
+    if re.fullmatch(r"(?:rank|dim|diag|det)", t):
+        return True
+    if re.fullmatch(r"[\d.,]+", t):
+        return True
+    if re.search(r"[A-Za-z0-9)\]]/[A-Za-z0-9(\[]", t):
+        return True
+    if "^" in t or "_" in t:
+        return True
+    if "(" in t and ")" in t:
+        return True
+    if re.search(r"(?<![A-Za-z0-9_])[A-Za-z]\.[A-Za-z](?![A-Za-z0-9_])", t):
+        return True
+    if re.match(r"^[A-Za-z]+-(hat|bar|dot|tilde|vec)$", t):
+        return True
+    if re.fullmatch(r"[A-Za-z]", t):
+        return True
+    if re.fullmatch(r"\d+(?:\.\d+)?", t):
+        return True
+    if re.fullmatch(r"[+\-*/×·]", t):
+        return True
+    return False
+
+
+# --- ASCII mathematics normalisation -------------------------------------
+# Lesson prose sometimes arrives without TeX delimiters, e.g.
+# ``R^(m x n)``, ``[v]_B``, ``P^(-1)``, ``xW_Q``, ``1/2``. KaTeX is the real
+# renderer here (loaded from CDN by the page template); the job of this
+# section is only to translate that ASCII into clean LaTeX before handing
+# it to KaTeX. Every rule is structural (caret groups, subscript groups,
+# operator calls, matrices) so new symbols need no per-symbol patches.
+# The normaliser is idempotent and safe on real LaTeX: already-braced
+# groups, backslash commands, and ``\sqrt{...}`` pass through unchanged.
+
+_MATH_OPERATORS = ("rank", "dim", "diag", "det")
+
+_MATRIX_RE = re.compile(r"\[\[((?:[^[]|\[(?!\[))+?)\]\]")
+_SQRT_RE = re.compile(r"(?<!\\)\bsqrt\(\s*([^()]+?)\s*\)")
+_HAT_RE = re.compile(r"(?<!\\)\b([A-Za-z])-(hat|bar|dot|tilde|vec)\b")
+_RBB_PAREN_RE = re.compile(r"(?<!\\)\bR\^\(\s*([^)]+?)\s*\)")
+_RBB_BRACE_RE = re.compile(r"(?<!\\)\bR\^\{([^}]+)\}")
+_RBB_CARET_RE = re.compile(r"(?<!\\)\bR\^([A-Za-z0-9])")
+_CARET_PAREN_RE = re.compile(r"(?<!\\)\^\(\s*([^)]+?)\s*\)")
+_DIM_TIMES_RE = re.compile(r"(?<=[A-Za-z0-9}\]\)])\s+x\s+(?=[A-Za-z0-9{\(\[])")
+_SUBSCRIPT_RE = re.compile(r"(?<![\\{])_([A-Za-z0-9]{2,})(?![A-Za-z0-9])")
+_OPERATOR_RE = re.compile(r"(?<![\\{])\b(rank|dim|diag|det)\b")
+_STAR_RE = re.compile(r"(?<=\S)\s*\*\s*(?=\S)")
+_DOT_SPACED_RE = re.compile(r"(?<=\S)\s+\.\s+(?=\S)")
+_DOT_TIGHT_RE = re.compile(r"(?<=[A-Za-z)}\])])\.(?=[A-Za-z(\[])")
+_INT_FRAC_RE = re.compile(r"(?<![\w}])(-?\d+)\s*/\s*(-?\d+)(?![\w{])")
+_SQRT_PAREN_FRAC_RE = re.compile(r"\(([^()]+)\)\s*/\s*(\\sqrt\{[^}]+\})")
+_SQRT_FRAC_RE = re.compile(r"([^\s()]+?)\s*/\s*(\\sqrt\{[^}]+\})")
+
+
+def _matrix_to_bmatrix(match):
+    inner = match.group(1)
+    rows = [row for row in re.split(r"\]\s*,\s*\[", inner)]
+    cells = [[cell.strip().strip("[] ") for cell in row.split(",")] for row in rows]
+    cells = [[cell for cell in row if cell != ""] for row in cells]
+    cells = [row for row in cells if row]
+    if not cells:
+        return match.group(0)
+    body = r" \\ ".join(" & ".join(row) for row in cells)
+    return r"\begin{bmatrix}" + body + r"\end{bmatrix}"
+
+
+def normalize_ascii_math(tex):
+    """Translate ASCII math idioms to LaTeX; already-clean LaTeX is unchanged."""
+    s = "" if tex is None else str(tex)
+    if s.strip() == "":
+        return s
+    s = _MATRIX_RE.sub(_matrix_to_bmatrix, s)
+    s = _SQRT_RE.sub(r"\\sqrt{\1}", s)
+    s = _HAT_RE.sub(lambda m: "\\%s{%s}" % (
+        {"hat": "hat", "bar": "bar", "dot": "dot",
+         "tilde": "tilde", "vec": "vec"}[m.group(2)], m.group(1)), s)
+    s = _RBB_PAREN_RE.sub(lambda m: "\\mathbb{R}^{" + m.group(1).strip() + "}", s)
+    s = _RBB_BRACE_RE.sub(r"\\mathbb{R}^{\1}", s)
+    s = _RBB_CARET_RE.sub(r"\\mathbb{R}^{\1}", s)
+    s = _CARET_PAREN_RE.sub(r"^{\1}", s)
+    s = _DIM_TIMES_RE.sub(r" \\times ", s)
+    s = _SUBSCRIPT_RE.sub(r"_{\1}", s)
+    s = _OPERATOR_RE.sub(r"\\operatorname{\1}", s)
+    s = _STAR_RE.sub(r" \\cdot ", s)
+
+    def _dot(match):
+        start, end = match.span()
+        before = s[:start].rstrip()[-1:] if s[:start].rstrip() else ""
+        after = s[end:].lstrip()[:1] if s[end:].lstrip() else ""
+        if before.isdigit() and after.isdigit():
+            return match.group(0)
+        return r" \cdot "
+
+    s = _DOT_SPACED_RE.sub(_dot, s)
+    s = _DOT_TIGHT_RE.sub(r" \\cdot ", s)
+    s = _INT_FRAC_RE.sub(r"\\frac{\1}{\2}", s)
+    s = _SQRT_PAREN_FRAC_RE.sub(r"\\frac{(\1)}{\2}", s)
+    s = _SQRT_FRAC_RE.sub(r"\\frac{\1}{\2}", s)
+    return s
+
+
+_AUTO_MATH_RES = [
+    re.compile(r"\bR\^"),                          # R^n, R^(m x n)
+    re.compile(r"\[[^\[\]]+\]_"),                  # [v]_B, [v]_{new}
+    re.compile(r"\b(?:rank|dim|diag|det)\s*\("),   # rank(A), diag(2, 0.5)
+    re.compile(r"[A-Za-z]\^[\(\{A-Za-z0-9]"),      # P^(-1), x^2
+    re.compile(r"[A-Za-z]_[A-Za-z0-9{\[]"),        # xW_Q, v_B
+    re.compile(r"\([^()]*\)[A-Za-z\[]"),           # (BA)x
+    re.compile(r"\b[A-Za-z]+\([^()]*\)"),          # T(x), sigmoid(z)
+    re.compile(r"\b[A-Za-z]-(?:hat|bar|dot|tilde|vec)\b"),  # y-hat
+    re.compile(r"[A-Za-z0-9)\]}]\s*[<>]\s*\S"),    # x>0, y-hat>t
+    re.compile(r"\bsqrt\("),                       # sqrt(2)
+    re.compile(r"\[\["),                           # [[1, 1], [0, 1]]
+    re.compile(r"(?<![\w.])-?\d+\s*/\s*(?:-?\d+|sqrt)"),  # 1/2, 10/sqrt(2)
+]
+
+
+def _looks_like_math(frag):
+    """A mathy-token run is an equation when it holds ``=`` or a math idiom.
+
+    A bare ``=`` with no operands (an English gloss such as
+    ``the column space = the largest number ...``) is prose, not math.
+    """
+    if re.search(r"\S\s*(?::=|=)\s*\S", frag):
+        return True
+    return any(rx.search(frag) for rx in _AUTO_MATH_RES)
+
+
+def _prev_substantive(parts, idx):
+    k = idx - 1
+    while k >= 0:
+        if parts[k] != "" and not re.fullmatch(r"\s+", parts[k]):
+            return parts[k]
+        k -= 1
+    return ""
+
+
+def _next_substantive(parts, idx):
+    k = idx + 1
+    while k < len(parts):
+        if parts[k] != "" and not re.fullmatch(r"\s+", parts[k]):
+            return parts[k]
+        k += 1
+    return ""
+
+
+def _is_lone_math_letter(frag, prev_tok, next_tok):
+    """Isolated single letters are variables, except English ``a`` / ``I``.
+
+    A leading ``A`` before a lowercase word (``A vector ...``) is the
+    English article, not the matrix.
+    """
+    core = frag.strip(".,;:!?\"'")
+    if len(core) != 1 or not core.isalpha():
+        return False
+    if core in ("a", "I"):
+        return False
+    if core == "A":
+        nxt = next_tok.strip(".,;:!?\"'")
+        prv = prev_tok.strip()
+        at_start = (prev_tok == "" or re.search(r"[.?!:]$", prv) is not None)
+        if at_start and re.fullmatch(r"[a-z][a-z]+", nxt or ""):
+            return False
+    return True
+
+
+def _split_trailing_punct(frag):
+    m = re.search(r"[.,;:!?]+$", frag)
+    if m:
+        return frag[:m.start()], frag[m.start():]
+    return frag, ""
+
+
+def _run_last_substantive(run):
+    for tok in reversed(run):
+        if tok != "" and not re.fullmatch(r"\s+", tok):
+            return tok.strip(".,;:!?\"'")
+    return ""
+
+
+def _run_last_raw(run):
+    for tok in reversed(run):
+        if tok != "" and not re.fullmatch(r"\s+", tok):
+            return tok
+    return ""
+
+
+def _render_outside(raw):
+    """Escape prose but wrap detected math runs for KaTeX.
+
+    Explicit ``$``/``\\(`` delimiters are handled upstream; here we catch
+    bare ASCII mathematics (equations, ``R^n``, ``[v]_B``, ``P^(-1)``,
+    operator calls, fractions) and lone variable letters, normalise each
+    span to LaTeX, and leave everything else as escaped text.
+    """
+    parts = re.split(r"(\s+)", raw)
+    n = len(parts)
+    # Phase 1: group maximal runs of mathy tokens (as before).
+    runs = []  # [start, end_exclusive, frag]
+    i = 0
+    while i < n:
+        p = parts[i]
+        if p == "" or re.fullmatch(r"\s+", p) or not _is_mathy_token(p):
+            i += 1
+            continue
+        j = i
+        run = []
+        while j < n:
+            tok = parts[j]
+            if re.fullmatch(r"\s+", tok):
+                nxt = parts[j + 1] if j + 1 < n else ""
+                last = _run_last_substantive(run)
+                if (_run_last_raw(run)[-1:] in (".", "?", "!")
+                        and re.match(r"[A-Z]", nxt.strip(".,;:!?\"'")[:1] or "")):
+                    # Sentence boundary ("... [1, 2]. W_Q = ..."): end the
+                    # run so two equations never fuse into one span.
+                    break
+                if (run and not re.fullmatch(r"\s+", run[-1])
+                        and j + 1 < n
+                        and (_is_mathy_token(nxt)
+                             or last in ("=", ":="))
+                        and len([t for t in run if not re.fullmatch(r"\s+", t)]) < 15):
+                    run.append(tok)
+                    j += 1
+                    continue
+                break
+            if _is_mathy_token(tok) or _run_last_substantive(run) in ("=", ":="):
+                run.append(tok)
+                j += 1
+                continue
+            break
+        frag = "".join(run).rstrip()
+        runs.append([i, j, frag])
+        i = j if j > i else i + 1
+    # Phase 2: decide which runs are math.
+    wrapped = {}
+    for (start, end, frag) in runs:
+        core, _ = _split_trailing_punct(frag)
+        if core.strip() == "":
+            continue
+        if _looks_like_math(core):
+            wrapped[start] = True
+            continue
+        if re.fullmatch(r"[A-Za-z](?:[.,;:!?\"']*)?", frag.strip()) and _is_lone_math_letter(
+                frag.strip(), _prev_substantive(parts, start), _next_substantive(parts, end - 1)):
+            wrapped[start] = True
+    # Phase 3: emit.
+    out = []
+    idx = 0
+    run_by_start = {r[0]: r for r in runs}
+    while idx < n:
+        if idx in run_by_start:
+            start, end, frag = run_by_start[idx]
+            if start in wrapped:
+                core, trail = _split_trailing_punct(frag)
+                trailing_ws = frag[len(frag.rstrip()):]
+                out.append(_math_paren_inline_html(normalize_ascii_math(core)))
+                if trail:
+                    out.append(html.escape(trail, quote=True))
+                if trailing_ws:
+                    out.append(html.escape(trailing_ws, quote=True))
+                idx = end
+                # Emit the whitespace gap between this run and the next part
+                # when the run loop stopped on it (it belongs to no run).
+                continue
+            out.append(html.escape(parts[idx], quote=True))
+            idx += 1
+            continue
+        out.append(html.escape(parts[idx], quote=True))
+        idx += 1
+    return "".join(out)
+
+
+def render_rich_text(raw):
+    """Escape prose, preserve $...$, $$...$$, \\(...\\), \\[...\\] for KaTeX auto-render."""
+    s = "" if raw is None else str(raw)
+    if s == "":
+        return ""
+    if "$" not in s and "\\(" not in s and "\\[" not in s:
+        return _render_outside(s)
+    out = []
+    outside = []
+
+    def flush():
+        if outside:
+            out.append(_render_outside("".join(outside)))
+            del outside[:]
+
+    i = 0
+    n = len(s)
+    while i < n:
+        if s[i] == "\\" and i + 1 < n and s[i + 1] == "$":
+            outside.append("$")
+            i += 2
+            continue
+        if s[i] == "\\" and i + 1 < n and s[i + 1] == "(":
+            j = s.find("\\)", i + 2)
+            if j == -1:
+                outside.append(s[i])
+                i += 1
+                continue
+            flush()
+            out.append(_math_paren_inline_html(s[i + 2:j]))
+            i = j + 2
+            continue
+        if s[i] == "\\" and i + 1 < n and s[i + 1] == "[":
+            j = s.find("\\]", i + 2)
+            if j == -1:
+                outside.append(s[i])
+                i += 1
+                continue
+            flush()
+            out.append(_math_bracket_display_html(s[i + 2:j]))
+            i = j + 2
+            continue
+        if s[i] == "$":
+            if i + 1 < n and s[i + 1] == "$":
+                j = i + 2
+                found = -1
+                while True:
+                    k = s.find("$$", j)
+                    if k == -1:
+                        break
+                    if _count_preceding_backslashes(s, k) % 2 == 1:
+                        j = k + 2
+                        continue
+                    found = k
+                    break
+                if found == -1:
+                    outside.append("$$")
+                    i += 2
+                    continue
+                flush()
+                out.append(math_display_html(s[i + 2:found], tag="span"))
+                i = found + 2
+                continue
+            j = i + 1
+            found = -1
+            while j < n:
+                if s[j] == "\\" and j + 1 < n and s[j + 1] == "$":
+                    j += 2
+                    continue
+                if s[j] == "$":
+                    if j + 1 < n and s[j + 1] == "$":
+                        j += 2
+                        continue
+                    if _count_preceding_backslashes(s, j) % 2 == 1:
+                        j += 1
+                        continue
+                    found = j
+                    break
+                j += 1
+            if found == -1:
+                outside.append("$")
+                i += 1
+                continue
+            inner = s[i + 1:found]
+            if inner.strip() == "":
+                outside.append(s[i:found + 1])
+                i = found + 1
+                continue
+            flush()
+            out.append(math_inline_html(inner))
+            i = found + 1
+            continue
+        outside.append(s[i])
+        i += 1
+    flush()
+    return "".join(out)
+
+
+
+
+_EXERCISE_CSS = (
+    ".exercise-form{margin-top:10px;display:grid;gap:8px;}"
+    ".exercise-label{display:grid;gap:6px;font-size:13px;color:var(--ink-muted);}"
+    '.exercise-form input[type="text"],.exercise-form input[type="number"],'
+    ".exercise-form textarea{width:100%;font:inherit;font-size:14px;color:var(--ink);"
+    "background:#fff;border:1px solid var(--divider-strong);border-radius:6px;padding:8px 10px;}"
+    ".exercise-form textarea{min-height:88px;resize:vertical;}"
+    ".exercise-options{display:grid;gap:6px;margin:8px 0;}"
+    ".exercise-options label{display:flex;gap:8px;align-items:baseline;font-size:14px;"
+    "background:#fff;border:1px solid var(--divider);border-radius:6px;padding:8px 10px;cursor:pointer;}"
+    ".exercise-actions button{appearance:none;border:1px solid var(--teal);background:var(--teal);"
+    "color:#fff;font:inherit;font-size:13px;font-weight:600;border-radius:999px;padding:6px 16px;cursor:pointer;}"
+    ".exercise-actions button:hover{background:var(--teal-deep);}"
+    ".exercise-status{font-size:12px;color:var(--done);margin-top:6px;min-height:1.2em;}"
+)
+
+_EXERCISE_JS = """(function () {
+  function storageKey(courseId, exerciseId) {
+    if (courseId) return "gnos:exercise:" + courseId + ":" + exerciseId;
+    return "gnos:exercise:" + exerciseId;
+  }
+  function getAnswer(form) {
+    var checked = form.querySelector('input[type="radio"][name="answer"]:checked');
+    if (checked) return checked.value;
+    var field = form.querySelector('textarea[name="answer"], input[name="answer"]');
+    if (field) return field.value;
+    return "";
+  }
+  function setAnswer(card, answer) {
+    var form = card.querySelector(".exercise-form");
+    if (!form) return;
+    var radios = form.querySelectorAll('input[type="radio"][name="answer"]');
+    if (radios && radios.length) {
+      Array.prototype.forEach.call(radios, function (r) { r.checked = (r.value === answer); });
+      return;
+    }
+    var field = form.querySelector('textarea[name="answer"], input[name="answer"]');
+    if (field) field.value = answer;
+  }
+  function setStatus(card, message) {
+    var el = card.querySelector(".exercise-status");
+    if (el) el.textContent = message;
+  }
+  function restoreCard(card) {
+    var exId = card.getAttribute("data-exercise-id") || "";
+    if (!exId) return;
+    var courseId = card.getAttribute("data-course-id") || "";
+    var key = storageKey(courseId, exId);
+    var raw = null;
+    try { raw = window.localStorage.getItem(key); } catch (e) { raw = null; }
+    if (raw === null || raw === undefined || raw === "") return;
+    var answer = "";
+    try {
+      var parsed = JSON.parse(raw);
+      if (parsed && typeof parsed.answer === "string") answer = parsed.answer;
+      else if (typeof parsed === "string") answer = parsed;
+      else return;
+    } catch (e) { answer = raw; }
+    if (!answer) return;
+    setAnswer(card, answer);
+    setStatus(card, "Saved \\u2713 Your answer was recorded locally. You can change it and save again.");
+  }
+  function syncCards(courseId, exId, answer, sourceCard) {
+    var cards = document.querySelectorAll(".card.exercise");
+    Array.prototype.forEach.call(cards, function (card) {
+      if (card === sourceCard) return;
+      if ((card.getAttribute("data-exercise-id") || "") !== exId) return;
+      if ((card.getAttribute("data-course-id") || "") !== courseId) return;
+      setAnswer(card, answer);
+      setStatus(card, "Saved \\u2713 Your answer was recorded locally. You can change it and save again.");
+    });
+  }
+  function onSubmit(e) {
+    var form = e.target;
+    if (!form || !form.classList || !form.classList.contains("exercise-form")) return;
+    e.preventDefault();
+    var card = null;
+    if (form.closest) card = form.closest(".card.exercise");
+    if (!card) {
+      var node = form.parentNode;
+      while (node && node !== document) {
+        if (node.classList && node.classList.contains("exercise")) { card = node; break; }
+        node = node.parentNode;
+      }
+    }
+    if (!card) return;
+    var exId = card.getAttribute("data-exercise-id") || "";
+    var courseId = card.getAttribute("data-course-id") || "";
+    var answer = getAnswer(form);
+    var isChoice = !!form.querySelector('input[type="radio"][name="answer"]');
+    if (typeof answer === "string" && !isChoice) answer = answer.trim();
+    if (!answer) {
+      setStatus(card, "Please enter or choose an answer before saving.");
+      return;
+    }
+    var key = storageKey(courseId, exId);
+    try {
+      window.localStorage.setItem(key, JSON.stringify({ answer: answer, savedAt: new Date().toISOString() }));
+    } catch (err) { /* storage unavailable; still show recorded state */ }
+    setStatus(card, "Saved \\u2713 Your answer was recorded locally. You can change it and save again.");
+    syncCards(courseId, exId, answer, card);
+  }
+  function init() {
+    if (document.documentElement.getAttribute("data-gnos-exercises") === "1") return;
+    document.documentElement.setAttribute("data-gnos-exercises", "1");
+    var cards = document.querySelectorAll(".card.exercise");
+    Array.prototype.forEach.call(cards, restoreCard);
+    document.addEventListener("submit", onSubmit);
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();"""
+
+
+_CHOICE_RESPONSE_TYPES = {"choice", "multiple-choice", "single-choice"}
+_LONG_RESPONSE_TYPES = {"long-text", "longtext", "longer", "long", "code-text", "codetext", "essay", "paragraph"}
+
+
+def _exercise_options(exercise):
+    """Return public choice options or None; never exposes answers/tolerances."""
+    evaluation = exercise.get("evaluation", {})
+    if not isinstance(evaluation, dict):
+        return None
+    options = evaluation.get("options")
+    if not isinstance(options, list) or not options:
+        return None
+    if any(not isinstance(option, str) or not option.strip() for option in options):
+        return None
+    return options
+
+
+def _exercise_field_html(exercise):
+    """Answer affordance appropriate to response_type; unknown defaults to text."""
+    raw_type = str(exercise.get("response_type", "") or "").strip().lower().replace("_", "-")
+    options = _exercise_options(exercise)
+    if raw_type in _CHOICE_RESPONSE_TYPES and options:
+        bits = ['<div class="exercise-options">']
+        for option in options:
+            bits.append(
+                f'<label><input type="radio" name="answer" value="{esc(option)}"> {render_rich_text(option)}</label>')
+        bits.append("</div>")
+        return "".join(bits)
+    if raw_type in _LONG_RESPONSE_TYPES:
+        return ('<label class="exercise-label">Your answer'
+                '<textarea name="answer" rows="4" aria-label="Your answer"></textarea></label>')
+    if raw_type == "numeric":
+        return ('<label class="exercise-label">Your answer'
+                '<input type="number" name="answer" step="any" autocomplete="off" '
+                'aria-label="Your answer"></label>')
+    return ('<label class="exercise-label">Your answer'
+            '<input type="text" name="answer" autocomplete="off" aria-label="Your answer"></label>')
+
+
+def _attempt_summary(attempts):
+    if not isinstance(attempts, list) or not attempts:
+        return ""
+    line = " · ".join(
+        f"{esc(a.get('status', ''))} {esc(str(a.get('submitted_at', ''))[:10])}"
+        for a in attempts if isinstance(a, dict))
+    count = len(attempts)
+    return (f" · {count} attempt{'s' if count != 1 else ''} · {line}" if line
+            else f" · {count} attempt{'s' if count != 1 else ''}")
+
+
+def render_exercise_card(exercise, course_id, title):
+    """One interactive exercise card; only public fields are rendered."""
+    if not isinstance(exercise, dict):
+        exercise = {}
+    ex_id = exercise.get("id", "")
+    prompt = exercise.get("prompt", "")
+    response_type = exercise.get("response_type", "")
+    attempts = exercise.get("attempts", [])
+    field = _exercise_field_html(exercise)
+    return (
+        f'<div class="card exercise" data-course-id="{esc(course_id)}" '
+        f'data-exercise-id="{esc(ex_id)}" data-response-type="{esc(response_type)}">'
+        f'<div class="card-title">{esc(title)}</div>'
+        f'<div class="prompt">{render_rich_text(prompt)}</div>'
+        f'<form class="exercise-form" method="post" action="#">'
+        f"{field}"
+        '<div class="exercise-actions"><button type="submit">Save answer</button></div>'
+        "</form>"
+        '<div class="exercise-status" role="status" aria-live="polite"></div>'
+        f'<div class="meta">{esc(response_type)}{_attempt_summary(attempts)}</div>'
+        "</div>")
 
 
 def artifact_src(artifact):
@@ -118,22 +764,34 @@ def render_media(artifact, group, workspace):
             f'<div class="media-meta">{meta_line}</div></div></div>')
 
 
-def render_block(block, lesson_exercises, sources):
+def render_block(block, lesson_exercises, sources, course_id=""):
+    if not isinstance(block, dict):
+        return '<div class="block"><div class="block-label">block</div></div>'
+    if not isinstance(lesson_exercises, dict):
+        lesson_exercises = {}
+    if not isinstance(sources, dict):
+        sources = {}
+    if not isinstance(course_id, str):
+        course_id = str(course_id or "")
     block_type = block.get("type", "")
     concepts = " · ".join(esc(c) for c in block.get("concepts", []))
     label = esc(block_type)
     if concepts:
         label += " · " + concepts
     header = f'<div class="block-label">{label}</div>'
-    body = ""
+    chunks = []
     if block.get("text"):
-        body = f"<p>{esc(block['text'])}</p>"
+        chunks.append(f"<p>{render_rich_text(block['text'])}</p>")
     if isinstance(block.get("items"), list):
-        body = "<ul>" + "".join(f"<li>{esc(item)}</li>" for item in block["items"]) + "</ul>"
-    if block.get("equation"):
-        body = f"<pre>{esc(block['equation'])}</pre>"
+        chunks.append("<ul>" + "".join(
+            f"<li>{render_rich_text(item)}</li>" for item in block["items"]) + "</ul>")
+    if block.get("equation") is not None and str(block.get("equation", "")).strip() != "":
+        chunks.append(math_display_html(block["equation"]))
+    elif "equation" in block and block.get("equation") is not None:
+        chunks.append(math_display_html(""))
     if block.get("code"):
-        body = f"<pre>{esc(block['code'])}</pre>"
+        chunks.append(f"<pre>{esc(block['code'])}</pre>")
+    body = "".join(chunks)
 
     if block_type == "source":
         source = sources.get(block.get("source_id", ""), {})
@@ -148,11 +806,13 @@ def render_block(block, lesson_exercises, sources):
         return f'<div class="block">{header}{body}</div>'
 
     if block_type == "exercise":
-        exercise = lesson_exercises.get(block.get("exercise_id", ""), {})
-        body = (f'<div class="card"><div class="card-title">exercise · {esc(block.get("exercise_id", ""))}</div>'
-                f'<div class="prompt">{esc(exercise.get("prompt", ""))}</div>'
-                f'<div class="meta">response · {esc(exercise.get("response_type", ""))}</div></div>')
-        return f'<div class="block">{header}{body}</div>'
+        exercise_id = block.get("exercise_id", "")
+        exercise = lesson_exercises.get(exercise_id, {})
+        if not isinstance(exercise, dict) or not exercise.get("id"):
+            body = (f'<div class="card"><div class="card-title">exercise · {esc(exercise_id)}</div>'
+                    '<div class="prompt">Exercise not yet available.</div></div>')
+            return f'<div class="block">{header}{body}</div>'
+        return f'<div class="block">{header}{render_exercise_card(exercise, course_id, f"exercise · {exercise_id}")}</div>'
 
     return f'<div class="block">{header}{body}</div>'
 
@@ -197,21 +857,26 @@ def render_chips(representations, lesson, artifacts):
     return '<div class="chips">' + "".join(chips) + "</div>"
 
 
-def render_lesson(lesson, index, total, previous_id, next_id, artifacts, sources, workspace, topic_reps):
+def render_lesson(lesson, index, total, previous_id, next_id, artifacts, sources, workspace, topic_reps,
+                course_id=""):
     topic = lesson.get("topic_id", "")
     media_groups = {"voice-animation": "watch", "animation": "watch", "video": "watch",
                     "audio": "watch", "diagram": "generated", "interactive-graph": "generated",
                     "simulation": "generated"}
-    lesson_exercises = {ex["id"]: ex for ex in lesson.get("exercises", [])}
+    lesson_exercises = {ex["id"]: ex for ex in lesson.get("exercises", []) if isinstance(ex, dict) and ex.get("id")}
+    if not isinstance(course_id, str):
+        course_id = str(course_id or "")
+    if not course_id:
+        course_id = str(lesson.get("course_id", "") or "")
     blocks = []
     for block in lesson.get("blocks", []):
         artifact_id = block.get("artifact_id")
         if artifact_id and artifact_id in artifacts:
             group = media_groups.get(block.get("type", ""), "resources")
             blocks.append(render_media(artifacts[artifact_id], group, workspace))
-            blocks.append(render_block(block, lesson_exercises, sources))
+            blocks.append(render_block(block, lesson_exercises, sources, course_id))
         else:
-            blocks.append(render_block(block, lesson_exercises, sources))
+            blocks.append(render_block(block, lesson_exercises, sources, course_id))
     chips = render_chips(topic_reps.get(topic, []), lesson, list(artifacts.values()))
     teacher = esc(lesson.get("teacher")) if lesson.get("teacher") else "no assigned teacher"
     meta = (f'teacher · {teacher} · updated {esc(lesson.get("updated_at", ""))}'
@@ -223,8 +888,8 @@ def render_lesson(lesson, index, total, previous_id, next_id, artifacts, sources
     nav = (f'<div class="lesson-nav">{left}<span>{index:02d} / {total:02d}</span>{right}</div>'
            if previous_id or next_id else "")
     return (f'<section class="lesson" id="lesson-{index - 1}">'
-            f'<h3>{esc(lesson.get("title", lesson["id"]))}</h3>'
-            f'<div class="purpose">{esc(lesson.get("purpose", ""))}</div>'
+            f'<h3>{render_rich_text(lesson.get("title", lesson["id"]))}</h3>'
+            f'<div class="purpose">{render_rich_text(lesson.get("purpose", ""))}</div>'
             f'<div class="meta">{meta}</div>'
             + chips + "".join(blocks) + nav + "</section>")
 
@@ -581,25 +1246,17 @@ def render_artifacts(view, workspace):
 
 
 def render_exercises(view):
+    course = view.get("course", {}) if isinstance(view, dict) else {}
+    course_id = course.get("id", "") if isinstance(course, dict) else ""
+    if not isinstance(course_id, str):
+        course_id = str(course_id or "")
     cards = []
-    for exercise in view["exercises"]:
-        options = exercise.get("evaluation", {}).get("options")
-        options_line = ""
-        if isinstance(options, list):
-            options_line = "<ul>" + "".join(f"<li>{esc(o)}</li>" for o in options) + "</ul>"
-        attempts = exercise.get("attempts", [])
-        attempt_line = ""
-        if attempts:
-            attempt_line = " · ".join(
-                f"{esc(a.get('status', ''))} {esc(str(a.get('submitted_at', ''))[:10])}"
-                for a in attempts)
-        cards.append(
-            f'<div class="card"><div class="card-title">{esc(exercise["id"])} · lesson {esc(exercise.get("lesson_id", ""))}</div>'
-            f'<div class="prompt">{esc(exercise.get("prompt", ""))}</div>{options_line}'
-            f'<div class="meta">{esc(exercise.get("response_type", ""))}'
-            + (f" · {len(attempts)} attempt{'s' if len(attempts) != 1 else ''} · {attempt_line}"
-               if attempts else "")
-            + "</div></div>")
+    for exercise in view.get("exercises", []):
+        if not isinstance(exercise, dict):
+            continue
+        ex_id = exercise.get("id", "")
+        lesson_id = exercise.get("lesson_id", "")
+        cards.append(render_exercise_card(exercise, course_id, f"{ex_id} · lesson {lesson_id}"))
     return "".join(cards)
 
 
@@ -609,7 +1266,7 @@ def render_questions(view):
     for question in questions:
         cards.append(
             f'<div class="card"><div class="card-title">question · {esc(question.get("id", ""))}</div>'
-            f'<div class="prompt">{esc(question.get("text", ""))}</div>'
+            f'<div class="prompt">{render_rich_text(question.get("text", ""))}</div>'
             f'<div class="meta">status · {esc(question.get("status", ""))}</div></div>')
     return cards
 
@@ -629,12 +1286,16 @@ def render_body(view, plan, workspace):
             artifacts[artifact["id"]] = artifact
 
     lessons = ordered_lessons(view, plan)
+    course_id = course.get("id", "") if isinstance(course, dict) else ""
+    if not isinstance(course_id, str):
+        course_id = str(course_id or "")
     lesson_html = ""
     for index, lesson in enumerate(lessons, start=1):
         previous_id = lessons[index - 2]["id"] if index > 1 else None
         next_id = lessons[index]["id"] if index < len(lessons) else None
         lesson_html += render_lesson(lesson, index, len(lessons), previous_id, next_id,
-                                     artifacts, course["sources"], workspace, topic_reps)
+                                     artifacts, course["sources"], workspace, topic_reps,
+                                     course_id)
 
     assumptions = plan.get("assumptions", [])
     assumptions_html = ""
@@ -668,6 +1329,9 @@ def render_body(view, plan, workspace):
         f'<section class="tab" id="tab-sources"><h2 class="sec">Sources</h2>{render_sources(course)}</section>',
         f'<section class="tab" id="tab-artifacts">{render_artifacts(view, workspace)}</section>',
         '<div class="footer">rendered by course-viewer · private evaluation criteria never appear here</div>',
+        f"<style>{_EXERCISE_CSS}</style>",
+        f"<style>{_MATH_CSS}</style>",
+        f"<script>{_EXERCISE_JS}</script>",
     ]
     return "\n".join(parts)
 

@@ -1,16 +1,19 @@
 ---
 name: lesson-design
-description: "This is to design indepth individual lessons following the course.json as template but going in way more depth of each individual lesson block , you can add more blocks of information in any representational choice until you feel the topic is well covered., just make sure , you update course.json too then "
+description: "Develop the current course topic into an in-depth lesson using the assigned teacher, subject guidance, and approved representations. Write and review the explanation, produce its blocks, and publish the finished lesson."
 ---
 
 # Lesson design
 
-Build only the lesson at the current topic . The course is already
-enrolled and designed by course-design. Do not rebuild the course here.
+Develop the current topic into a complete lesson. Course design establishes
+the progression and scope; this skill develops the reasoning, examples,
+practice, and media that make the topic understandable.
 
-Start here only after course-design enrolled. If there is no enrolled
+Start after course design has enrolled the plan. If there is no enrolled
 `learners/<learner>/courses/<course-id>/course.json`, stop and return
-to course-design. If the plan needs a adding new concepts, different topic , or skill or more explanation than one topic can provide, stop and request a course-design revision first for that specific chapter part.
+to course design. A new concept, changed topic scope, or different medium or
+skill route needs a course revision first. Additional explanation and blocks
+within the approved scope do not.
 
 ## 0. Read the current topic
 
@@ -22,35 +25,32 @@ Read these before writing anything:
    and `teacher`.
 2. The subject guide through `skills/subject/SKILL.md`. It says what
    learners in this field must inspect.
-3. [The lesson contract](references/lesson-contract.md).
-   It is the law for `lesson.json`.
-4. [Representation choices](../course-design/references/representation-choices.md).
-   It sets the media budget. Read it; do not copy it.
-5. [The artifact manifest](../course-design/references/artifact-manifest.md).
+3. The assigned teacher's `SOUL.md`, when one exists, and the relevant
+   learner evidence supplied by the orchestrator.
+4. [Lesson design](references/lesson-design.md), before drafting the
+   explanation. Use it to develop the reasoning, language, examples, and flow.
+5. [The lesson contract](references/lesson-contract.md), for the structure
+   and constraints of `lesson.json`.
+6. [Representation choices](../course-design/references/representation-choices.md),
+   for the purpose and cost of each medium.
+7. [The artifact manifest](../course-design/references/artifact-manifest.md).
    Only the coordinator writes it.
 
-`depth` and `length` were agreed during course design. You only read
-them. `survey` or one session means mostly text plus one medium where
-the lesson fails without it. `working` means add the diagrams,
-controls, and motion needed for transfer. `mastery` or a term means
-several earned representations across the course, never several
-versions of one idea.
+Use the agreed `depth` and `length` to pace the explanation and practice.
+Develop the reasoning fully within that scope. A short lesson may need a
+careful visual explanation; a long one may rely on text. Follow the approved
+representations and return to course design if their selection needs to change.
 
-## Decide each representation
+## Develop the explanation and assign blocks
 
-Write one sentence per block before you build it:
-
-"The learner must inspect, change, hear, compare, derive, or
-practice ___."
-
-
-One idea gets one primary medium. Do not show the same idea twice in
-two tools. Different parts of one concept may each earn one
-representation.
+Use the lesson design reference to draft the reasoning before producing files.
+Decide what each block contributes to that explanation and which approved
+representation supports it. Text can introduce and interpret an image; remove
+duplication when another block adds no explanation, observation, or practice.
 
 | Representation kind | Lesson block type |
 | --- | --- |
-| `manim` | `voice-animation` |
+| `manim` | `voice-animation` or `animation` |
 | `image` | `diagram` or `artifact` |
 | `diagram` | `diagram` or `artifact` |
 | `simulation` | `interactive-graph` or `simulation` |
@@ -73,10 +73,10 @@ topic's `teacher` (or `null`), `skill_routes` taken from the topic,
 `assumptions`, ordered `blocks`, detailed `exercises`, `publication`
 (`draft`, `ready`, or `archived`), and real UTC timestamps.
 
-Order blocks by reasoning, not by file type. A good order names the
-claim, lets the learner inspect its changing parts, then asks for a
-prediction. You may use fewer blocks than the topic lists. You may not
-add a medium the topic did not approve.
+Order blocks so each explanation or activity prepares the learner for what
+follows. One representation may support several blocks, and unused
+representations need not become blocks. Develop the topic's outcome without
+adding a medium the course did not approve.
 
 Validate the skeleton and publish it as `draft` before producing
 files. The draft gives every artifact a real lesson ID:
@@ -106,10 +106,10 @@ each worker has to do and how to brief it. Each brief names:
 Do not write "make it clear", "make it engaging", or "add context".
 Those words test nothing.
 
-## 3. **Run workers, then merge**
+## 3. Produce the blocks and assemble the lesson
 
-Run multi-agent execution for each file-producing block to one worker.
-Give a text or code block to a worker only when
+When using multi-agent execution, assign each file-producing block to one
+worker. Give a text or code block to a worker only when
 it needs separate research or a long worked construction. Keep short
 explanations, transitions, and notation yourself.
 
@@ -121,8 +121,8 @@ They never edit `course.json`, `lesson.json`, or `manifest.json`.
 
 Run blocks with no unmet dependencies in parallel. A block listed in
 `depends_on_block_ids` starts only after those earlier blocks return.
-If multi-agent execution is unavailable, use the same briefs and
-produce the blocks one by one. Do not weaken the checks.
+If multi-agent execution is unavailable or the user requests solo work, use
+the same briefs and produce the blocks one by one. Apply the same checks.
 
 Check every result against its acceptance checks. Reject a result
 that changes the plan or breaks continuity. If a worker needs a
@@ -138,6 +138,8 @@ python3 skills/course-design/scripts/manage_artifact.py --learners-root learners
   register <learner-id> <course-id> --file artifact.json
 ```
 
+Review the assembled lesson using [lesson-design.md](references/lesson-design.md).
+Check the explanation and transitions across blocks as well as each artifact.
 Then validate the assembled lesson, set it to `ready`, publish it
 with `course_workspace.py publish`, and re-render the course page:
 

@@ -41,6 +41,23 @@ Never turn an illustrative response into a diagnosis or stable trait claim.
 ## Source selection
 
 Use original studies, systematic reviews, and inspected academic chapters. Check population, design, effect size, uncertainty, and replication; verify current clinical guidance when relevant.
+
+## What each area earns
+
+First write what the learner must inspect, change, compare, or work out
+in one sentence, and pick the smallest medium that lets them do it. Only
+then check this table for what psychology usually needs. Never use the
+table as a reason to order its favorite medium. Depth and length still
+cap the media: a survey earns mostly text plus one medium.
+
+| Area | Lead with | Then earn, only when | Exercise |
+| --- | --- | --- | --- |
+| Cognition and learning | Construct, measure, and study design in text | Manim, only when a timed process must be watched in order | Short text: compare the mechanisms with a controlled task |
+| Development | Age and cohort stated in text | Excalidraw timeline, only to separate age change from cohort difference | Short text: separate the developmental change from the cohort effect |
+| Social and personality | Context and measurement in text | Simulation, only when the learner varies the context or measure | Short text: compare the person explanation with the situation explanation |
+| Biological psychology | Nervous system and measurement scale in text | Labeled image, only of the actual record, with its scale stated | Multiple-choice: connect the mechanism to the behavioral evidence |
+| Clinical psychology | Symptoms, impairment, and study design in text | Nothing else; this is exact educational explanation, never diagnosis | Multiple-choice: separate education about a condition from individual diagnosis |
+| Research methods | Operational definitions and uncertainty in text | Simulation, only when the learner varies sampling or confounding | Short text: audit the validity and name the confound |
 No curated source entries are supplied specifically for this subject yet.
 Inspect suitable sources before assigning a sustained course; follow
 [the source-use guide](../references/source-use.md).

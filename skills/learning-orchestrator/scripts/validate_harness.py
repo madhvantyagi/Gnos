@@ -16,8 +16,8 @@ from lesson_contract import validate_lesson
 def validate():
     errors = []
     skills = sorted((ROOT / 'skills').glob('*/SKILL.md'))
-    expected = ('course-design', 'course-viewer', 'image-gen', 'learner-tracking',
-                'learning-orchestrator', 'manim-voice-animation', 'pdf', 'subject')
+    expected = ('course-design', 'course-viewer', 'learner-tracking',
+                'learning-orchestrator', 'lesson-design', 'manim-voice-animation', 'pdf', 'subject')
     if [path.parent.name for path in skills] != sorted(expected):
         found = [path.parent.name for path in skills]
         errors.append(f'Expected skills {sorted(expected)}; found {sorted(found)}')
@@ -38,6 +38,8 @@ def validate():
         ('skills/course-design/SKILL.md', 'Do not stop at'),
         ('skills/course-viewer/SKILL.md', 'even with zero lessons'),
         ('skills/learner-tracking/SKILL.md', 'Never render lessons, viewer pages'),
+        ('skills/lesson-design/SKILL.md', 'representation_id'),
+        ('skills/lesson-design/SKILL.md', 'Only the coordinator'),
     ):
         path = ROOT / required[0]
         if path.is_file() and required[1] not in path.read_text():

@@ -50,7 +50,10 @@ at the current scene time, fills unused cue duration with a wait, applies
 `pause_after`, and exports actual cue starts to SRT and timing JSON. Do not reuse
 a cue or leave one unplayed. An animation must fit inside its cue.
 
-Check dependencies without network calls:
+Use the project's `.venv/bin/python` for the commands below when that
+environment is present. Check it before assuming packages missing from the
+system Python are unavailable. For a fresh environment, install this skill's
+`requirements.txt` there. Check dependencies without network calls:
 
 ```bash
 python3 skills/manim-voice-animation/scripts/setup_env.py
