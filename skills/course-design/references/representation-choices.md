@@ -129,8 +129,8 @@ continuity rules, dependencies, and acceptance checks. The worker implements
 that block only. It does not edit `course.json`, `lesson.json`, or
 `manifest.json`.
 
-Read [lesson-contract.md](lesson-contract.md) for the block packet and merge
-protocol. Read [artifact-manifest.md](artifact-manifest.md) before publishing a
+Read [lesson-contract.md](../../lesson-design/references/lesson-contract.md) for how to brief each worker and merge
+the results. Read [artifact-manifest.md](artifact-manifest.md) before publishing a
 file.
 
 ## Final checks
