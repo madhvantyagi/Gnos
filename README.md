@@ -22,6 +22,16 @@ GNOS is a teaching harness made of skills, scripts, and visual tools. Tell it wh
 
 As you work, GNOS records what you tried, where your reasoning broke, and what you could do independently. It uses that evidence to adjust upcoming lessons and exercises. The course grows with you.
 
+## Study your course in a browser
+
+Just ask GNOS to show your course in the browser. It routes the request to the `course-viewer` skill, which renders the curriculum and current lesson as a study page. Open a topic to read its lesson, work through exercises, and follow its sources and learning materials.
+
+<p align="center">
+  <img src="assets/course-viewer.png" alt="GNOS course viewer showing a course curriculum and selected topic details" width="100%" />
+</p>
+
+<p align="center"><em>Browse the curriculum and open a topic to study it in the course viewer.</em></p>
+
 ## Why does learning with AI still feel hard?
 
 Frontier models know a great deal, but a good answer is only one part of teaching. Learning a large subject also takes a coherent route, a diagnosis of mistakes, and a way to make abstract ideas visible. GNOS gives a coding agent that structure.
