@@ -11,7 +11,7 @@
   &nbsp;·&nbsp;
   <a href=".codex-plugin/plugin.json">Codex plugin</a>
   &nbsp;·&nbsp;
-  <a href="#get-started">Claude Code & other agents</a>
+  <a href=".claude-plugin/plugin.json">Claude Code plugin</a>
   &nbsp;·&nbsp;
   <a href="LICENSE">MIT license</a>
 </p>
@@ -35,9 +35,28 @@ Frontier models know a great deal, but a good answer is only one part of teachin
 
 ## Get started
 
-**Codex:** Use the [Codex plugin](.codex-plugin/plugin.json), then ask it to teach you a topic.
+### Use GNOS as a plugin
 
-**Claude Code or another agent that can read local files:** Clone the repo, open it as your workspace, and start with:
+1. **Codex:** Install the [Codex plugin](.codex-plugin/plugin.json) from this repo's marketplace:
+
+   ```sh
+   codex plugin marketplace add madhvantyagi/Gnos --ref codex
+   codex plugin add gnos@gnos
+   ```
+
+   Start a new Codex task and ask it to teach you a topic.
+
+2. **Claude Code:** From the cloned repository root, load the [Claude Code plugin](.claude-plugin/plugin.json) for the session:
+
+   ```sh
+   claude --plugin-dir .
+   ```
+
+   In Claude Code, invoke `/gnos:learning-orchestrator`, then tell it what you want to learn. See the [Claude Code plugin guide](https://code.claude.com/docs/en/plugins) for other installation options.
+
+### Use GNOS with another agent
+
+For another agent that can read local files, clone the repo, open it as your workspace, and start with:
 
 > Read `AGENTS.md`, then `skills/learning-orchestrator/SKILL.md`. Help me learn [topic].
 

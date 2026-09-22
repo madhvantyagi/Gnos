@@ -1,0 +1,14 @@
+{
+  "name": "gnos",
+  "displayName": "GNOS",
+  "version": "0.2.0",
+  "description": "A teaching harness that diagnoses the learner's reasoning gap and selects the right teacher, subject guidance, and learning artifact.",
+  "author": {
+    "name": "Madhvan Tyagi",
+    "url": "https://github.com/madhvantyagi"
+  },
+  "homepage": "https://github.com/madhvantyagi/Gnos",
+  "repository": "https://github.com/madhvantyagi/Gnos",
+  "license": "MIT",
+  "keywords": ["education", "teaching", "learning"]
+}

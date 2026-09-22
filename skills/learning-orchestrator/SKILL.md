@@ -1,6 +1,6 @@
 ---
 name: learning-orchestrator
-description: Entry point. Start every GNOS turn here: read the request, route it to a subject, teacher, course, or learner record, then teach. After any course build or change, enroll, ask to show it, render the page, and return the link.
+description: 'Entry point. Start every GNOS turn here: read the request, route it to a subject, teacher, course, or learner record, then teach. After any course build or change, enroll, ask to show it, render the page, and return the link.'
 ---
 
 # Learning orchestrator — the entry point
