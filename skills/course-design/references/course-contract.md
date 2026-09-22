@@ -9,7 +9,6 @@ Create new plans with `schema_version: 2`. Keep lesson content in lesson files
 and learner attempts in `learners/<id>/state.json`.
 
 ## Establish the goal and starting point
-
 Write a course `goal` that describes what the learner will be able to do.
 “Derive and implement gradient descent” gives the course a clearer destination
 than “Learn optimization.” Use `starting_evidence` for abilities the learner
@@ -28,7 +27,6 @@ the available time, narrow the course or discuss a longer duration. Do not fit
 the schedule by removing the reasoning that makes a topic understandable.
 
 ## Build the progression
-
 Arrange topics so each one uses knowledge established earlier or explicitly
 identified as a starting prerequisite. List only earlier topic IDs in
 `prerequisites`. If an early topic depends on a later one, repair the order.
@@ -50,7 +48,6 @@ them further as learner evidence establishes what is needed. The position of
 a topic in the plan does not prove that the learner has understood it.
 
 ## Assign the subject and teacher
-
 Read the selected subject guide through `skills/subject/SKILL.md` and its
 matching `teachers/<subject>/SOUL.md` when one exists. Use the subject guide to
 check prerequisites, likely misconceptions, and suitable evidence of learning.
@@ -63,7 +60,6 @@ and where its contribution ends. Lesson design keeps the lead teacher's voice
 through that explanation.
 
 ## Plan what each representation contributes
-
 Read [representation-choices.md](representation-choices.md) alongside the
 subject guide. Give each topic a `representations` list that covers the
 explanation and practice as well as any useful media. For each entry, record
@@ -104,7 +100,7 @@ decisions in complete sentences where an explanation is needed.
 
 | Part | What to record |
 | --- | --- |
-| Course identity | A stable `id`, a short descriptive `title`, the `goal`, and an optional one-line `vision` of the finished capability. |
+| Course identity | A stable `id`, a course `title` that is the hero heading of at most 3 words, the `goal`, and an optional one-line `vision` of the finished capability. Put any longer description in `goal`, `vision`, or `hero_subtitle`, never in `title`. |
 | Scope | Agreed `depth` and `length`, supported `starting_evidence`, and unverified `assumptions`. |
 | Structure | Ordered `chapters` containing ordered `topics`. Give each chapter and topic a stable ID and a readable title. |
 | Current position | One `current` object with `chapter_id`, `topic_id`, and a concrete `next_step`. |

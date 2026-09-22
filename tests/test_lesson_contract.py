@@ -45,6 +45,16 @@ def valid_lesson():
 
 
 class LessonContractTests(unittest.TestCase):
+    def test_worked_solution_is_validated_but_excluded_from_public_lesson(self):
+        lesson = valid_lesson()
+        lesson['exercises'][0]['solution'] = 'A positive slope predicts an increase.'
+        checked = validate_lesson(lesson, validate_course(valid_v2_course()))
+        self.assertNotIn('solution', public_lesson(checked)['exercises'][0])
+        for invalid in ['', '  ', {'answer': 1}]:
+            lesson['exercises'][0]['solution'] = invalid
+            with self.assertRaises(ValueError):
+                validate_lesson(lesson, validate_course(valid_v2_course()))
+
     def test_teacher_neutral_lesson_matches_null_topic_teacher(self):
         course = valid_v2_course()
         course["chapters"][0]["topics"][0]["teacher"] = None

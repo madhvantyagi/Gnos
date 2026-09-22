@@ -1,8 +1,10 @@
 """Tests for private persistence behind the course portal interactions."""
 
 import json
+import os
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -19,12 +21,14 @@ from portal_interactions import (  # noqa: E402
     list_pending,
     read_attempt,
     read_attempts,
+    exercise_state,
+    reveal_solution,
     request_hint,
     review_attempt,
     save_draft,
     submit_attempt,
 )
-from manage_interaction import record_reviewed_attempt  # noqa: E402
+from manage_interaction import _reviewed_event, record_reviewed_attempt  # noqa: E402
 from learner_state import mutate as mutate_learner_state, read_state  # noqa: E402
 from test_course_workspace import valid_lesson, valid_v2_course  # noqa: E402
 
@@ -74,6 +78,29 @@ class PortalInteractionTests(unittest.TestCase):
 
         self.assertNotEqual(first["attempt_id"], second["attempt_id"])
         self.assertEqual(len(read_attempts(self.workspace, "predict-change")), 2)
+
+    def test_reveal_preserves_response_and_marks_subsequent_attempt_as_assisted(self):
+        first = submit_attempt(self.workspace, 'predict-change', {'value': 0})
+        reveal_solution(self.workspace, 'predict-change', first['id'])
+        self.assertEqual(read_attempt(self.workspace, first['id'])['response'], {'value': 0})
+        second = submit_attempt(self.workspace, 'predict-change', {'value': 1})
+        self.assertTrue(second['solution_seen_before_submission'])
+        self.assertEqual(exercise_state(self.workspace, 'predict-change')['attempt']['id'], second['id'])
+
+    @unittest.skipUnless(hasattr(time, 'tzset'), 'Requires a process-local timezone setting')
+    def test_review_uses_local_submission_date_across_utc_midnight(self):
+        with mock.patch('portal_interactions.utc_now', return_value='2026-09-13T01:00:00Z'):
+            attempt = submit_attempt(self.workspace, 'predict-change', {'value': 1})
+        review = {'result': 'correct', 'help': 'none', 'kind': 'retrieval',
+                  'interpretation': 'Correct sign.', 'next_step': 'Try another example.'}
+        reviewed = review_attempt(self.workspace, attempt['id'], review)
+        try:
+            with mock.patch.dict(os.environ, {'TZ': 'America/New_York'}):
+                time.tzset()
+                event = _reviewed_event(self.workspace, reviewed, review, 'test-event')
+                self.assertEqual(event['date'], '2026-09-12')
+        finally:
+            time.tzset()
 
     def test_open_ended_attempt_waits_for_review(self):
         result = submit_attempt(self.workspace, "explain-gradient", {"text": "My reasoning"})

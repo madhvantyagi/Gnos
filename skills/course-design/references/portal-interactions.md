@@ -11,6 +11,18 @@ Resolve every exercise ID from a validated ready lesson. Render and accept only
 the response shape declared by that exercise. Keep private success criteria and
 deterministic answers on the server side.
 
+Use `skills/course-viewer/scripts/serve_course.py` to serve the interactive
+page. Save answer calls the existing submission store and writes the response
+to `submissions/<exercise-id>/<attempt-id>.json`. Show a saved state only after
+that write succeeds. A browser draft alone is not a persisted course attempt.
+
+After saving, offer Show answer. Verify that the attempt belongs to this
+exercise, return only its authored `solution` (or the deterministic answer for
+older numeric/choice exercises), and record `solution_revealed_at` on the
+attempt. Preserve the original response. Later attempts record
+`solution_seen_before_submission` so review can account for that assistance.
+Never send success criteria, tolerances, or private review notes with a solution.
+
 Drafts are replaceable working state. Submitted attempts are append-only. A
 retry receives a new attempt ID and never erases the earlier response. Reusing
 an attempt ID with an identical payload is idempotent; reusing it with different

@@ -177,6 +177,8 @@ def validate_lesson(data, course):
         if response_type not in RESPONSE_TYPES:
             raise ValueError(f"{exercise_id}: invalid response_type")
         _validate_evaluation(exercise.get("evaluation"), response_type, exercise_id)
+        if "solution" in exercise:
+            nonempty(exercise["solution"], f"{exercise_id}.solution")
         _strings(exercise.get("success_criteria"), f"{exercise_id}.success_criteria", required=True)
         refs = exercise.get("reference_block_ids", [])
         _strings(refs, f"{exercise_id}.reference_block_ids")

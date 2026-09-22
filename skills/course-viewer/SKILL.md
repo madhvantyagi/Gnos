@@ -1,12 +1,13 @@
 ---
 name: course-viewer
-description: Render and show the learner's course page. Use when the learner says see, show, or open my course, or after course.json is created, enrolled, or changed; render portal/index.html and return the link.
+description: "Show an enrolled course and its lessons. Use lesson-design to author or repair the current lesson before delivering teaching; render published content and serve the local page with saved exercises."
 ---
 
 # Course viewer
 
-Turn a course workspace into one static page the learner reads.
-No app, no build step. One self-contained page + one CDN exception for math (KaTeX). Cream editorial page: top bar with GNOS + tabs, hero
+Render the enrolled course and its published lessons. The HTML page can be
+read on its own; the local course server saves exercises to JSON and reveals
+answers after submission. Math uses KaTeX. Cream editorial page: top bar with GNOS + tabs, hero
 with giant title + field metadata, curriculum list + topic details.
 
 Use this skill whenever a course plan is created, enrolled, or
@@ -16,10 +17,34 @@ every new lesson, video, image, or simulation. Render only from the
 enrolled workspace at `learners/<learner>/courses/<course-id>`,
 never from a blueprint `outputs/` file.
 
+
+## lesson-design should have been used before using this skill
+
+**Make sure that you have used [lesson-design](../lesson-design/SKILL.md) skill to design the lesson for the current in way better manner and then use the course-viewer to view the lesson , after you done using the lesson-design skill. then you can smoothly use course-viewer**
+
+
+
+
+## Complete the lesson handoff before showing teaching
+
+Read the current topic and its published lesson. Course design supplies the
+outline; [lesson-design](../lesson-design/SKILL.md) supplies the teaching.
+If the current topic has no ready lesson, use that skill and its
+[lesson design reference](../lesson-design/references/lesson-design.md) to
+author it before delivering a lesson page. If the learner reports a shallow
+lesson, use the same reference to repair its explanation and examples even
+when its file is already marked `ready`.
+
+Do not write lesson content from `course.json` inside this viewer workflow.
+The renderer does not call a model or invoke skills: the host must perform
+the handoff, review the lesson, and publish it. Use `--require-current-lesson`
+when delivering teaching so a missing lesson cannot silently produce only an
+outline. Omit that flag for an explicitly requested outline or contents preview.
+
 ## Render
 
 ```bash
-python3 skills/course-viewer/scripts/render_viewer.py learners/alex/courses/motion
+.venv/bin/python skills/course-viewer/scripts/render_viewer.py learners/alex/courses/motion --require-current-lesson
 ```
   
 The script reads `course.json`, published lessons, and the artifact
@@ -28,10 +53,15 @@ manifest, then writes `portal/index.html` inside the course folder.
 Open it locally:
 
 ```bash
-cd learners/alex/courses/motion
-python3 -m http.server 8080
-# visit http://localhost:8080/portal/
+.venv/bin/python skills/course-viewer/scripts/serve_course.py learners/alex/courses/motion --port 8080
+# visit http://127.0.0.1:8080/portal/
 ```
+
+Use this server for exercise interaction. A plain file or generic static server
+cannot write a learner response to the course workspace. Save answer persists
+an attempt under `submissions/<exercise-id>/<attempt-id>.json`; only a
+successful save enables Show answer. The solution is fetched on that explicit
+request and the reveal is recorded separately from the learner's response.
 
 ## The layout
 
@@ -75,17 +105,18 @@ what is coming. The lesson coordinator registers every artifact with
 
 ## Rules
 
-- Render only public fields. Never print success criteria, answers,
-  tolerances, solutions, or private review notes.
+- Render only public fields in the initial page. Keep success criteria,
+  tolerances, and private review notes private. The local server may return
+  an authored solution only after a saved attempt and explicit Show answer.
 - The page references media files in the workspace; it never copies
   or downloads them. Missing files get a visible note, never a crash.
 - Re-render whenever the plan, a lesson, or the manifest changes.
 - Math renders with KaTeX (CDN, the one network exception). Lesson text
   must already delimit math as LaTeX (`$...$`, `$$...$$`); the renderer
-  additionally normalises bare ASCII idioms (`R^(m x n)` →
-  `\mathbb{R}^{m \times n}`, `P^(-1)` → `P^{-1}`) as a safety net, never
-  as the authorised notation. Body prose is serif; monospace is only
-  for code.
+  preserves delimited LaTeX and equation blocks exactly. Legacy undelimited
+  ASCII text has a limited compatibility converter; never rely on it when
+  authoring. Follow [math notation](../lesson-design/references/math-notation.md).
+  Body prose is serif; monospace is only for code.
 - If enroll or render fails, say plainly what failed and fix it that
   turn. Never silently skip the page.
 - If the learner did not answer the show question, ask again on the

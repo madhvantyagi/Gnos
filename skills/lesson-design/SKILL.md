@@ -36,6 +36,9 @@ Read these before writing anything:
 7. [The artifact manifest](../course-design/references/artifact-manifest.md).
    Only the coordinator writes it.
 
+For mathematics in any subject, read [math notation](references/math-notation.md)
+before drafting equations, prompts, or worked answers.
+
 Use the agreed `depth` and `length` to pace the explanation and practice.
 Develop the reasoning fully within that scope. A short lesson may need a
 careful visual explanation; a long one may rely on text. Follow the approved
@@ -144,7 +147,7 @@ Then validate the assembled lesson, set it to `ready`, publish it
 with `course_workspace.py publish`, and re-render the course page:
 
 ```bash
-python3 skills/course-viewer/scripts/render_viewer.py learners/<learner>/courses/<course-id>
+python3 skills/course-viewer/scripts/render_viewer.py learners/<learner>/courses/<course-id> --require-current-lesson
 ```
 
 Tell the learner the page is updated and give the `portal/` link with

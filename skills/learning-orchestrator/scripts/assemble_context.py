@@ -53,6 +53,7 @@ def selected_paths(subject, mode='lesson', media=None, course=None):
                 f'({topic_subject!r}/{teacher!r})'
             )
         paths.extend(topic.get('skill_routes', []))
+        paths.extend(['skills/subject/SKILL.md', f'skills/subject/subjects/{subject}.md'])
     if teacher is not None:
         teacher_path = ROOT / f'teachers/{teacher}/SOUL.md'
         if teacher_path.is_file():
@@ -67,9 +68,10 @@ def selected_paths(subject, mode='lesson', media=None, course=None):
             'skills/learner-tracking/references/adaptive-lifecycle.md',
             'skills/course-viewer/SKILL.md',
         ]
-    if mode == 'lesson' and course is not None:
+    if course is not None:
         paths += [
             'skills/lesson-design/SKILL.md',
+            'skills/lesson-design/references/lesson-design.md',
             'skills/lesson-design/references/lesson-contract.md',
             'skills/course-design/references/representation-choices.md',
             'skills/course-design/references/artifact-manifest.md',

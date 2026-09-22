@@ -46,10 +46,14 @@ Paths below are relative to the repository root.
    tool as directed by the subject skill; there is no local GNOS image skill.
    During course work, load `skills/course-viewer/SKILL.md`. After a
    course plan is written or changed, enroll it under the learner's name
-   (or the default `learner`) that same turn, then ask this exact
-   question: "want to see the course now?" On yes, render the viewer page and
+   (or the default `learner`) that same turn. Continue with lesson design and
+   its teaching reference to author, review, and publish the current lesson.
+   An explicitly requested outline can stop at planning. Ask this exact
+   question: "want to see the course now?" unless already requested or approved.
+   This controls opening the viewer; it must not replace lesson authoring.
+   On yes, render the viewer page and
    reply with the `portal/` link and what to click:
-   `python3 skills/course-viewer/scripts/render_viewer.py learners/<learner>/courses/<course-id>`.
+   `python3 skills/course-viewer/scripts/render_viewer.py learners/<learner>/courses/<course-id> --require-current-lesson`.
    Never end a course turn without either rendering the page or asking
    to render it. Chat teaching or RESEARCH.md is not a substitute for
    the page.

@@ -69,7 +69,7 @@ def math_display_html(tex, tag="div"):
     tag = "div" if tag not in ("div", "span") else tag
     if raw.strip() == "":
         return f'<{tag} class="math math-display math-empty" role="math" aria-label="{label}"></{tag}>'
-    inner = html.escape(normalize_ascii_math(raw), quote=True)
+    inner = html.escape(raw, quote=True)
     return f'<{tag} class="math math-display" role="math" aria-label="{label}">$${inner}$$</{tag}>'
 
 
@@ -78,7 +78,7 @@ def math_inline_html(tex):
     label = html.escape(raw, quote=True)
     if raw.strip() == "":
         return f'<span class="math math-inline math-empty" role="math" aria-label="{label}"></span>'
-    inner = html.escape(normalize_ascii_math(raw), quote=True)
+    inner = html.escape(raw, quote=True)
     return f'<span class="math math-inline" role="math" aria-label="{label}">${inner}$</span>'
 
 
@@ -87,7 +87,7 @@ def _math_paren_inline_html(tex):
     label = html.escape(raw, quote=True)
     if raw.strip() == "":
         return f'<span class="math math-inline math-empty" role="math" aria-label="{label}"></span>'
-    inner = html.escape(normalize_ascii_math(raw), quote=True)
+    inner = html.escape(raw, quote=True)
     return f'<span class="math math-inline" role="math" aria-label="{label}">\\({inner}\\)</span>'
 
 
@@ -96,7 +96,7 @@ def _math_bracket_display_html(tex):
     label = html.escape(raw, quote=True)
     if raw.strip() == "":
         return f'<span class="math math-display math-empty" role="math" aria-label="{label}"></span>'
-    inner = html.escape(normalize_ascii_math(raw), quote=True)
+    inner = html.escape(raw, quote=True)
     return f'<span class="math math-display" role="math" aria-label="{label}">\\[{inner}\\]</span>'
 
 
@@ -202,6 +202,9 @@ def normalize_ascii_math(tex):
     """Translate ASCII math idioms to LaTeX; already-clean LaTeX is unchanged."""
     s = "" if tex is None else str(tex)
     if s.strip() == "":
+        return s
+    # Legacy plain-text notation only. Never rewrite authored TeX commands.
+    if "\\" in s:
         return s
     s = _MATRIX_RE.sub(_matrix_to_bmatrix, s)
     s = _SQRT_RE.sub(r"\\sqrt{\1}", s)
@@ -518,105 +521,12 @@ _EXERCISE_CSS = (
     ".exercise-actions button{appearance:none;border:1px solid var(--teal);background:var(--teal);"
     "color:#fff;font:inherit;font-size:13px;font-weight:600;border-radius:999px;padding:6px 16px;cursor:pointer;}"
     ".exercise-actions button:hover{background:var(--teal-deep);}"
+    ".exercise-actions button:disabled{opacity:.45;cursor:default;}"
+    ".exercise-solution{white-space:pre-line;margin-top:18px;padding-top:12px;border-top:1px solid var(--divider);}"
     ".exercise-status{font-size:12px;color:var(--done);margin-top:6px;min-height:1.2em;}"
 )
 
-_EXERCISE_JS = """(function () {
-  function storageKey(courseId, exerciseId) {
-    if (courseId) return "gnos:exercise:" + courseId + ":" + exerciseId;
-    return "gnos:exercise:" + exerciseId;
-  }
-  function getAnswer(form) {
-    var checked = form.querySelector('input[type="radio"][name="answer"]:checked');
-    if (checked) return checked.value;
-    var field = form.querySelector('textarea[name="answer"], input[name="answer"]');
-    if (field) return field.value;
-    return "";
-  }
-  function setAnswer(card, answer) {
-    var form = card.querySelector(".exercise-form");
-    if (!form) return;
-    var radios = form.querySelectorAll('input[type="radio"][name="answer"]');
-    if (radios && radios.length) {
-      Array.prototype.forEach.call(radios, function (r) { r.checked = (r.value === answer); });
-      return;
-    }
-    var field = form.querySelector('textarea[name="answer"], input[name="answer"]');
-    if (field) field.value = answer;
-  }
-  function setStatus(card, message) {
-    var el = card.querySelector(".exercise-status");
-    if (el) el.textContent = message;
-  }
-  function restoreCard(card) {
-    var exId = card.getAttribute("data-exercise-id") || "";
-    if (!exId) return;
-    var courseId = card.getAttribute("data-course-id") || "";
-    var key = storageKey(courseId, exId);
-    var raw = null;
-    try { raw = window.localStorage.getItem(key); } catch (e) { raw = null; }
-    if (raw === null || raw === undefined || raw === "") return;
-    var answer = "";
-    try {
-      var parsed = JSON.parse(raw);
-      if (parsed && typeof parsed.answer === "string") answer = parsed.answer;
-      else if (typeof parsed === "string") answer = parsed;
-      else return;
-    } catch (e) { answer = raw; }
-    if (!answer) return;
-    setAnswer(card, answer);
-    setStatus(card, "Saved \\u2713 Your answer was recorded locally. You can change it and save again.");
-  }
-  function syncCards(courseId, exId, answer, sourceCard) {
-    var cards = document.querySelectorAll(".card.exercise");
-    Array.prototype.forEach.call(cards, function (card) {
-      if (card === sourceCard) return;
-      if ((card.getAttribute("data-exercise-id") || "") !== exId) return;
-      if ((card.getAttribute("data-course-id") || "") !== courseId) return;
-      setAnswer(card, answer);
-      setStatus(card, "Saved \\u2713 Your answer was recorded locally. You can change it and save again.");
-    });
-  }
-  function onSubmit(e) {
-    var form = e.target;
-    if (!form || !form.classList || !form.classList.contains("exercise-form")) return;
-    e.preventDefault();
-    var card = null;
-    if (form.closest) card = form.closest(".card.exercise");
-    if (!card) {
-      var node = form.parentNode;
-      while (node && node !== document) {
-        if (node.classList && node.classList.contains("exercise")) { card = node; break; }
-        node = node.parentNode;
-      }
-    }
-    if (!card) return;
-    var exId = card.getAttribute("data-exercise-id") || "";
-    var courseId = card.getAttribute("data-course-id") || "";
-    var answer = getAnswer(form);
-    var isChoice = !!form.querySelector('input[type="radio"][name="answer"]');
-    if (typeof answer === "string" && !isChoice) answer = answer.trim();
-    if (!answer) {
-      setStatus(card, "Please enter or choose an answer before saving.");
-      return;
-    }
-    var key = storageKey(courseId, exId);
-    try {
-      window.localStorage.setItem(key, JSON.stringify({ answer: answer, savedAt: new Date().toISOString() }));
-    } catch (err) { /* storage unavailable; still show recorded state */ }
-    setStatus(card, "Saved \\u2713 Your answer was recorded locally. You can change it and save again.");
-    syncCards(courseId, exId, answer, card);
-  }
-  function init() {
-    if (document.documentElement.getAttribute("data-gnos-exercises") === "1") return;
-    document.documentElement.setAttribute("data-gnos-exercises", "1");
-    var cards = document.querySelectorAll(".card.exercise");
-    Array.prototype.forEach.call(cards, restoreCard);
-    document.addEventListener("submit", onSubmit);
-  }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
-  else init();
-})();"""
+_EXERCISE_JS = (Path(__file__).with_name('exercise_controls.js')).read_text()
 
 
 _CHOICE_RESPONSE_TYPES = {"choice", "multiple-choice", "single-choice"}
@@ -685,9 +595,11 @@ def render_exercise_card(exercise, course_id, title):
         f'<div class="prompt">{render_rich_text(prompt)}</div>'
         f'<form class="exercise-form" method="post" action="#">'
         f"{field}"
-        '<div class="exercise-actions"><button type="submit">Save answer</button></div>'
+        '<div class="exercise-actions"><button type="submit">Save answer</button> '
+        '<button type="button" class="reveal-answer" disabled>Show answer</button></div>'
         "</form>"
         '<div class="exercise-status" role="status" aria-live="polite"></div>'
+        '<div class="exercise-solution" hidden></div>'
         f'<div class="meta">{esc(response_type)}{_attempt_summary(attempts)}</div>'
         "</div>")
 
@@ -781,7 +693,8 @@ def render_block(block, lesson_exercises, sources, course_id=""):
     header = f'<div class="block-label">{label}</div>'
     chunks = []
     if block.get("text"):
-        chunks.append(f"<p>{render_rich_text(block['text'])}</p>")
+        chunks.extend(f"<p>{render_rich_text(paragraph)}</p>"
+                      for paragraph in re.split(r'\n\s*\n', block['text']) if paragraph.strip())
     if isinstance(block.get("items"), list):
         chunks.append("<ul>" + "".join(
             f"<li>{render_rich_text(item)}</li>" for item in block["items"]) + "</ul>")
@@ -1328,7 +1241,7 @@ def render_body(view, plan, workspace):
         + (render_exercises(view) or "<p>No exercises yet.</p>") + questions_html + "</section>",
         f'<section class="tab" id="tab-sources"><h2 class="sec">Sources</h2>{render_sources(course)}</section>',
         f'<section class="tab" id="tab-artifacts">{render_artifacts(view, workspace)}</section>',
-        '<div class="footer">rendered by course-viewer · private evaluation criteria never appear here</div>',
+        '<div class="footer">GNOS · learn, practice, and revisit</div>',
         f"<style>{_EXERCISE_CSS}</style>",
         f"<style>{_MATH_CSS}</style>",
         f"<script>{_EXERCISE_JS}</script>",
@@ -1357,6 +1270,8 @@ def main():
                         help="optional learner summary JSON for progress columns")
     parser.add_argument("--out", type=Path,
                         help="output HTML path (default: <workspace>/portal/index.html)")
+    parser.add_argument("--require-current-lesson", action="store_true",
+                        help="require a ready current lesson when delivering teaching, not just an outline")
     args = parser.parse_args()
     workspace = args.workspace
     try:
@@ -1368,6 +1283,11 @@ def main():
             view = build_portal_view(workspace, summary)
         except FileNotFoundError:
             view = _empty_view(plan)
+        if args.require_current_lesson and not any(
+                lesson.get("topic_id") == plan["current"]["topic_id"]
+                for lesson in ordered_lessons(view, plan)):
+            raise ValueError("Current topic has no ready lesson. Use skills/lesson-design/SKILL.md "
+                             "to author and publish it before delivering the lesson page.")
         body = render_body(view, plan, workspace)
         template = TEMPLATE.read_text()
         if BODY_START not in template or BODY_END not in template:

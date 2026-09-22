@@ -68,7 +68,8 @@ def _reviewed_event(workspace, attempt, review, event_id):
     if not isinstance(submitted_at, str):
         raise ValueError("Attempt submitted_at is malformed")
     try:
-        submitted_date = datetime.fromisoformat(submitted_at.replace("Z", "+00:00")).date()
+        # Learner events use local calendar dates; UTC can already be tomorrow.
+        submitted_date = datetime.fromisoformat(submitted_at.replace("Z", "+00:00")).astimezone().date()
     except ValueError as exc:
         raise ValueError("Attempt submitted_at is malformed") from exc
     exercise = found["exercise"]

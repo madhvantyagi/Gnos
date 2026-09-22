@@ -64,22 +64,38 @@ Briefly explain the course goal, agreed depth and duration, and current topic.
 Describe what the selected representations will help the learner understand.
 Use enough detail to make the plan understandable without reciting its fields.
 
-## Show the course and hand off the lesson
+## Hand the current topic to lesson design
 
-Follow the orchestrator's course-viewer step: ask “want to see the course now?”
-unless the learner has already requested or approved it. On yes, render the
-page and return its `portal/` link with what to open:
+After enrollment, continue with [lesson-design](../lesson-design/SKILL.md).
+Read its [teaching reference](../lesson-design/references/lesson-design.md) and
+load the current topic, teacher, subject guidance, and learner evidence. When
+using the context loader, switch to lesson authoring explicitly:
 
 ```bash
-python3 skills/course-viewer/scripts/render_viewer.py learners/<learner>/courses/<course-id>
+python3 skills/learning-orchestrator/scripts/assemble_context.py --subject <subject> \
+  --learner <learner> --course-id <course-id> --mode lesson
 ```
 
-The contents page can render before any lessons exist. Use
-[lesson-design](../lesson-design/SKILL.md) to develop the enrolled current
-topic. That skill writes the lesson, coordinates production, registers checked
-artifacts, and publishes the finished lesson. Re-render the page after a new
-lesson or artifact is published. Course design does not write `lesson.json`,
-production briefs, or block content.
+Lesson design must develop and review the explanation before publishing a
+ready lesson. Do not turn topic outcomes or representation purposes into short
+paragraphs and call that the lesson. Its finished content belongs in
+`lessons/<lesson-id>/lesson.json`. Course design stops authoring at the plan;
+the same host continues the work under lesson design's instructions.
+
+## Show the finished lesson
+
+Ask “want to see the course now?” unless the learner already requested or
+approved it. This question controls opening the page, not whether lesson
+design runs. On yes, use [course-viewer](../course-viewer/SKILL.md) and render:
+
+```bash
+python3 skills/course-viewer/scripts/render_viewer.py learners/<learner>/courses/<course-id> --require-current-lesson
+```
+
+Return the `portal/` link with the current lesson to open. An explicit request
+for only an outline may render before a lesson exists; identify that result
+as the course outline. For teaching, complete the lesson handoff before
+delivering the page. Re-render after changes to the lesson or its artifacts.
 
 If lesson design discovers a missing concept or an unsuitable representation,
 revise that part of the course first. Record the reason in `revision_notes`,

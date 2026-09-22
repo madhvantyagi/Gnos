@@ -375,7 +375,21 @@ class LearnerTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn('skills/lesson-design/SKILL.md', result.stdout)
         self.assertIn('skills/lesson-design/references/lesson-contract.md', result.stdout)
+        self.assertIn('skills/lesson-design/references/lesson-design.md', result.stdout)
         self.assertIn('--- COURSE DATA:', result.stdout)
+
+    def test_enrolled_course_context_includes_lesson_authoring_guidance(self):
+        from tests.test_course_contract_v2 import valid_v2_course
+        course = valid_v2_course()
+        course_path = self.root / 'course.json'
+        course_path.write_text(json.dumps(course))
+        loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
+        result = subprocess.run([
+            sys.executable, str(loader), '--subject', 'math', '--mode', 'course',
+            '--course', str(course_path), '--learners-root', str(self.root),
+        ], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn((ROOT / 'skills/lesson-design/references/lesson-design.md').read_text(), result.stdout)
 
     def test_course_mode_rejects_subject_mismatch(self):
         from tests.test_course_contract_v2 import valid_v2_course

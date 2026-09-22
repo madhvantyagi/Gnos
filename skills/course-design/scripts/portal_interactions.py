@@ -35,8 +35,8 @@ _ID_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
 def utc_now() -> str:
-    """Return a second-precision UTC timestamp for interaction snapshots."""
-    return datetime.now(timezone.utc).replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ")
+    """Keep rapid successive attempts ordered with a precise UTC timestamp."""
+    return datetime.now(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
 
 
 def new_slugged_id(prefix: str) -> str:
@@ -272,9 +272,46 @@ def submit_attempt(workspace: Path, exercise_id: str, response: dict, attempt_id
             if existing.get("exercise_id") == exercise_id and _json_equal(existing.get("response"), checked_response):
                 return _with_attempt_alias(existing)
             raise ValueError("Attempt ID is already used for different content")
+        record["solution_seen_before_submission"] = any(
+            item.get("solution_revealed_at")
+            for item in read_attempts(workspace, exercise_id))
         _safe_directory(target.parent)
         _write_new(target, record)
     return _with_attempt_alias(record)
+
+
+def exercise_state(workspace: Path, exercise_id: str) -> dict:
+    """Return the latest saved response without disclosing the worked answer."""
+    workspace = _workspace(workspace)
+    exercise = _find_exercise(workspace, exercise_id)["exercise"]
+    attempts = read_attempts(workspace, exercise_id)
+    latest = attempts[-1] if attempts else None
+    fields = ("id", "exercise_id", "response", "submitted_at", "status", "feedback",
+              "solution_revealed_at", "solution_seen_before_submission")
+    return {
+        "attempt": {key: latest[key] for key in fields if key in latest} if latest else None,
+        "solution_available": bool(exercise.get("solution")) or "answer" in exercise["evaluation"],
+    }
+
+
+def reveal_solution(workspace: Path, exercise_id: str, attempt_id: str) -> dict:
+    """Reveal an authored solution only after an attempt was persisted for this exercise."""
+    workspace = _workspace(workspace)
+    exercise = _find_exercise(workspace, exercise_id)["exercise"]
+    target = _attempt_path(workspace, exercise_id, attempt_id)
+    _validate_attempt_reference(workspace, exercise_id, attempt_id)
+    solution = exercise.get("solution")
+    if not solution and "answer" in exercise["evaluation"]:
+        solution = str(exercise["evaluation"]["answer"])
+    if not solution:
+        raise ValueError("A worked answer has not been added to this exercise yet.")
+    with course_workspace._workspace_lock(workspace):
+        record = _read_record(target)
+        if not record.get("solution_revealed_at"):
+            record["solution_revealed_at"] = utc_now()
+            _write_replace(target, record)
+    return {"exercise_id": exercise_id, "attempt_id": attempt_id, "solution": solution,
+            "revealed_at": record["solution_revealed_at"]}
 
 
 def _validate_attempt_reference(workspace: Path, exercise_id: str, attempt_id: str | None):

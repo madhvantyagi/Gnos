@@ -64,6 +64,16 @@ class ViewerTests(unittest.TestCase):
         self.assertIn("No ready lessons yet", text)
         self.assertNotIn("success_criteria", text)
 
+    def test_lesson_delivery_requires_a_ready_current_lesson(self):
+        result = subprocess.run([sys.executable, str(RENDER), str(self.workspace),
+                                 '--require-current-lesson'], capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('lesson-design', result.stderr)
+        publish_lesson(self.workspace, lesson_with_reps())
+        result = subprocess.run([sys.executable, str(RENDER), str(self.workspace),
+                                 '--require-current-lesson'], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_ready_lesson_flips_chips_and_shows_media(self):
         publish_lesson(self.workspace, lesson_with_reps())
         video = self.workspace / "artifacts/videos/slope-video.mp4"

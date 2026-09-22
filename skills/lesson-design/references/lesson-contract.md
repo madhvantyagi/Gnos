@@ -19,6 +19,14 @@ Keep ids stable. You may change the title. Never change the id to
 fix wording. Inherit the topic teacher. Never invent a persona.
 Keep `skill_routes` unique and inside the topic routes.
 
+For new exercises, write a worked answer in the exercise's top-level `solution`
+string. Explain the reasoning as well as the result, using the same notation
+as the lesson. This is separate from `evaluation`: manual evaluation still
+means a teacher must review the learner's response. The solution stays out of
+the initial HTML and public lesson JSON. The local server returns it only
+after a saved attempt and an explicit Show answer request. Older exercises
+without a solution remain readable; add one when revising them.
+
 ## Blocks and the course plan
 
 Every block carries `id`, `type`, `concepts`, short `purpose`, and
@@ -81,7 +89,7 @@ They keep every representation consistent.
 
 - State claims precisely and explain how they follow. Keep sentences readable without breaking connected reasoning into fragments.
 - Use bullets only for parallel items. Use an equation block when the learner must inspect notation.
-- Write math as LaTeX for KaTeX: inline `$...$`, display `$$...$$`. Never leave bare ASCII like `R^(m x n)` or `1/2`.
+- Follow [math-notation.md](math-notation.md) for LaTeX, JSON escaping, and rendered checks. Do not rely on ASCII conversion when authoring.
 - Keep terms, symbols, colors, direction, units, names, and dates identical across explanation, motion, graph, and exercise.
 - Ask exercises under a changed condition, such as new inputs or evidence. Keep success criteria and answers private. Choice options stay public because the learner needs them. Everything else private stays out of the public projection.
 - Add a short transition only when the reason to change medium is unclear. Never hide unrelated artifacts behind generic connectors.

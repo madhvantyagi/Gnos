@@ -86,7 +86,16 @@ equation images, page numbering, and source links. Inspect rendered pages.
 Manim: storyboard to narration clips to scenes. Place each clip at the scene's
 actual cue start; extra pauses then cannot shift later narration. Export
 subtitles from the same cue timings. Keep silent rendering usable offline.
-The course viewer renders registered artifacts on one static page.
+The course viewer renders published lessons and registered artifacts on one
+page. A teaching delivery requires a ready current lesson; an outline preview
+can render earlier. The host loads lesson design and its teaching reference
+before authoring. The renderer itself does not invoke skills or a model.
+
+`skills/course-viewer/scripts/serve_course.py` serves that page on loopback and
+connects exercise controls to the existing private submission store. Worked
+answers remain outside the initial page and are returned only after a saved
+attempt and explicit reveal. The original response and reveal time are stored
+separately. A plain static server supports reading, but cannot persist answers.
 
 ## Scope decisions
 

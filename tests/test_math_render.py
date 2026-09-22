@@ -23,6 +23,29 @@ def equation_block(equation):
 
 
 class MathBlockTests(unittest.TestCase):
+    def test_lesson_paragraphs_remain_separate_around_math(self):
+        rendered = viewer.render_block({
+            'id': 'intro', 'type': 'explanation', 'concepts': ['math.derivative'],
+            'purpose': 'Explain the notation.',
+            'text': 'First define the quantity $x$.\n\nThen explain its role.'}, {}, {})
+        self.assertIn('</p><p>Then explain its role.</p>', rendered)
+
+    def test_authored_tex_is_preserved_across_every_delimiter(self):
+        import html
+        expressions = [
+            r'\min_x f(x)\quad\text{s.t.}\quad x\in\mathcal{X},\quad x^*\in\arg\min_x f(x)',
+            r'\mathbf{F}=m\mathbf{a},\quad g=9.81\,\mathrm{m\,s^{-2}}',
+            r'\psi^*\psi,\quad A^\dagger,\quad \vec{E}\cdot\vec{B}',
+            r'\begin{aligned}x&=1\\y&=2\end{aligned}',
+            r'x^*',
+        ]
+        for tex in expressions:
+            with self.subTest(tex=tex):
+                for start, end in [('$', '$'), ('$$', '$$'), (r'\(', r'\)'), (r'\[', r'\]')]:
+                    rendered = html.unescape(viewer.render_rich_text(start + tex + end))
+                    self.assertIn(start + tex + end, rendered)
+                self.assertIn('$$' + tex + '$$', html.unescape(viewer.math_display_html(tex)))
+
     def test_equation_block_does_not_render_as_pre(self):
         html = viewer.render_block(
             equation_block(r"\frac{a}{b} + \sqrt{x}"), {}, {})
@@ -216,10 +239,10 @@ class MathBlockTests(unittest.TestCase):
         self.assertNotIn("<pre>", html)
         self.assertGreaterEqual(html.count("math-inline"), 8)
 
-    def test_ascii_equation_block_is_normalised(self):
+    def test_equation_block_does_not_guess_the_authors_notation(self):
         html = viewer.render_block(equation_block("R^(m x n)"), {}, {})
         self.assertIn('class="math math-display"', html)
-        self.assertIn("\\mathbb{R}^{m \\times n}", html)
+        self.assertIn("$$R^(m x n)$$", html)
 
     def test_sentence_boundary_splits_equations(self):
         html = viewer.render_rich_text("W_Q = [[1,1],[0,1]] and x = [1, 2].")
