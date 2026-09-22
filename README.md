@@ -4,8 +4,6 @@
 
 <div align="center">
 
-# GNOS
-
 **A teaching harness that turns your coding agent into a teacher — it designs the course, teaches the lesson, and adapts to you in real time.**
 
 [![GitHub stars](https://img.shields.io/github/stars/madhvantyagi/Gnos?style=social)](https://github.com/madhvantyagi/Gnos)
@@ -114,111 +112,9 @@ economics, history** — assigned per topic, in real time.
 
 ---
 
-## Media production
+## Use it
 
-GNOS earns its media. No subject requires an animation for every topic; each
-concept declares the representation that serves it, and the plan dispatches
-the work:
-
-- **Manim** — narrated teaching animations with subtitles, for the ideas where
-  motion is the point
-- **Images** — generated through your host's image tool, from GNOS-written
-  briefs, checked before they count
-- **Diagrams** — pinepaper and excalidraw through the bundled MCP servers
-- **PDFs** — printable handouts with embedded fonts, captions, equation
-  rendering, page numbers, and source links
-- **Simulations** — interactive parts where clicking beats reading
-
-The **course viewer** assembles published lessons and registered artifacts
-onto one editorial page — math in KaTeX, videos, images, and exercises with
-saved responses and worked answers revealed only after you try.
-
----
-
-## Subjects
-
-Mathematics · Physics · History · Biology · Economics · Computer Science ·
-Accounting · Artificial Intelligence · Business · Psychology ·
-Chemical Engineering · Political Science
-
----
-
-## Get started
-
-### Install the Codex plugin
-
-GNOS ships as a Codex plugin — install it from the plugin marketplace (served
-from the [`codex` branch](https://github.com/madhvantyagi/Gnos/tree/codex) of
-this repository).
-
-### Or use it anywhere
-
-GNOS is portable. Clone the repository into any LLM workspace that can read
-files — Claude, Codex, or anything else — and start at the orchestrator,
-[`skills/learning-orchestrator/SKILL.md`](skills/learning-orchestrator/SKILL.md):
-
-```bash
-git clone https://github.com/madhvantyagi/Gnos.git
-```
-
-Then just ask: *"Teach me recursion"*, *"I want to learn mechanics over six
-weeks"*, or *"Why can we divide by x here?"* — no sign-up, no ID required, no
-biography interview before the first lesson.
-
-### Set up the environment
-
-GNOS uses a project Python environment so the PDF and video checks run too:
-
-```bash
-python3 -m venv .venv
-.venv/bin/python -m pip install -r skills/pdf/requirements.txt -r skills/manim-voice-animation/requirements.txt
-
-# validate the harness
-.venv/bin/python skills/learning-orchestrator/scripts/validate_harness.py
-.venv/bin/python -m unittest discover -s tests -v
-```
-
-### Design and view a course
-
-```bash
-python3 skills/course-design/scripts/validate_course.py course.json
-python3 skills/course-viewer/scripts/render_viewer.py learners/<id>/courses/<course-id>
-```
-
-A learner's course lives at `learners/<learner-id>/courses/<course-id>/` —
-`course.json` is the living route, `lessons/` grows one lesson at a time, and
-`artifacts/` holds the finished media. Progress lives separately in
-`state.json` and is derived from evidence, never from exposure. All of it is
-local, private, and ignored by Git.
-
-To serve the course page with working exercises, start the local viewer:
-
-```bash
-.venv/bin/python skills/course-viewer/scripts/serve_course.py learners/<id>/courses/<course-id>
-```
-
----
-
-## Project structure
-
-```
-Gnos/
-├── assets/                  hero art and plugin icon
-├── skills/                  the teaching skills
-│   ├── learning-orchestrator/   entry point — every turn starts here
-│   ├── course-design/           syllabus design from real sources
-│   ├── lesson-design/           lesson authoring, block by block
-│   ├── learner-tracking/        evidence records and real-time adaptation
-│   ├── subject/                 subject guides, routing, representations
-│   ├── course-viewer/           the course portal page
-│   ├── manim-voice-animation/   narrated teaching animations
-│   └── pdf/                     printable handouts
-├── teachers/                SOUL.md personas for six subjects
-├── learners/                private learner records (gitignored)
-├── docs/                    design notes and the flow diagram
-├── examples/                fictional example outputs
-└── .codex-plugin/           Codex plugin manifest
-```
+**[Install the Codex plugin](https://github.com/madhvantyagi/Gnos/tree/codex) · or [clone and start at the orchestrator](skills/learning-orchestrator/SKILL.md) — no sign-up, no ID required. Just ask: *"Teach me recursion"*.**
 
 ---
 
