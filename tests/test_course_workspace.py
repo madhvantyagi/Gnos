@@ -9,8 +9,9 @@ from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "skills/course-design/scripts"))
+sys.path.insert(0, str(ROOT / "skills/learner-tracking/scripts"))
 
-from course_contract import course_fingerprint
+from course_contract import course_content_fingerprint, course_fingerprint, validate_course
 from course_workspace import (  # noqa: E402
     ConflictError,
     atomic_json,
@@ -22,6 +23,7 @@ from course_workspace import (  # noqa: E402
 )
 from lesson_contract import lesson_fingerprint  # noqa: E402
 import course_workspace as workspace  # noqa: E402
+import learner_state  # noqa: E402
 
 
 def valid_v2_course():
@@ -81,9 +83,9 @@ def valid_v2_course():
     }
 
 
-def valid_lesson(publication="draft"):
-    return {
-        "schema_version": 1,
+def valid_lesson(publication="draft", course=None):
+    lesson = {
+        "schema_version": 2,
         "id": "slope-introduction",
         "course_id": "gradient-descent",
         "chapter_id": "change",
@@ -100,12 +102,42 @@ def valid_lesson(publication="draft"):
             "concepts": ["math.derivative"],
             "purpose": "Introduce slope.",
             "text": "Slope predicts local change.",
+            "production": {
+                "skill_route": "skills/subject/SKILL.md",
+                "brief": "Explain what slope predicts.",
+                "must_include": ["Local change"],
+                "continuity": ["Use the lesson's stated concept."],
+                "acceptance_checks": ["The explanation states what slope predicts."],
+                "depends_on_block_ids": [],
+            },
+        }, {
+            "id": "slope-equation",
+            "type": "equation",
+            "concepts": ["math.derivative"],
+            "purpose": "Write the local rate as a ratio.",
+            "equation": "\\frac{\\Delta y}{\\Delta x}",
+            "production": {
+                "skill_route": "skills/subject/SKILL.md",
+                "brief": "Write the local rate as a ratio.",
+                "must_include": ["Change in y", "Change in x"],
+                "continuity": ["Reuse the slope explanation's notation."],
+                "acceptance_checks": ["The equation shows change in y over change in x."],
+                "depends_on_block_ids": ["intro"],
+            },
         }, {
             "id": "exercise-block",
             "type": "exercise",
             "concepts": ["math.derivative"],
             "purpose": "Check prediction.",
             "exercise_id": "predict-change",
+            "production": {
+                "skill_route": "skills/subject/SKILL.md",
+                "brief": "Ask the learner to predict the sign of the local change.",
+                "must_include": ["A prediction using the slope sign"],
+                "continuity": ["Use the ratio introduced in the prior block."],
+                "acceptance_checks": ["The exercise checks the stated course concept."],
+                "depends_on_block_ids": ["slope-equation"],
+            },
         }],
         "exercises": [{
             "id": "predict-change",
@@ -119,6 +151,15 @@ def valid_lesson(publication="draft"):
         "created_at": "2026-09-12T16:00:00Z",
         "updated_at": "2026-09-12T16:00:00Z",
     }
+    if publication == "ready":
+        target = validate_course(course if course is not None else valid_v2_course())
+        lesson["design_receipt"] = {
+            "designed_at": "2026-09-12T16:00:00Z",
+            "course_fingerprint": course_content_fingerprint(target),
+            "skill_route": "skills/lesson-design/SKILL.md",
+            "review": "pass",
+        }
+    return lesson
 
 
 class CourseWorkspaceTests(unittest.TestCase):
@@ -221,7 +262,6 @@ class CourseWorkspaceTests(unittest.TestCase):
         lesson_path = path / "lessons" / draft["id"] / "lesson.json"
         self.assertTrue(lesson_path.is_file())
         self.assertEqual(read_plan(path)["chapters"][0]["topics"][0]["lesson_ids"], [])
-
         ready = valid_lesson("ready")
         ready["updated_at"] = "2026-09-12T16:01:00Z"
         self.assertEqual(publish_lesson(path, ready), lesson_fingerprint(ready))
@@ -231,6 +271,38 @@ class CourseWorkspaceTests(unittest.TestCase):
         archived["updated_at"] = "2026-09-12T16:02:00Z"
         publish_lesson(path, archived)
         self.assertEqual(read_plan(path)["chapters"][0]["topics"][0]["lesson_ids"], [])
+
+    def test_ready_and_archived_publication_do_not_stale_course_enrollment(self):
+        plan = valid_v2_course()
+        learner_state.mutate(self.root, "alex", "enroll", plan)
+        path = workspace_path(self.root, "alex", plan["id"])
+
+        ready = valid_lesson("ready", plan)
+        publish_lesson(path, ready)
+        state = learner_state.read_state(self.root, "alex")
+        resolved = learner_state.resolve_all_enrolled_plans(self.root, "alex", state)
+        self.assertEqual(resolved[plan["id"]]["chapters"][0]["topics"][0]["lesson_ids"],
+                         [ready["id"]])
+
+        archived = valid_lesson("archived", plan)
+        archived["updated_at"] = "2026-09-12T16:02:00Z"
+        publish_lesson(path, archived)
+        state = learner_state.read_state(self.root, "alex")
+        resolved = learner_state.resolve_all_enrolled_plans(self.root, "alex", state)
+        self.assertEqual(resolved[plan["id"]]["chapters"][0]["topics"][0]["lesson_ids"], [])
+
+    def test_published_lesson_does_not_mask_a_meaningful_plan_change(self):
+        plan = valid_v2_course()
+        learner_state.mutate(self.root, "alex", "enroll", plan)
+        path = workspace_path(self.root, "alex", plan["id"])
+        publish_lesson(path, valid_lesson("ready", plan))
+
+        changed = read_plan(path)
+        changed["title"] = "A meaningfully changed course"
+        write_plan(path, changed, expected_fingerprint=course_fingerprint(read_plan(path)))
+        state = learner_state.read_state(self.root, "alex")
+        with self.assertRaisesRegex(ValueError, "Stale course plan reference"):
+            learner_state.resolve_all_enrolled_plans(self.root, "alex", state)
 
     def test_stale_publication_does_not_leave_an_orphan_lesson(self):
         path = create_workspace(self.root, "alex", valid_v2_course())

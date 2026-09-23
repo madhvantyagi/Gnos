@@ -13,6 +13,27 @@ COURSE = ROOT / 'skills/course-design/scripts/validate_course.py'
 
 
 class LearnerTests(unittest.TestCase):
+    def test_memory_curriculum_uses_subtopics_when_outcome_is_absent(self):
+        from tests.test_course_contract_v2 import valid_v2_course
+
+        plan = valid_v2_course()
+        topic = plan["chapters"][0]["topics"][0]
+        topic.pop("outcome", None)
+        topic["subtopics"] = ["Slope from nearby points", "Slope at one point"]
+        sys.path.insert(0, str(ROOT / "skills/learner-tracking/scripts"))
+        import memory_views
+
+        rendered = memory_views.curriculum({"status": "active"}, [], plan)
+
+        self.assertIn(
+            "Outcome: Study Slope as local change, including Slope from nearby points, Slope at one point.",
+            rendered,
+        )
+
+        topic["outcome"] = "Predict local change."
+        legacy_rendered = memory_views.curriculum({"status": "active"}, [], plan)
+        self.assertIn("Outcome: Predict local change.", legacy_rendered)
+
     def test_teacher_neutral_accounting_course_loads_without_persona(self):
         from tests.test_course_contract_v2 import valid_v2_course
 
@@ -356,8 +377,8 @@ class LearnerTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn('skills/learner-tracking/references/adaptive-lifecycle.md', result.stdout)
         self.assertNotIn('skills/course-design/references/lesson-contract.md', result.stdout)
-        self.assertIn('skills/course-design/references/representation-choices.md', result.stdout)
-        self.assertIn('skills/course-viewer/SKILL.md', result.stdout)
+        self.assertNotIn('--- INSTRUCTIONS: skills/lesson-design/references/representation-choices.md ---', result.stdout)
+        self.assertNotIn('--- INSTRUCTIONS: skills/course-viewer/SKILL.md ---', result.stdout)
         self.assertIn('skills/subject/subjects/math.md', result.stdout)
         self.assertIn('teachers/math/SOUL.md', result.stdout)
         self.assertIn('--- COURSE DATA:', result.stdout)
@@ -376,16 +397,42 @@ class LearnerTests(unittest.TestCase):
         self.assertIn('skills/lesson-design/SKILL.md', result.stdout)
         self.assertIn('skills/lesson-design/references/lesson-contract.md', result.stdout)
         self.assertIn('skills/lesson-design/references/lesson-design.md', result.stdout)
+        self.assertIn('--- INSTRUCTIONS: skills/lesson-design/references/representation-choices.md ---', result.stdout)
+        self.assertNotIn('--- INSTRUCTIONS: skills/course-viewer/SKILL.md ---', result.stdout)
         self.assertIn('--- COURSE DATA:', result.stdout)
 
-    def test_enrolled_course_context_includes_lesson_authoring_guidance(self):
+    def test_viewer_mode_loads_viewer_after_course_selection(self):
+        from tests.test_course_contract_v2 import valid_v2_course
+
+        course_path = self.root / 'course.json'
+        course_path.write_text(json.dumps(valid_v2_course()))
+        loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
+        result = subprocess.run([
+            sys.executable, str(loader), '--subject', 'math', '--mode', 'viewer',
+            '--course', str(course_path), '--learners-root', str(self.root),
+        ], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('--- INSTRUCTIONS: skills/course-viewer/SKILL.md ---', result.stdout)
+        self.assertNotIn('--- INSTRUCTIONS: skills/lesson-design/references/representation-choices.md ---', result.stdout)
+        self.assertIn('--- COURSE DATA:', result.stdout)
+
+    def test_viewer_mode_requires_a_course(self):
+        loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
+        result = subprocess.run([
+            sys.executable, str(loader), '--subject', 'math', '--mode', 'viewer',
+            '--learners-root', str(self.root),
+        ], capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('course', result.stderr)
+
+    def test_enrolled_lesson_context_includes_lesson_authoring_guidance(self):
         from tests.test_course_contract_v2 import valid_v2_course
         course = valid_v2_course()
         course_path = self.root / 'course.json'
         course_path.write_text(json.dumps(course))
         loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
         result = subprocess.run([
-            sys.executable, str(loader), '--subject', 'math', '--mode', 'course',
+            sys.executable, str(loader), '--subject', 'math', '--mode', 'lesson',
             '--course', str(course_path), '--learners-root', str(self.root),
         ], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -425,6 +472,27 @@ class LearnerTests(unittest.TestCase):
                 manifest = subprocess.run(command + ['--manifest'], capture_output=True, text=True)
                 self.assertEqual(manifest.returncode, 0, manifest.stderr)
                 for path in manifest.stdout.splitlines():
+                    self.assertTrue((ROOT / path).is_file(), path)
+
+
+    def test_diagram_tool_context_loads_the_selected_lesson_workflow(self):
+        loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
+        for media in ('excalidraw', 'pinepaper'):
+            with self.subTest(media=media):
+                command = [sys.executable, str(loader), '--subject', 'math',
+                           '--media', media, '--learners-root', str(self.root)]
+                workflow = f'skills/lesson-design/references/{media}.md'
+                result = subprocess.run(command, capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn(f'--- INSTRUCTIONS: {workflow} ---', result.stdout)
+                self.assertIn((ROOT / workflow).read_text(), result.stdout)
+                manifest = subprocess.run(command + ['--manifest'], capture_output=True, text=True)
+                self.assertEqual(manifest.returncode, 0, manifest.stderr)
+                paths = manifest.stdout.splitlines()
+                self.assertIn(workflow, paths)
+                other = 'pinepaper' if media == 'excalidraw' else 'excalidraw'
+                self.assertNotIn(f'skills/lesson-design/references/{other}.md', paths)
+                for path in paths:
                     self.assertTrue((ROOT / path).is_file(), path)
 
 

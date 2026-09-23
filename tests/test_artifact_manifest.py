@@ -80,6 +80,23 @@ class ArtifactManifestTests(unittest.TestCase):
             ["gradient-video"],
         )
 
+    def test_simulation_dimensions_are_bounded_when_provided(self):
+        artifact = copy.deepcopy(ready_video())
+        artifact.update({"id": "route-simulation", "type": "simulation",
+                         "mime_type": "text/html",
+                         "metadata": {"dimensions": {"width": 1280, "height": 800}}})
+        manifest = read_manifest(self.workspace)
+        manifest["artifacts"].append(artifact)
+        validate_manifest(manifest, manifest["course_id"])
+        for dimensions in ({"width": 200, "height": 800},
+                           {"width": 1280, "height": 2000},
+                           {"width": True, "height": 800},
+                           {"width": 1280.5, "height": 800},
+                           {"width": 1280}):
+            artifact["metadata"]["dimensions"] = dimensions
+            with self.subTest(dimensions=dimensions), self.assertRaises(ValueError):
+                validate_manifest(manifest, manifest["course_id"])
+
     def test_unknown_type_is_valid_when_open_action_is_safe(self):
         item = copy.deepcopy(ready_video())
         item.update({

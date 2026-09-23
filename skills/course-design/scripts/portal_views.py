@@ -191,7 +191,7 @@ def build_contents(plan: dict, course_progress: dict) -> list[dict]:
         for topic in chapter.get("topics", []):
             topic_view = _copy_if_present(
                 topic,
-                ("id", "title", "state", "outcome", "subject", "teacher",
+                ("id", "title", "subtopics", "state", "subject", "teacher",
                  "supporting_subjects", "supporting_teachers", "concepts", "prerequisites",
                  "minutes", "resource_ids", "exercise_ids", "lesson_ids"),
             )

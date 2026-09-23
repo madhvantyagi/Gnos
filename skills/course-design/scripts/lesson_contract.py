@@ -6,9 +6,9 @@ import hashlib
 import json
 import re
 
-from course_contract import _validate_skill_route, nonempty, slug
+from course_contract import _validate_skill_route, course_content_fingerprint, nonempty, slug
 
-LESSON_SCHEMA_VERSION = 1
+LESSON_SCHEMA_VERSION = 2
 BLOCK_TYPES = {
     "explanation", "bullets", "equation", "code", "voice-animation", "animation",
     "diagram", "interactive-graph", "simulation", "source", "exercise", "feedback", "artifact",
@@ -26,6 +26,13 @@ REPRESENTATION_BLOCK_TYPES = {
     "pdf": {"artifact"},
     "text": {"explanation", "bullets", "equation", "code", "source", "feedback"},
     "exercise": {"exercise"},
+}
+TEACHING_FORMS = {
+    "explanation": "prose", "bullets": "prose", "equation": "notation",
+    "code": "code", "source": "source", "diagram": "still visual",
+    "voice-animation": "motion", "animation": "motion",
+    "interactive-graph": "interactive model", "simulation": "interactive model",
+    "artifact": "artifact",
 }
 
 
@@ -53,6 +60,29 @@ def _timestamp(value, label):
         datetime.fromisoformat(value[:-1])
     except ValueError as exc:
         raise ValueError(f"{label} must be a real ISO UTC timestamp") from exc
+
+
+def _validate_design_receipt(receipt, course, created_at, updated_at):
+    if not isinstance(receipt, dict):
+        raise ValueError("ready lesson requires design_receipt from skills/lesson-design/SKILL.md")
+    _timestamp(receipt.get("designed_at"), "design_receipt.designed_at")
+    if (datetime.fromisoformat(receipt["designed_at"][:-1])
+            < datetime.fromisoformat(created_at[:-1])):
+        raise ValueError("design_receipt.designed_at must not be earlier than created_at")
+    if (datetime.fromisoformat(receipt["designed_at"][:-1])
+            > datetime.fromisoformat(updated_at[:-1])):
+        raise ValueError("design_receipt.designed_at must not be later than updated_at")
+    fingerprint = receipt.get("course_fingerprint")
+    if not isinstance(fingerprint, str) or not re.fullmatch(r"[0-9a-f]{64}", fingerprint):
+        raise ValueError("design_receipt.course_fingerprint must be a sha256 hex fingerprint")
+    if fingerprint != course_content_fingerprint(course):
+        raise ValueError("design_receipt.course_fingerprint must match the enrolled course content fingerprint")
+    route = receipt.get("skill_route")
+    if route != "skills/lesson-design/SKILL.md":
+        raise ValueError("design_receipt.skill_route must be skills/lesson-design/SKILL.md")
+    _validate_skill_route(route)
+    if receipt.get("review") != "pass":
+        raise ValueError("design_receipt.review must be pass after the lesson-design review checklist")
 
 
 def _artifact_ids(data):
@@ -103,7 +133,7 @@ def _validate_evaluation(evaluation, response_type, label):
         raise ValueError(f"{label}: manual evaluation cannot include private answer fields")
 
 
-def _validate_production(production, lesson_routes, label):
+def _validate_production(production, lesson_routes, label, *, require_dependencies):
     if not isinstance(production, dict):
         raise ValueError(f"{label}.production must be an object")
     route = production.get("skill_route")
@@ -112,15 +142,20 @@ def _validate_production(production, lesson_routes, label):
     nonempty(production.get("brief"), f"{label}.production.brief")
     for field in ("must_include", "continuity", "acceptance_checks"):
         _strings(production.get(field), f"{label}.production.{field}", required=True)
+    if require_dependencies and "depends_on_block_ids" not in production:
+        raise ValueError(f"{label}.production.depends_on_block_ids is required; use [] when there are no dependencies")
     dependencies = production.get("depends_on_block_ids", [])
     _strings(dependencies, f"{label}.production.depends_on_block_ids")
+    if require_dependencies and len(dependencies) != len(set(dependencies)):
+        raise ValueError(f"{label}.production.depends_on_block_ids must be unique")
     return dependencies
 
 
 def validate_lesson(data, course):
     """Validate a lesson against an already validated version-two course."""
-    if not isinstance(data, dict) or data.get("schema_version") != LESSON_SCHEMA_VERSION:
-        raise ValueError("Lesson requires schema_version 1")
+    if not isinstance(data, dict) or data.get("schema_version") not in (1, LESSON_SCHEMA_VERSION):
+        raise ValueError("Lesson requires schema_version 1 or 2")
+    requires_production = data["schema_version"] >= 2
     for key in ("id", "course_id", "chapter_id", "topic_id"):
         slug(data.get(key))
     for key in ("title", "purpose"):
@@ -145,9 +180,6 @@ def validate_lesson(data, course):
     routes = _strings(data.get("skill_routes"), "skill_routes", required=True)
     if len(routes) != len(set(routes)):
         raise ValueError("skill_routes must be unique")
-    topic_routes = set(topic.get("skill_routes", []))
-    if any(route not in topic_routes for route in routes):
-        raise ValueError("skill_routes must be a subset of the selected topic routes")
     for route in routes:
         _validate_skill_route(route)
     _strings(data.get("assumptions"), "assumptions")
@@ -157,6 +189,12 @@ def validate_lesson(data, course):
     _timestamp(data.get("updated_at"), "updated_at")
     if datetime.fromisoformat(data["updated_at"][:-1]) < datetime.fromisoformat(data["created_at"][:-1]):
         raise ValueError("updated_at must be greater than or equal to created_at")
+    if data.get("publication") == "ready":
+        _validate_design_receipt(
+            data.get("design_receipt"), course, data["created_at"], data["updated_at"])
+    elif "design_receipt" in data and data["design_receipt"] is not None:
+        _validate_design_receipt(
+            data.get("design_receipt"), course, data["created_at"], data["updated_at"])
 
     exercises = data.get("exercises")
     if not isinstance(exercises, list):
@@ -207,9 +245,7 @@ def validate_lesson(data, course):
         nonempty(block.get("purpose"), f"{block_id}.purpose")
         representation_id = block.get("representation_id")
         representation = None
-        if representations:
-            if representation_id is None:
-                raise ValueError(f"{block_id}: representation_id is required by the topic plan")
+        if representations and representation_id is not None:
             slug(representation_id)
             representation = representations.get(representation_id)
             if representation is None:
@@ -225,9 +261,13 @@ def validate_lesson(data, course):
                 raise ValueError(f"{block_id}: purpose must match the course representation")
         elif representation_id is not None:
             raise ValueError(f"{block_id}: representation_id requires a topic representation plan")
+        if "production" not in block and requires_production:
+            raise ValueError(f"{block_id}.production is required so every block has an assigned producer")
         if "production" in block:
-            dependencies = _validate_production(block["production"], routes, block_id)
-            if representation is not None and block["production"]["skill_route"] != representation.get("skill_route"):
+            dependencies = _validate_production(
+                block["production"], routes, block_id, require_dependencies=requires_production)
+            if (representation is not None and representation.get("skill_route") is not None
+                    and block["production"]["skill_route"] != representation["skill_route"]):
                 raise ValueError(f"{block_id}.production.skill_route must match the course representation")
             if any(dependency not in block_ids - {block_id} for dependency in dependencies):
                 raise ValueError(f"{block_id}.production.depends_on_block_ids must name earlier lesson blocks")
@@ -249,6 +289,12 @@ def validate_lesson(data, course):
     for exercise in exercises:
         if any(ref not in block_ids for ref in exercise.get("reference_block_ids", [])):
             raise ValueError(f"{exercise['id']}: unknown reference block")
+    if data["publication"] == "ready" and requires_production:
+        forms = {TEACHING_FORMS[block["type"]] for block in blocks
+                 if block["type"] in TEACHING_FORMS}
+        if len(forms) < 2:
+            raise ValueError("ready lesson needs at least two distinct teaching forms; "
+                             "exercise and feedback blocks do not count")
     return data
 
 
@@ -268,12 +314,15 @@ def public_exercise(exercise):
 
 
 def public_lesson(data):
-    return {"schema_version": data["schema_version"], "id": data["id"], "course_id": data["course_id"],
+    result = {"schema_version": data["schema_version"], "id": data["id"], "course_id": data["course_id"],
             "chapter_id": data["chapter_id"], "topic_id": data["topic_id"], "title": data["title"],
             "purpose": data["purpose"], "concepts": list(data["concepts"]), "teacher": data["teacher"],
             "blocks": [public_block(block) for block in data["blocks"]],
             "exercises": [public_exercise(exercise) for exercise in data["exercises"]],
             "publication": data["publication"], "updated_at": data["updated_at"]}
+    if isinstance(data.get("design_receipt"), dict):
+        result["design_receipt"] = copy.deepcopy(data["design_receipt"])
+    return result
 
 
 def lesson_fingerprint(data):

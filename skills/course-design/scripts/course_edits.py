@@ -13,7 +13,8 @@ from pathlib import Path
 import re
 
 import course_workspace
-from course_contract import course_fingerprint, course_topics, slug, validate_course
+from course_contract import (course_content_fingerprint, course_fingerprint,
+                             course_topics, slug, validate_course)
 import learner_state
 
 
@@ -315,7 +316,7 @@ def _update_enrollment(data, course_id, plan):
     if not isinstance(entry, dict) or entry.get("plan_ref") != expected_ref or "plan" in entry:
         raise ValueError("Enrollment must reference the canonical course plan")
     entry["plan_revision"] = plan["revision"]
-    entry["plan_fingerprint"] = course_fingerprint(plan)
+    entry["plan_fingerprint"] = course_content_fingerprint(plan)
 
 
 def apply_course_edit(workspace: Path, action: dict, evidence: dict,
@@ -350,7 +351,8 @@ def apply_course_edit(workspace: Path, action: dict, evidence: dict,
             if not isinstance(enrollment, dict):
                 raise ValueError(f"Learner is not enrolled in course {course_id!r}")
             if (enrollment.get("plan_revision") != plan["revision"] or
-                    enrollment.get("plan_fingerprint") != actual_fingerprint):
+                    enrollment.get("plan_fingerprint") not in (
+                        actual_fingerprint, course_content_fingerprint(plan))):
                 raise course_workspace.ConflictError(
                     "Enrollment reference is stale; refresh before editing"
                 )

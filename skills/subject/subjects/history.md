@@ -1,175 +1,124 @@
-# History subject map
+# History
 
 Teacher: `teachers/history/SOUL.md` (Elias Ward).
 
-Route a history request by question, place, period, and scale. “Tell me about
-the revolution” is not yet a course: ask whether the learner wants a sequence,
-causes, lived experience, institutional change, memory, or historiographical
-debate. Period and region are independent dimensions; neither is a universal
-ladder of progress.
+Choose the question, place, period, and scale before the route. Give enough
+chronology and geography to explain the first decision. A course should develop
+questions about causes, experience, institutions, or interpretation. Periods
+and regions are not a universal ladder of progress.
 
-## Entry routes and prerequisites
+For each source, identify its maker, date, audience, purpose, access, and form.
+Separate what it records from what is inferred. Bias changes how a source can
+be used; it does not automatically make it useless. Explain conditions,
+triggers, choices, and consequences without making the later outcome inevitable.
 
-| Route | Inspect first | First observable outcome |
-| --- | --- | --- |
-| Political / institutional | dated sequence, actors, offices, law | Compare a decision with the options and constraints at that moment |
-| Social / cultural | place, group, genre, vocabulary | Compare two situated voices without generalizing one |
-| Economic / labor | production, exchange, institutions, series | Pair a quantitative pattern with how its records were made |
-| Intellectual / religious | terms in period usage, audience | Close-read a claim and separate author from later reception |
-| Global / comparative | regional chronologies, contact, scale | Map connection while naming what the map omits |
-| Environmental / medical | ecology, institutions, measurement history | Explain a change with both material and documentary evidence |
-| Gender / race / empire | category history, power, archive survival | Analyze how classification shaped options and records |
-| Historiography / methods | provenance, argument, corroboration | Compare interpretations and the evidence each privileges |
+## Ways to show the idea
 
-If chronology, geography, vocabulary, or source literacy is uncertain, bridge
-only the item needed for the first question. Statistics can reveal a pattern;
-they cannot repair a missing account of who was counted. Economics can propose
-a mechanism; it cannot substitute for historical evidence. Keep that boundary
-visible in mixed courses.
+Use dated maps, timelines, source excerpts, images, and evidence tables.
+Use [Excalidraw](../../lesson-design/references/excalidraw.md) for institutional relationships
+and [Pinepaper](../../lesson-design/references/pinepaper.md) for sourced spatial or temporal
+comparisons. Use [Manim](../../manim-voice-animation/SKILL.md) when migration
+or changing boundaries need a narrated sequence. Label it as reconstruction.
+Audio and video can be primary evidence when provenance is known. A
+[PDF packet](../../pdf/SKILL.md) can collect sources for close reading.
+Caption images with maker, date, repository, rights, relevant scale, and any
+reconstruction. Never invent a primary quotation, border, or archival record.
 
-## Historical reasoning
+Elias leads source judgment. Economics may supply a conditional model and math
+may explain a series; neither replaces historical evidence. Preserve the dated
+question and source limits through that bridge.
+Read [the history reference](../references/history.md) when the lesson needs
+close reading, conflicting records, or a causal explanation across sources.
 
-Start with a dated, located question and a small source set. For each source
-ask: who made it, when, for whom, in what form, with what access, and for what
-purpose? Then distinguish what the source directly records, what the historian
-infers, and what remains disputed. Bias changes a source's use; it does not
-automatically make it useless. A diary may be weak evidence for attendance and
-strong evidence for its author's fears if date and authorship are secure.
+## Teaching each area
 
-Teach causation as a constrained sequence. Separate long conditions, proximate
-triggers, choices, and consequences. Return to a point before the outcome and
-ask which options were still available; this prevents hindsight from turning
-contingency into inevitability. A chronology supports explanation but is not
-itself a causal argument, and a compelling plot is not corroboration.
+Choose the matching section. Its order suggests how to build the topic; it is
+not a complete syllabus. Course design uses the starting point and source
+checks. Lesson design chooses the views that explain the difficult steps.
+Treat the named confusion as a possibility, not a diagnosis of this learner.
 
-**Political and institutional history.** Put an actor, institution, rule, and
-decision in the same frame. Compare a speech, vote, administrative record, and
-opposition account rather than treating one public statement as public opinion.
-A mini-lesson can ask why a policy was adopted despite an available alternative,
-then require evidence for each claimed constraint. “The state decided” should
-be unpacked into people, procedures, and unequal authority.
+### Political / institutional
 
-**Social and cultural history.** Define the group and the evidence before using
-“the people,” “women,” “workers,” or “the public.” Compare a census, letter,
-material object, oral account, or image with attention to genre and survival.
-Teach silence as a limit on the archive, not proof that an experience did not
-occur. A changed case should alter class, location, or audience and test whether
-the explanation still holds.
+- **Build:** Start with a dated decision and the choices open to named actors. Knowing
+  the later outcome can make a contingent choice seem inevitable.
+- **Research:** Use a scholarly account to establish the sequence, then inspect laws,
+  minutes, votes, or correspondence. Check which records show action and which only
+  state an intention.
+- **Show and check:** A chronology establishes order. Two records test motives or
+  constraints. An institutional diagram shows who could decide. Return to the choice
+  before its outcome.
 
-**Economic and labor history.** Put prices, wages, production, migration, or
-employment beside their collection rules and institutional setting. A series
-can be nominal or real, local or aggregated, complete or selective. Invite an
-economics bridge for incidence or incentives, then return to contracts, law,
-workplaces, and testimony. Do not make a modern model the historical actor's
-unspoken motive.
+### Social / cultural
 
-**Intellectual, religious, and cultural history.** Read terms in their period
-usage and audience. Separate what an author argued from how later readers used
-the text; a famous work is not a transparent window into everyone’s belief.
-Ask the learner to annotate a short excerpt, identify its claim and warrant,
-then compare a contemporary response. Translate difficult vocabulary without
-silently replacing its historical meaning with a modern one.
+- **Build:** Start with a situated person, group, or object and its surviving record.
+  One vivid voice does not represent everyone. Archival silence is not absence.
+- **Research:** Pair a social history with letters, oral accounts, objects, or images.
+  Inspect provenance, selection, and whose records are absent.
+- **Show and check:** Compare captioned sources. A place map gives context. A source
+  table shows whose experience is missing. Revise the claim when the group changes.
 
-**Global, comparative, environmental, and medical history.** Choose the scale
-before comparing regions. A map can show routes and borders while hiding labor,
-ecology, or archival imbalance. Explain contact as reciprocal but asymmetric,
-and state where evidence is thin. For disease or climate, distinguish measured
-conditions, later reconstruction, institutional response, and lived experience;
-do not infer a diagnosis from a historical description.
+### Economic / labor
 
-**Historiography and methods.** Compare claims, sources, definitions, and
-reasons for disagreement. “Both sides” is not an analysis when evidence is
-unequal. Have the learner revise a thesis after a new source, identify whether
-the dispute is about records, scale, concepts, or interpretation, and state what
-additional evidence could change the conclusion.
+- **Build:** Start with a workplace or exchange and the rules governing it. A price or
+  wage series may change because its coverage or units changed.
+- **Research:** Inspect contracts, workplace records, and the construction of wage or
+  price series. Use scholarship to place those records in their institutional setting.
+- **Show and check:** Pair a data table with collection notes. Compare contracts and
+  testimony. A dated graph shows the pattern that the explanation must account for.
 
-## Source routes and access honesty
+### Intellectual / religious
 
-`openstax-world-history-1` is an introductory route to 1500; its landing page
-was verified, but chapter coverage was not inspected and it is not a source for
-every region or specialty. `loc-source-analysis` points to Library of Congress
-guides; the catalog record was verified, while direct page access returned 403,
-so retrieve and inspect the current guide before assigning it.
+- **Build:** Start with a short passage, its audience, and a term in period usage. An
+  author's claim differs from later readers' uses of it.
+- **Research:** Use a reliable edition with period context and a contemporary response.
+  Distinguish the original argument from later reception.
+- **Show and check:** Annotate an excerpt. Compare a contemporary response. An argument
+  map shows premises. A reception timeline separates later interpretations.
 
-For a US primary-source exercise, National Archives document analysis at
-https://www.archives.gov/education/lessons/worksheets was accessible and
-explicitly covers written documents, maps, photographs, artifacts, and sound.
-It is a teaching aid and repository route, not a neutral account of global
-history. Use the catalog metadata and a stable item citation for each document.
-The Digital Public Library of America landing page was not accessible in the
-current check; do not promise a DPLA item until it is reopened and verified.
+### Global / comparative
 
-For later periods, non-US archives, Indigenous histories, or specialized
-historiography, select a collection, scholarly monograph, or peer-reviewed
-article for the specific question. A landing page proves existence, not that a
-document is legible, public domain, representative, or appropriate to the
-learner's claim. Never fabricate a primary quotation, date, border, or archive.
+- **Build:** Start with two local chronologies and a documented connection. Shared dates
+  or surface similarities do not establish the same cause.
+- **Research:** Use regional scholarship on both sides of the connection and dated maps
+  or travel records. Check unequal archive coverage and incompatible period boundaries.
+- **Show and check:** A dated map shows contact. Parallel timelines expose different
+  sequences. Source comparison checks asymmetry and what the map omits.
 
-## Course design and learner evidence
+### Environmental / medical
 
-Write the outcome as an action: place an event, corroborate a claim, compare
-interpretations, explain a contingent decision, or construct an evidence-backed
-argument. Build the route around sources and questions, not a march through
-dates. Before fixing a sustained sequence, use
-`skills/course-design/references/course-research.md` to check period scope,
-prerequisites, source fit, and assessment. Each module needs a main source, a
-reason it fits the starting level, and a check that exposes source misuse or
-hindsight. Preserve completed concept evidence while revising a route when the
-learner's question changes.
+- **Build:** Start with a material change, how it was measured, and a recorded response.
+  Later reconstruction differs from contemporary observation.
+- **Research:** Pair environmental or medical history with measurement records and
+  contemporary accounts. Distinguish observations, later reconstructions, and
+  institutional responses.
+- **Show and check:** Pair a measured or reconstructed series with documents. Maps show
+  exposure or movement. Label uncertainty before explaining an institutional response.
 
-Evidence includes a correctly scoped thesis, provenance-aware source use,
-chronology used to support a causal claim, and a revision after disconfirming
-evidence. Memorized dates and a fluent narrative are exposure or assisted
-success until the learner can transfer the method to a changed source. Record
-the exact misconception—“biased means useless,” “speech equals consensus,” or
-“later outcome was inevitable”—and revisit it with a new genre.
+### Gender / race / empire
 
-## Representations and media
+- **Build:** Start with a category used in a particular record and the authority behind
+  it. Present categories may not match period meanings or lived identities.
+- **Research:** Inspect the original classifications in laws, censuses, or
+  administrative records and scholarship on their use. Check who applied the category
+  and with what consequences.
+- **Show and check:** A record excerpt shows classification. A table compares its use
+  across institutions. A sourced map shows jurisdiction. Explain whose options and
+  records changed.
 
-Lead with dated context, actors, place, and the question. Use concise prose and
-bullets for chronology, competing claims, and source limits. Use dated maps,
-document crops, photographs, short timelines, and evidence matrices when they
-reduce comparison load. Captions identify maker, date, repository, scale,
-rights, and whether a border or scene is reconstructed. Use audio or video when
-the recording itself is a primary source; preserve speaker, date, audience, and
-provenance. Use Manim sparingly for sequence, migration, demographic change, or
-changing institutional boundaries. Animation is an explanatory reconstruction,
-never documentary evidence. A PDF is useful for a source packet with
-transcription, provenance, context questions, and space for claim, evidence,
-and uncertainty.
+### Historiography / methods
 
-## Teacher selection and handoffs
+- **Build:** Start with two explanations of the same question and their evidence.
+  Disagreement does not give every account equal support.
+- **Research:** Read competing scholarly arguments and the sources they cite. Identify
+  whether disagreement concerns records, definitions, scale, or inference.
+- **Show and check:** An evidence matrix compares claims and sources. Annotated passages
+  expose inference. Revise a thesis after a new record. Collect sources in a PDF when
+  close reading needs a packet.
 
-Elias leads chronology, provenance, source comparison, contingency, and
-historiographical judgment. Hand to economics for a clearly named model of
-incidence, incentives, or measurement, then return to the historical records;
-hand to math for a technical series or uncertainty question. A geography or CS
-bridge may operate a map or dataset, but it cannot supply historical meaning.
-One teacher speaks at a time, and every handoff carries the question, period,
-source set, learner's last sound inference, and unresolved uncertainty.
+## Source use
 
-## What each route earns
-
-First write what the learner must inspect, change, compare, or work out
-in one sentence, and pick the smallest medium that lets them do it. Only
-then check this table for what history usually needs. Never use the table
-as a reason to order its favorite medium. Depth and length still cap the
-media: a survey earns mostly text plus one medium.
-
-| Route | Lead with | Then earn, only when | Exercise |
-| --- | --- | --- | --- |
-| Political / institutional | Dated sequence, actors, and law in text | Nothing else unless two records must sit side by side | Long text: compare the decision with the options open at that moment |
-| Social / cultural | Place, group, and vocabulary in text | Captioned document crop or photograph, only when comparing two situated voices | Long text: compare the voices without generalizing one |
-| Economic / labor | Production and institutions in text | Small table, only when a series must sit beside its collection rules | Short text: pair the pattern with how its records were made |
-| Intellectual / religious | Terms in period usage in text | Short excerpt, only for close reading | Long text: separate the author's claim from its later reception |
-| Global / comparative | Regional chronologies in text | Dated Pinepaper map, only when connection must be seen, and name what the map omits | Short text: map the connection and its limits |
-| Environmental / medical | Ecology and measurement history in text | Dated image, only when material and documentary evidence must appear together | Short text: explain the change with both kinds of evidence |
-| Gender / race / empire | Category history and archive survival in text | Nothing else; the analysis is how classification shaped records | Long text: analyze how the categories shaped options and records |
-| Historiography / methods | Provenance and argument in text | PDF source packet with an evidence matrix, only for comparing interpretations | Long text: revise a thesis after a new source |
-
-Use Manim sparingly, only for a migration, demographic change, or moving
-boundary — and say it is a reconstruction, never evidence. Use audio or
-video only when the recording itself is the primary source. Memorized
-dates and a fluent story prove exposure only; the check must place,
-corroborate, compare, or argue. Caption every image with maker, date,
-repository, scale, rights, and whether anything in it is reconstructed.
+Use [the source-use guide](../references/source-use.md). Catalog entries are
+leads; inspect the relevant section before using it. Match the source to the
+subfield and question. Start with an accessible explanation, then inspect the
+technical argument or evidence needed for the agreed depth. Record the section,
+its job, and any access limit in the course research notes.

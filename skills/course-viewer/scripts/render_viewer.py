@@ -10,6 +10,7 @@ fields are rendered; private evaluation criteria never appear.
 import argparse
 import html
 import json
+import math
 import re
 import sys
 from pathlib import Path
@@ -19,6 +20,7 @@ sys.path.insert(0, str(ROOT / "skills/course-design/scripts"))
 
 from portal_views import build_portal_view  # noqa: E402
 from course_workspace import read_plan  # noqa: E402
+from course_contract import course_content_fingerprint  # noqa: E402
 
 TEMPLATE = ROOT / "skills/course-viewer/references/example.html"
 LOGO_PNG = ROOT / "skills/course-viewer/references/gnos-logo.png"
@@ -636,6 +638,22 @@ def media_element(artifact, group):
         if mime.startswith("image/"):
             return f'<img src="{src}" alt="{title}" loading="lazy">'
         if mime in ("text/html", "application/xhtml+xml"):
+            if artifact.get("type") == "simulation":
+                dimensions = artifact.get("metadata", {}).get("dimensions", {})
+                if not isinstance(dimensions, dict):
+                    dimensions = {}
+                width = dimensions.get("width", 1280)
+                height = dimensions.get("height", 800)
+                if (not isinstance(width, (int, float)) or isinstance(width, bool) or
+                        not isinstance(height, (int, float)) or isinstance(height, bool) or
+                        not math.isfinite(width) or not math.isfinite(height) or
+                        width < 320 or width > 2400 or height < 480 or height > 1600):
+                    width, height = 1280, 800
+                width, height = round(width), round(height)
+                return (f'<iframe class="simulation-frame" sandbox="allow-scripts" '
+                        f'width="{width}" height="{height}" '
+                        f'style="--simulation-max-height:{height}px" '
+                        f'src="{src}" title="{title}"></iframe>')
             return f'<iframe sandbox="allow-scripts" src="{src}" title="{title}"></iframe>'
     return None
 
@@ -661,7 +679,7 @@ def render_media(artifact, group, workspace):
 
     element = media_element(artifact, group)
     if element is None:
-        return (f'<div class="card"><div class="card-title">{esc(group)} · {esc(artifact.get("type", ""))}</div>'
+        return (f'<div class="card media-resource"><div class="card-title">Resource</div>'
                 f'<div class="prompt">{title}</div>'
                 f'<div class="meta"><a href="{src}">open</a> · {purpose}</div></div>')
 
@@ -669,7 +687,8 @@ def render_media(artifact, group, workspace):
     meta_line = esc(artifact.get("mime_type", ""))
     if meta:
         meta_line += " · " + meta
-    return (f'<div class="media">{element}'
+    media_class = "media simulation-media" if artifact.get("type") == "simulation" else "media"
+    return (f'<div class="{media_class}">{element}'
             f'<div class="media-body">'
             f'<div class="media-title">{title} {note}</div>'
             f'<div class="media-purpose">{purpose}</div>'
@@ -686,10 +705,7 @@ def render_block(block, lesson_exercises, sources, course_id=""):
     if not isinstance(course_id, str):
         course_id = str(course_id or "")
     block_type = block.get("type", "")
-    concepts = " · ".join(esc(c) for c in block.get("concepts", []))
-    label = esc(block_type)
-    if concepts:
-        label += " · " + concepts
+    label = esc(block.get("label") or block_type or "block")
     header = f'<div class="block-label">{label}</div>'
     chunks = []
     if block.get("text"):
@@ -704,6 +720,8 @@ def render_block(block, lesson_exercises, sources, course_id=""):
         chunks.append(math_display_html(""))
     if block.get("code"):
         chunks.append(f"<pre>{esc(block['code'])}</pre>")
+    if block.get("caption"):
+        chunks.append(f'<p class="block-caption">{render_rich_text(block["caption"])}</p>')
     body = "".join(chunks)
 
     if block_type == "source":
@@ -712,20 +730,20 @@ def render_block(block, lesson_exercises, sources, course_id=""):
         link = ""
         if source.get("url"):
             link = f'<div class="meta"><a href="{esc(source["url"])}">open source</a></div>'
-        body = (f'<div class="card"><div class="card-title">source · {esc(block.get("source_id", ""))}</div>'
-                f'<div class="prompt">{esc(source.get("title", ""))}'
-                + (f" — {sections}" if sections else "") + f"</div>{link}"
-                f'<div class="meta">{esc(block.get("purpose", ""))}</div></div>')
+        body += (f'<div class="card source-card"><div class="card-title">Source</div>'
+                 f'<div class="prompt">{esc(source.get("title", ""))}'
+                 + (f" — {sections}" if sections else "") + f"</div>{link}"
+                 f'<div class="meta">{esc(block.get("purpose", ""))}</div></div>')
         return f'<div class="block">{header}{body}</div>'
 
     if block_type == "exercise":
         exercise_id = block.get("exercise_id", "")
         exercise = lesson_exercises.get(exercise_id, {})
         if not isinstance(exercise, dict) or not exercise.get("id"):
-            body = (f'<div class="card"><div class="card-title">exercise · {esc(exercise_id)}</div>'
-                    '<div class="prompt">Exercise not yet available.</div></div>')
+            body += ('<div class="card"><div class="card-title">Exercise</div>'
+                     '<div class="prompt">Exercise not yet available.</div></div>')
             return f'<div class="block">{header}{body}</div>'
-        return f'<div class="block">{header}{render_exercise_card(exercise, course_id, f"exercise · {exercise_id}")}</div>'
+        return f'<div class="block">{header}{body}{render_exercise_card(exercise, course_id, "Exercise")}</div>'
 
     return f'<div class="block">{header}{body}</div>'
 
@@ -733,7 +751,8 @@ def render_block(block, lesson_exercises, sources, course_id=""):
 def rep_ready(representation, lesson, artifacts):
     kind = representation.get("kind")
     blocks = [block for block in lesson.get("blocks", [])
-              if block.get("representation_id") == representation.get("id")]
+              if block.get("id") == representation.get("block_id") or
+              block.get("representation_id") == representation.get("id")]
     if not blocks:
         return False
     if kind in ("text", "exercise"):
@@ -770,6 +789,25 @@ def render_chips(representations, lesson, artifacts):
     return '<div class="chips">' + "".join(chips) + "</div>"
 
 
+def lesson_representations(lesson, artifacts):
+    """Show formats actually used when the course has no old media plan."""
+    kinds = {
+        "voice-animation": "manim", "animation": "manim",
+        "diagram": "diagram", "interactive-graph": "simulation",
+        "simulation": "simulation", "exercise": "exercise",
+    }
+    result = []
+    for block in lesson.get("blocks", []):
+        block_type = block.get("type")
+        kind = kinds.get(block_type, "text")
+        if block_type == "artifact":
+            artifact = artifacts.get(block.get("artifact_id"), {})
+            kind = "pdf" if artifact.get("mime_type") == "application/pdf" else "image"
+        result.append({"id": block.get("id"), "block_id": block.get("id"),
+                       "kind": kind, "purpose": block.get("purpose", "")})
+    return result
+
+
 def render_lesson(lesson, index, total, previous_id, next_id, artifacts, sources, workspace, topic_reps,
                 course_id=""):
     topic = lesson.get("topic_id", "")
@@ -786,8 +824,13 @@ def render_lesson(lesson, index, total, previous_id, next_id, artifacts, sources
         artifact_id = block.get("artifact_id")
         if artifact_id and artifact_id in artifacts:
             group = media_groups.get(block.get("type", ""), "resources")
+            preview_fields = ("text", "items", "equation", "code", "caption")
+            has_preview = any(block.get(field) for field in preview_fields)
+            if has_preview:
+                blocks.append(render_block(block, lesson_exercises, sources, course_id))
             blocks.append(render_media(artifacts[artifact_id], group, workspace))
-            blocks.append(render_block(block, lesson_exercises, sources, course_id))
+            if not has_preview:
+                continue
         else:
             blocks.append(render_block(block, lesson_exercises, sources, course_id))
     chips = render_chips(topic_reps.get(topic, []), lesson, list(artifacts.values()))
@@ -1028,7 +1071,7 @@ def render_topic_details(view, plan, topic_reps):
     # Topic index within chapter for eyebrow is not tracked; use global number.
     eyebrow = f"Chapter {ci:02d} &middot; Topic {n:02d}"
     title = esc(topic.get("title", topic.get("id", "")))
-    outcome = esc(topic.get("outcome", "")) or "—"
+    subtopics = esc(" · ".join(topic.get("subtopics", []))) or "—"
     raw_state = topic.get("state", "planned")
     label, _ = _display_state(topic.get("id", ""), raw_state, current_id)
     reps = topic_reps.get(topic.get("id", ""), [])
@@ -1046,7 +1089,7 @@ def render_topic_details(view, plan, topic_reps):
         f'<p class="td-eyebrow" data-td="eyebrow">{eyebrow}</p>'
         f'<h3 class="td-title" data-td="title">{title}</h3>'
         '<dl class="td-fields">'
-        f'<div class="td-field"><dt class="td-label">Outcome</dt><dd class="td-value" data-td="outcome">{outcome}</dd></div>'
+        f'<div class="td-field"><dt class="td-label">Subtopics</dt><dd class="td-value" data-td="subtopics">{subtopics}</dd></div>'
         f'<div class="td-field"><dt class="td-label">State</dt><dd class="td-value td-state" data-td="state">{esc(label)}</dd></div>'
         f'<div class="td-field"><dt class="td-label">Formats</dt><dd class="td-value" data-td="formats">{formats}</dd></div>'
         f'<div class="td-field"><dt class="td-label">Evidence</dt><dd class="td-value" data-td="evidence">{evidence_text}</dd></div>'
@@ -1074,7 +1117,7 @@ def render_contents(view, course, topic_reps):
             num += 1
             t_id = topic.get("id", "")
             t_title = topic.get("title", "")
-            outcome = topic.get("outcome", "")
+            subtopics = " · ".join(topic.get("subtopics", [])) or "—"
             raw = topic.get("state", "planned")
             label, disp = _display_state(t_id, raw, current_topic)
             selected = (t_id == current_topic)
@@ -1096,9 +1139,9 @@ def render_contents(view, course, topic_reps):
                 f' data-chapter-id="{esc(ch_id)}"'
                 f' data-topic-id="{esc(t_id)}"'
                 f' data-state="{esc(label)}"'
-                f' data-outcome="{esc(outcome)}"'
                 f' data-eyebrow="Chapter {ch_index:02d} · Topic {num:02d}"'
                 f' data-title="{esc(t_title)}"'
+                f' data-subtopics="{esc(subtopics)}"'
                 f' data-formats="{esc(formats)}"'
                 f' data-evidence="{esc(evidence_text)}"'
                 f' data-sources-html="{esc(sources_html)}"'
@@ -1108,7 +1151,6 @@ def render_contents(view, course, topic_reps):
                 f'<span class="curr-state {disp}">{esc(label)}</span>'
                 f'<span class="curr-chev" aria-hidden="true">&#8250;</span>'
                 f'<span class="curr-chips-hidden">{chips_hidden}</span>'
-                f'<span class="sr-only">Outcome: {esc(outcome)}</span>'
                 "</button>"
             )
         parts.append("</div></section>")
@@ -1199,6 +1241,10 @@ def render_body(view, plan, workspace):
             artifacts[artifact["id"]] = artifact
 
     lessons = ordered_lessons(view, plan)
+    for lesson in lessons:
+        topic_id = lesson.get("topic_id")
+        if topic_id and not topic_reps.get(topic_id):
+            topic_reps[topic_id] = lesson_representations(lesson, artifacts)
     course_id = course.get("id", "") if isinstance(course, dict) else ""
     if not isinstance(course_id, str):
         course_id = str(course_id or "")
@@ -1262,6 +1308,27 @@ def _empty_view(plan):
     }
 
 
+def require_current_lesson(view, plan):
+    """Reject a teaching view before the current lesson has passed review."""
+    current_lessons = [
+        lesson for lesson in ordered_lessons(view, plan)
+        if lesson.get("topic_id") == plan["current"]["topic_id"]]
+    if not current_lessons:
+        raise ValueError("Current topic has no ready lesson. Use skills/lesson-design/SKILL.md "
+                         "to author and publish it before delivering the lesson page.")
+    expected_fingerprint = course_content_fingerprint(plan)
+    if not any(
+            isinstance(lesson.get("design_receipt"), dict)
+            and lesson["design_receipt"].get("course_fingerprint") == expected_fingerprint
+            and lesson["design_receipt"].get("review") == "pass"
+            for lesson in current_lessons):
+        raise ValueError("Current lesson has no valid design receipt "
+                         "for this course revision. Use skills/lesson-design/SKILL.md: "
+                         "publish a draft, run the review "
+                         "checklist, set publication to ready with a matching design_receipt, "
+                         "then render again.")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("workspace", type=Path,
@@ -1271,8 +1338,12 @@ def main():
     parser.add_argument("--out", type=Path,
                         help="output HTML path (default: <workspace>/portal/index.html)")
     parser.add_argument("--require-current-lesson", action="store_true",
-                        help="require a ready current lesson when delivering teaching, not just an outline")
+                        help="legacy spelling; the current lesson is required by default")
+    parser.add_argument("--outline-only", action="store_true",
+                        help="render the course plan before its current lesson is ready")
     args = parser.parse_args()
+    if args.require_current_lesson and args.outline_only:
+        parser.error("--require-current-lesson and --outline-only cannot be used together")
     workspace = args.workspace
     try:
         plan = read_plan(workspace)
@@ -1283,11 +1354,8 @@ def main():
             view = build_portal_view(workspace, summary)
         except FileNotFoundError:
             view = _empty_view(plan)
-        if args.require_current_lesson and not any(
-                lesson.get("topic_id") == plan["current"]["topic_id"]
-                for lesson in ordered_lessons(view, plan)):
-            raise ValueError("Current topic has no ready lesson. Use skills/lesson-design/SKILL.md "
-                             "to author and publish it before delivering the lesson page.")
+        if not args.outline_only:
+            require_current_lesson(view, plan)
         body = render_body(view, plan, workspace)
         template = TEMPLATE.read_text()
         if BODY_START not in template or BODY_END not in template:

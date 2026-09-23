@@ -141,7 +141,7 @@ class MathBlockTests(unittest.TestCase):
             root = Path(tmp)
             workspace = create_workspace(root, "alex", valid_v2_course())
             result = subprocess.run(
-                [sys.executable, str(RENDER), str(workspace)],
+                [sys.executable, str(RENDER), str(workspace), "--outline-only"],
                 capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             text = (workspace / "portal" / "index.html").read_text()

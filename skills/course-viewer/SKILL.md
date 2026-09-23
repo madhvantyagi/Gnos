@@ -10,20 +10,15 @@ read on its own; the local course server saves exercises to JSON and reveals
 answers after submission. Math uses KaTeX. Cream editorial page: top bar with GNOS + tabs, hero
 with giant title + field metadata, curriculum list + topic details.
 
-Use this skill whenever a course plan is created, enrolled, or
-changed — even with zero lessons. A fresh course still renders its
-contents table, sources, and representation plan. Re-render after
-every new lesson, video, image, or simulation. Render only from the
+Use this skill when the learner asks to see the course or answers yes after
+the current lesson is ready. Re-render after a changed lesson or artifact
+before giving a page link. A learner who explicitly asks for only
+the outline may see its contents and sources through `--outline-only`.
+For an explicit context load at this step, use `assemble_context.py --mode
+viewer --subject <subject> --learner <learner> --course-id <course-id>`.
+Render only from the
 enrolled workspace at `learners/<learner>/courses/<course-id>`,
 never from a blueprint `outputs/` file.
-
-
-## lesson-design should have been used before using this skill
-
-**Make sure that you have used [lesson-design](../lesson-design/SKILL.md) skill to design the lesson for the current in way better manner and then use the course-viewer to view the lesson , after you done using the lesson-design skill. then you can smoothly use course-viewer**
-
-
-
 
 ## Complete the lesson handoff before showing teaching
 
@@ -32,19 +27,29 @@ outline; [lesson-design](../lesson-design/SKILL.md) supplies the teaching.
 If the current topic has no ready lesson, use that skill and its
 [lesson design reference](../lesson-design/references/lesson-design.md) to
 author it before delivering a lesson page. If the learner reports a shallow
-lesson, use the same reference to repair its explanation and examples even
-when its file is already marked `ready`.
+lesson, set its `publication` back to `draft`, use the same reference to
+repair its explanation and examples, write a new `design_receipt`, and
+re-publish as `ready` — do not edit a `ready` file in place.
 
 Do not write lesson content from `course.json` inside this viewer workflow.
 The renderer does not call a model or invoke skills: the host must perform
-the handoff, review the lesson, and publish it. Use `--require-current-lesson`
-when delivering teaching so a missing lesson cannot silently produce only an
-outline. Omit that flag for an explicitly requested outline or contents preview.
+the handoff, review the lesson, and publish it. A normal render requires a
+`ready` lesson for the current
+topic whose `design_receipt.course_fingerprint` equals the enrolled
+`course.json` fingerprint and whose `design_receipt.review` is `pass`.
+It fails otherwise with instructions to run lesson design first. Use
+`--outline-only` only for an explicitly requested outline or contents preview.
+If rendering fails, do not link an earlier `portal/index.html` or say the
+course is ready to view.
+The local server also checks the current lesson before starting and whenever
+it serves the page, so an old page cannot be used after the course moves on.
+The receipt checks a recorded handoff and course match. It cannot prove that
+the host read the skill or that the explanation is good; review the lesson.
 
 ## Render
 
 ```bash
-.venv/bin/python skills/course-viewer/scripts/render_viewer.py learners/alex/courses/motion --require-current-lesson
+.venv/bin/python skills/course-viewer/scripts/render_viewer.py learners/alex/courses/motion
 ```
   
 The script reads `course.json`, published lessons, and the artifact
@@ -78,10 +83,11 @@ Copy that look exactly:
   chapters as "Chapter 01 + Title", topics as numbered rows with
   Current (navy) / Planned (plum) + › chevron; selected row has
   textured grey fill; clicking a row updates Topic details
-  (eyebrow, plum title, Outcome / State / Formats / Evidence / Sources)
-- lessons show the topic's representation plan as chips: manim,
+  (eyebrow, plum title, Subtopics / State / Formats / Evidence / Sources)
+- lessons show their actual block formats as chips: manim,
   image, simulation, text (kept as `chip manim` hooks, hidden in
-  curriculum rows, visible in Lessons). A chip turns ready
+  curriculum rows, visible in Lessons). Older course plans still show their
+  planned formats. A chip turns ready
   (`chip manim ready`) when its artifact is registered
 - videos, images, and sandboxed simulations render full width inside
   rounded frames, captions below, never overlapping
@@ -98,9 +104,8 @@ manifest, whatever made it:
 - interactive simulations (HTML) -> sandboxed `<iframe>`
 - pdf handouts and documents -> resources, open links
 
-The topic's `representations` in `course.json` say which parts need
-which skill. The page shows that plan as chips, so the learner sees
-what is coming. The lesson coordinator registers every artifact with
+The lesson blocks show which forms were used. Older courses can still show
+their planned formats. The lesson coordinator registers every artifact with
 `manage_artifact.py` before rendering; only `ready` artifacts appear.
 
 ## Rules
@@ -115,7 +120,7 @@ what is coming. The lesson coordinator registers every artifact with
   must already delimit math as LaTeX (`$...$`, `$$...$$`); the renderer
   preserves delimited LaTeX and equation blocks exactly. Legacy undelimited
   ASCII text has a limited compatibility converter; never rely on it when
-  authoring. Follow [math notation](../lesson-design/references/math-notation.md).
+  authoring. Follow [the lesson contract](../lesson-design/references/lesson-contract.md).
   Body prose is serif; monospace is only for code.
 - If enroll or render fails, say plainly what failed and fix it that
   turn. Never silently skip the page.

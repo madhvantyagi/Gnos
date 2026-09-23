@@ -1,6 +1,6 @@
 ---
 name: subject
-description: Select the lead subject, supporting bridges, teacher, sources, and subject-specific representations for a learning goal.
+description: Select the lead subject, supporting bridges, teacher, sources, and field-specific teaching guidance for a learning goal.
 ---
 
 # Subject routing
@@ -20,9 +20,11 @@ series still needs historical source judgment.
    subject only for a named bottleneck.
 4. Keep one lead teacher. A supporting teacher supplies one bounded bridge and
    returns the lesson to the lead subject.
-5. Read the guide's representation profile before planning course media.
-6. Record the selected subject guide and every producing skill in the topic's
-   `skill_routes`.
+5. Read the guide's matching subfield section when planning the course and lesson.
+   Course design uses its starting point and likely confusions to order ideas.
+   Lesson design uses its suggested views to explain those ideas.
+6. Record the selected subject guide in the topic's `skill_routes`. Lesson
+   design records media skill routes in `lesson.json`.
 
 Do not route by vocabulary alone. “Gradient” does not make every optimization
 question mathematics; the domain subject owns what the objective and variables
@@ -86,11 +88,22 @@ landing page is not proof that the needed section was inspected.
 Carry the learner's last sound step, notation, units, and unresolved question
 through every bridge. Do not stage a panel discussion.
 
-## Choose subject-specific representations
+## Use subject guidance in the lesson
 
-The subject guide answers “What must be visible in this field?” The course
-representation guide answers “Which medium reveals it with the least extra
-machinery?” Read both, in that order.
+The subject guide says what the learner must notice, work out, or check in
+this field. Lesson design uses that advice to choose explanations, examples,
+practice, and media. Read the guide before choosing blocks. A lesson may use
+several forms when each helps with a different step of the same idea.
+Every ready lesson needs at least two distinct teaching forms. The subject
+guide helps choose a useful pair; it does not assign a fixed pair to every
+topic. Exercise and feedback blocks are practice, not one of the two forms.
+There is no upper limit when more forms deepen the explanation.
+For the current topic, carry three decisions into lesson design: the concrete
+starting case, the distinction most likely to need explanation, and what the
+learner could inspect or change to understand it. Use the matching subfield
+section for its research checks and representation choices. Adapt them to the
+learner's question. Read deeper references when that section leaves a
+prerequisite, mechanism, or evidence question unresolved.
 
 | Workflow | What it produces | Route |
 | --- | --- | --- |
@@ -98,8 +111,8 @@ machinery?” Read both, in that order.
 | Image generation | Still illustration or labeled image | The host's existing image-generation skill or tool, following the instructions below |
 | Manim voice animation | Narrated rendered motion with subtitles | `skills/manim-voice-animation/SKILL.md` |
 | PDF | Rendered and inspected handout or source packet | `skills/pdf/SKILL.md` |
-| Excalidraw MCP | Quick inspectable CS relationship or boundary diagram | [Excalidraw workflow](references/excalidraw.md) through the CS guide |
-| Pinepaper MCP | Polished vector, interactive relation, or animated SVG | [Pinepaper workflow](references/pinepaper.md) and a linked subject reference |
+| Excalidraw MCP | Quick inspectable relationship, process, or boundary diagram | [Excalidraw workflow](../lesson-design/references/excalidraw.md) and the selected subject guide |
+| Pinepaper MCP | Polished vector, interactive relation, or animated SVG | [Pinepaper workflow](../lesson-design/references/pinepaper.md) and a linked subject reference |
 | Simulation | Learner-controlled graph or model | Self-contained HTML registered through `manage_artifact.py` |
 
 For generated images, invoke the host's existing image-generation skill
@@ -110,36 +123,30 @@ separate image-generation skill. If the host has no image-generation capability,
 report that and revise the representation rather than claiming an image exists.
 
 Image generation and the MCP references use the subject route. Declare
-`skills/subject/SKILL.md` and the selected subject guide in the topic's
-`skill_routes`; use `skills/subject/SKILL.md` for an image representation's
-production route. The host skill is invoked from these instructions, so its
-installation path does not belong in `course.json`. Add a producing `SKILL.md`
-route for GNOS's Manim or PDF skill when it will create a file.
+`skills/subject/SKILL.md` and the selected subject guide in the course topic.
+Declare any media producer in the lesson's `skill_routes`; use
+`skills/subject/SKILL.md` for a generated image block. The host skill is
+invoked from these instructions, so its installation path does not belong in
+`course.json`.
 
-Apply these tests:
+Several forms may explain one idea: text states the claim, a diagram shows
+its parts, motion shows a change, and practice checks whether the learner can
+use it. Give each form a distinct job. Do not recreate the same diagram in
+several tools or add media to meet a quota. Do not omit a useful graph, map,
+diagram, or control just to keep the lesson short.
 
-- Use text for exact claims, definitions, dates, derivations, code contracts,
-  and short comparisons.
-- Use a still for structure, spatial relations, labels, boundaries, maps, or
-  source comparison.
-- Use motion only when time, transformation, propagation, feedback, or ordered
-  state change is the object.
-- Use a simulation only when the learner should change an input and predict the
-  result.
-- Use narration when spoken timing coordinates meaningful visual change. Use
-  source audio or video only when listening or viewing is part of the evidence.
-- Use a PDF for review or a stable source packet, not as a substitute for the
-  live lesson.
+For a physics lesson on a pendulum, name the system and make a prediction,
+draw the forces at one position, show how position and velocity change over
+time, then let the learner vary the starting angle. Keep the same pendulum,
+units, and labels throughout. For a history lesson on a policy decision, give
+the dated choices in prose, show the relevant documents side by side, then ask
+the learner to explain what each source can and cannot establish. These are
+examples of different jobs for different forms, not templates for every lesson.
 
-One idea gets one primary medium. Do not recreate the same diagram in ImageGen,
-Excalidraw, Pinepaper, and Manim. Do not add media to meet a quota. Do not omit
-an earned graph, map, diagram, or control merely to keep the lesson short.
-
-For a course, write the approved choices into the topic's
-`representations` list. Then read
-`skills/course-design/references/representation-choices.md`. Each delegated
-lesson worker receives the selected subject guide and only the deep workflow
-reference its block needs.
+During lesson design, read
+`skills/lesson-design/references/representation-choices.md` for the medium
+choices. Each delegated lesson worker receives the selected subject guide and
+only the deep workflow reference its block needs.
 
 ## Source discipline
 

@@ -1,59 +1,70 @@
 # Accounting
 
-## Route by task
+Identify the entity, reporting framework, jurisdiction, period, and transaction.
+Separate cash from accrual profit, assets from expenses, and estimates from
+errors. Debits and credits name sides of an entry; whether they increase an
+account depends on the account type.
 
-| Area | Inspect first | Teaching decision |
-| --- | --- | --- |
-| Financial accounting | Accounting equation, debits and credits | Trace recognition, journal entry, ledger, and statements |
-| Managerial and cost accounting | Cost behavior, allocation, contribution margin | Compare relevant costs for a specified decision |
-| Audit and controls | Assertions, evidence, sampling | Connect a risk to a control and an audit procedure |
-| Tax and reporting | Entity, jurisdiction, reporting period | Check the applicable dated rule before applying it |
+## Ways to show the idea
 
-## Prerequisites and distinctions
+Use exact tables for journals, ledgers, and statements. Carry one amount through
+the records so the learner can reconcile it. Use
+[Excalidraw](../../lesson-design/references/excalidraw.md) for document or control flows, graphs
+for cost behavior, and a simulation for timing or allocation choices. Use
+[Manim](../../manim-voice-animation/SKILL.md) when movement across periods
+needs narration. Keep framework and period labels beside the numbers.
 
-Separate cash from accrual profit, assets from expenses, and estimates from errors. Debits and credits are sides of an entry, not synonyms for increases and decreases. Identify the entity, period, reporting framework, and transaction evidence.
+Accounting owns recognition and reconciliation. Business supplies the decision;
+math supplies ratios or discounting. No accounting teacher is assigned by default.
 
-## Mini lesson and evidence
+## Teaching each area
 
-Record a credit sale, then collection in a later period. Explain which statements change at each step and why collection does not create a second sale.
+Choose the matching section. Its order suggests how to build the topic; it is
+not a complete syllabus. Course design uses the starting point and source
+checks. Lesson design chooses the views that explain the difficult steps.
+Treat the named confusion as a possibility, not a diagnosis of this learner.
 
-Evidence of progress is an independent explanation or solution under a changed
-condition, with assumptions and limitations stated. A repeated definition alone
-is not evidence of transfer.
+### Financial accounting
 
-## Handoffs
+- **Build:** Start with one business event, the entity, and the reporting period.
+  Receiving cash and earning revenue can occur at different times.
+- **Research:** Use an introductory accounting chapter for the sequence, then the
+  applicable reporting standard for recognition. Check entity, framework, period, and
+  transaction evidence.
+- **Show and check:** Trace the event through a journal, ledger, and statements. Linked
+  tables show both sides of the entry. A timeline explains recognition across periods.
 
-Economics supports incentives; business owns the operating decision; math supports ratios and discounting. Accounting owns recognition and reconciliation.
+### Managerial and cost accounting
 
-## Representation profile
+- **Build:** Start with a decision between alternatives and which costs change.
+  Allocated or sunk costs may not be relevant to the decision.
+- **Research:** Use a managerial-accounting chapter and a stated operating case. Check
+  which costs change with the decision and which are allocations.
+- **Show and check:** A cost table separates fixed and variable terms. A graph shows
+  break-even. Controls test volume or capacity. Explain a changed decision.
 
-Start with the entity, period, transaction, and accounting equation. Use journal
-entries, ledgers, reconciliation tables, and linked statements for exact work.
-Use a flow diagram when recognition moves through documents, accounts, and
-reports. Use a simulation or executable model for allocation, cash-flow timing,
-ratio sensitivity, or control failure under changed inputs. Use animation only
-when timing across periods is the lesson. Keep reporting framework,
-jurisdiction, and effective date in text. A polished statement is not evidence
-that the recognition rule was applied correctly.
+### Audit and controls
 
-## Source selection
+- **Build:** Start with an assertion about a transaction and what could make it wrong.
+  Having a control does not establish that it operated effectively.
+- **Research:** Inspect the applicable auditing standard and the records the procedure
+  examines. Separate control design, operation, and evidence of failure.
+- **Show and check:** A process diagram locates a failure. An evidence table connects
+  risk, control, and test. Compare a case where the control exists but fails.
 
-Use the applicable standard setter, regulator, and inspected textbook chapter. Verify framework, jurisdiction, and effective date; do not treat an illustrative entry as current tax advice.
+### Tax and reporting
 
-## What each area earns
+- **Build:** Start with an entity, jurisdiction, period, and concrete transaction. A
+  familiar rule may not apply to this entity or date.
+- **Research:** Inspect the authority for the jurisdiction and reporting period. Check
+  effective dates, definitions, exceptions, and any official worked example.
+- **Show and check:** Pair the applicable rule excerpt with a worked calculation. A
+  timeline separates relevant dates. Reconcile the result to the underlying records.
 
-First write what the learner must inspect, change, compare, or work out
-in one sentence, and pick the smallest medium that lets them do it. Only
-then check this table for what accounting usually needs. Never use the
-table as a reason to order its favorite medium. Depth and length still
-cap the media: a survey earns mostly text plus one medium.
+## Source use
 
-| Area | Lead with | Then earn, only when | Exercise |
-| --- | --- | --- | --- |
-| Financial accounting | Entity, period, and the accounting equation in text | Linked journal, ledger, and statement tables for the exact work | Code text: trace recognition, entry, ledger, and statements |
-| Managerial and cost accounting | Cost behavior and the decision stated in text | Simulation, only when the learner varies cost, volume, or allocation | Numeric: compare the relevant costs for the stated decision |
-| Audit and controls | Assertions and evidence in text | Excalidraw sketch, only to connect one risk to its control and procedure | Multiple-choice: match the risk to the control and procedure |
-| Tax and reporting | Entity, jurisdiction, and reporting period in text | Nothing else; the dated rule is checked before it is applied | Short text: check the applicable rule before applying it |
-No curated source entries are supplied specifically for this subject yet.
-Inspect suitable sources before assigning a sustained course; follow
-[the source-use guide](../references/source-use.md).
+Use [the source-use guide](../references/source-use.md). Catalog entries are
+leads; inspect the relevant section before using it. Match the source to the
+subfield and question. Start with an accessible explanation, then inspect the
+technical argument or evidence needed for the agreed depth. Record the section,
+its job, and any access limit in the course research notes.

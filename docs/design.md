@@ -11,9 +11,9 @@ automatic assessment service hidden behind these files.
 | --- | --- | --- |
 | Learning | Turn routing, teaching loop, load order | Teacher biographies |
 | Teacher SOUL | Identity, voice, judgment under pressure | Course state |
-| Subject | Subfields, prerequisites, representations, sources | General tutor rules |
-| Course design | Outcomes, sequence, teacher assignments, assessments | Lesson blocks and files |
-| Lesson design | One lesson's blocks, briefs, workers, and finished files | Route order and sources |
+| Subject | Subfields, prerequisites, evidence, and visual advice | General tutor rules |
+| Course design | Goal, chapter and topic order, subtopics, prerequisites, teachers, and sources | Lesson content and media |
+| Lesson design | One lesson's explanation, examples, practice, media, blocks, briefs, and files | Topic order and scope |
 | Learner model | Dated observations, attempts, preferences, next step | Fixed labels of ability |
 | PDF / Manim / Image | Artifact construction and verification | Whether the learner understood |
 
@@ -32,18 +32,22 @@ across subjects by concept ID, so vectors are not re-taught under every label.
    justified; a local doubt keeps its small plan in the turn. Before designing a
    course, ask how deep and how long the learner wants to go, and record both in
    the plan.
-4. For a course, resolve the current chapter/topic and author only the next useful
-   lesson. The taught topic's default record is its formal lesson file; chat
-   carries the live exchange. Teach the missing connection. Choose text, a
-   diagram, an exercise, or motion for what it reveals; a media deliverable is
-   not a prerequisite to answering.
-5. Enroll the plan under the learner's folder the same turn it is written, then
-   offer the portal page. Record observed evidence and a concrete next step,
-   then revise provisional future topics only when that evidence changes the
-   route. Persist under the learner's folder, defaulting to `learner` when no
-   name was given.
+4. Build chapters, topics, and ordered subtopics. Enroll the plan under the
+   learner's folder in the same turn. Then use lesson design to brief one
+   subagent for each block, respect block dependencies, assemble and review
+   their results, and publish the current lesson with at least two distinct
+   teaching forms.
+   The formal lesson file holds that teaching; chat carries the live exchange.
+5. Once the current lesson is ready, ask whether the learner wants to see the
+   course. On yes, render and link the viewer. Record observed evidence and a
+   concrete next step, then revise provisional future topics only when that
+   evidence changes the route. Persist under the learner's folder, defaulting
+   to `learner` when no name was given.
 
 `skills/learning-orchestrator/scripts/assemble_context.py` prints this selected context or its file manifest.
+Its `course`, `lesson`, and `viewer` modes load instructions for the current
+step. Viewer instructions enter only when the learner asks to see the course
+or answers yes.
 It is an explicit loader for hosts without native skill discovery. It does not
 classify arbitrary prose or call a model. `AGENTS.md` is the in-repository entry.
 
@@ -59,27 +63,37 @@ lesson counts alone.
 The canonical living plan is
 `learners/<id>/courses/<course-id>/course.json`. State records its relative
 reference, revision, and fingerprint so a stale or missing plan fails before a
-learner mutation. Chapters contain topics; topics gain detailed lesson files
+learner mutation. Chapters contain topics with ordered subtopics; topics gain detailed lesson files
 gradually. Examples under `examples/` are explicitly fictional. Outputs live
 under the learner course workspace or `output/`; media sources remain editable.
 
 ## Media choices
 
-A topic declares its representations in `course.json` so each part is
-dispatched to the right skill: manim for motion, the host's image generation for still
-images, pdf for handouts, simulation for interactive parts, text for the
-rest. The plan's agreed `depth` and `length` set the media budget;
-`representation-choices.md` holds the rules that stop Manim from
-being ordered for everything.
+Course design records the topic's subtopics, concepts, prerequisites, teacher,
+and sources. Lesson design chooses the forms that help explain and test those
+concepts. A ready lesson has at least two distinct teaching forms, with no
+maximum. Exercises and feedback do not count toward the two. The selected
+subject guide says what must be shown or checked in that field;
+`skills/lesson-design/references/representation-choices.md` helps the lesson
+designer choose each form.
 
-The selected subject guide supplies the domain-specific representation
-profile. Each lesson block names one approved course representation through
-`representation_id`; the lesson cannot silently introduce a new concept,
-medium, or skill route. A delegated block carries a private production brief.
-Block workers write separate outputs and return block fragments or artifact
-records. The lesson coordinator alone registers checked artifacts one by one,
-and publishes the assembled lesson. It never edits the route to fix a bad
-block; it sends the fix back to course design.
+Subject files map the subfields; their deeper references develop difficult
+examples, source comparisons, and domain checks. Tool operation belongs in
+`skills/lesson-design/references/excalidraw.md` and
+`skills/lesson-design/references/pinepaper.md`. These references cover tool
+calls, inspection, and export across subjects. The context loader selects them
+through `--media excalidraw` or `--media pinepaper`.
+
+Older courses may still have topic `representations` and lesson blocks with
+`representation_id`. Those bindings remain valid for existing lessons. New
+courses leave both fields out. Lesson design declares any media skill routes
+in `lesson.json` and gives every block a brief and a list of earlier blocks
+it depends on. Each block has its own subagent, including text and exercise
+blocks. Workers write separate outputs and return block fragments or artifact
+records. The lesson coordinator checks their work and publishes the assembled
+lesson. A change in
+media or explanation stays in lesson design; a new topic concept or source
+goes back to course design.
 
 PDF: structured lesson JSON to ReportLab, with embedded fonts, image captions,
 equation images, page numbering, and source links. Inspect rendered pages.
@@ -87,8 +101,9 @@ Manim: storyboard to narration clips to scenes. Place each clip at the scene's
 actual cue start; extra pauses then cannot shift later narration. Export
 subtitles from the same cue timings. Keep silent rendering usable offline.
 The course viewer renders published lessons and registered artifacts on one
-page. A teaching delivery requires a ready current lesson; an outline preview
-can render earlier. The host loads lesson design and its teaching reference
+page. A normal render and the local server require a ready current lesson;
+only an explicit
+`--outline-only` preview can render earlier. The host loads lesson design and its teaching reference
 before authoring. The renderer itself does not invoke skills or a model.
 
 `skills/course-viewer/scripts/serve_course.py` serves that page on loopback and

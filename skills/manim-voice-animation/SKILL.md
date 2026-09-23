@@ -9,11 +9,11 @@ Use Manim when motion exposes a relationship the learner needs to inspect. A
 still diagram, runnable example, or source excerpt is the better representation
 when nothing meaningful changes.
 
-Order Manim only for a topic representation with `kind: manim` in the course
-plan. Before that, read
-`skills/course-design/references/representation-choices.md`: it names the
-trigger words and the hard rules that stop Manim from being ordered for
-definitions, lists, and static diagrams.
+Choose Manim during lesson design when motion teaches a change the learner
+needs to follow. Give it an `animation` or `voice-animation` lesson block with
+a clear purpose and production brief. Before building it, read
+`skills/lesson-design/references/representation-choices.md` for when motion
+helps and when a still or explanation is clearer.
 
 ## Start with GNOS context
 

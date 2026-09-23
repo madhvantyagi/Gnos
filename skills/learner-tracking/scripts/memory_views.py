@@ -52,6 +52,16 @@ def curriculum(course, events, plan=None):
     covered = {c for e in relevant for c in e['covered']}
     attempts = [(e['date'], a) for e in relevant for a in e['attempts']]
     covered.update(a['concept'] for _, a in attempts)
+    def topic_intent(topic):
+        outcome = topic.get('outcome')
+        if isinstance(outcome, str) and outcome.strip():
+            return outcome
+        title = topic.get('title', 'this topic')
+        subtopics = topic.get('subtopics', [])
+        if isinstance(subtopics, list) and subtopics:
+            return f"Study {title}, including {', '.join(subtopics)}."
+        return f"Study {title}."
+
     lines = [f"# {plan['title']} · Curriculum", '', f"Status: {course.get('status', 'active')}",
              f"Goal: {plan['goal']}", f"Plan revision: {plan['revision']}", '',
              'Completion records the course decision. Topic evidence below shows what was actually taught and tested.', '']
@@ -63,7 +73,7 @@ def curriculum(course, events, plan=None):
             topic_progress = progress['topics'][topic['id']]
             lines += [f"### Topic {topic_index}: {topic['title']} ({topic['state']})", '',
                       f"Evidence: {topic_progress['evidence']}", '',
-                      f"Outcome: {topic['outcome']}",
+                      f"Outcome: {topic_intent(topic)}",
                       f"Lead teacher: {teacher_name(topic['teacher'])}",
                       'Supporting teachers: ' + (', '.join(teacher_name(t) for t in topic['supporting_teachers']) or 'None'),
                       f"Planned study time: {topic['minutes']} minutes", '', 'Concepts:', '']

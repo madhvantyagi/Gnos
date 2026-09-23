@@ -2,67 +2,125 @@
 
 Teacher: `teachers/physics/SOUL.md` (Mira Sen).
 
-Route by the physical prediction: describe motion, account for energy, infer a
-field, explain a measurement, or compare models. Every equation belongs to a
-system, frame, approximation, and measurable quantity.
+Choose the branch by the physical question. Name the system, frame, quantities,
+and approximation before calculating. Develop a qualitative prediction, then
+check units, sign, and a limiting case. Distinguish a model prediction from a
+measurement and state when the approximation fails.
 
-| Area | Inspect first | Evidence of progress |
-| --- | --- | --- |
-| Mechanics | Objects, interactions, vectors, frame | Predict direction and acceleration |
-| Oscillations and waves | Phase, amplitude, frequency, propagation | Track two quantities on one clock |
-| Thermodynamics | System boundary, state, transfer | Account for energy and process assumptions |
-| Electricity and magnetism | Source, field, force, potential | Use symmetry, sign, units, and a limit |
-| Optics | Scale, geometry, wave behavior | Predict a changed setup |
-| Relativity and quantum physics | Observers, states, measurements | Separate invariant or distribution from trajectory |
-| Experimental physics | Calibration, uncertainty, residuals | Report fit and a plausible error source |
-| Computational physics | Discretization, initial state, stability | Compare with analytic or limiting behavior |
+## Ways to show the idea
 
-Ask for a qualitative prediction before calculation when sign, direction, or
-scale distinguishes the models. After calculating, check units, sign, limiting
-case, and whether an approximation was extended beyond its domain.
+Use diagrams for setup, graphs for quantities, and equations for their relation.
+Use [Excalidraw](../../lesson-design/references/excalidraw.md) for boundaries or apparatus,
+[Manim](../../manim-voice-animation/SKILL.md) for narrated motion, and
+[Pinepaper](../../lesson-design/references/pinepaper.md) for linked visual states. A simulation
+lets the learner test a changed condition. Keep the same units and initial
+state across views. Generated motion is a model illustration.
 
-Use a labeled still for a force balance, circuit, or system boundary. Use motion
-when time, phase, propagation, field response, or changing state is the missing
-idea. For detailed prerequisites, examples, source routes, and visual patterns,
-read [the physics reference](../references/physics.md). For advanced animated
-vector work, also read [the Pinepaper workflow](../references/pinepaper.md).
+Read [the physics reference](../references/physics.md) for detailed examples
+and visual conventions. Mira owns the physical meaning; math and CS support
+only the calculation or implementation needed for this question.
 
-## Representation profile
+## Teaching each area
 
-Name the system, frame, approximation, and qualitative prediction in text
-before showing media. Use labeled apparatus images, free-body diagrams, circuit
-diagrams, field maps, and graphs to connect equations to measured quantities.
-Use bullets for parallel assumptions or checks, not for a derivation. Use
-animation for motion, phase, propagation, field response, energy transfer, or
-state change. Use a simulation when the learner should vary an initial
-condition, force, frequency, boundary, or numerical step. Physics often earns
-several representations in one lesson, but they must share one system, units,
-and initial conditions. Generated motion illustrates the model; it is not
-experimental footage or validation.
+Choose the matching section. Its order suggests how to build the topic; it is
+not a complete syllabus. Course design uses the starting point and source
+checks. Lesson design chooses the views that explain the difficult steps.
+Treat the named confusion as a possibility, not a diagnosis of this learner.
 
-Load those references only when needed. Mira owns the physical system,
-assumptions, units, predictions, and measurements; math or CS supplies one
-bounded bridge while she remains the lesson's voice.
+### Mechanics
 
-## What each area earns
+- **Build:** Start with an object, its interactions, and a prediction before equations.
+  Velocity and acceleration can point differently. Force is not needed to maintain
+  constant velocity.
+- **Research:** Use an introductory mechanics chapter with a worked force or energy
+  argument. Check the frame and approximations before adopting a formula.
+- **Show and check:** A free-body diagram separates forces. Position and velocity graphs
+  share a clock. Motion links the graphs. Controls test mass, force, or initial
+  velocity.
 
-First write what the learner must inspect, change, compare, or work out
-in one sentence, and pick the smallest medium that lets them do it. Only
-then check this table for what physics usually needs. Never use the table
-as a reason to order its favorite medium. Depth and length still cap the
-media: a survey earns mostly text plus one medium.
+### Oscillations and waves
 
-| Area | Lead with | Then earn, only when | Exercise |
-| --- | --- | --- | --- |
-| Mechanics | System, frame, and qualitative prediction in text | Manim, only when the motion itself is the missing idea | Numeric: predict direction and acceleration |
-| Oscillations and waves | Phase, amplitude, and frequency in text | Manim, only to track two quantities on one clock | Numeric: track both quantities through one cycle |
-| Thermodynamics | System boundary and process assumptions in text | Excalidraw sketch of the boundary, only for a static setup | Numeric: account for the energy |
-| Electricity and magnetism | Source, field, and symmetry in text | Pinepaper field or circuit diagram, checked for sign, units, and limits | Numeric: use the symmetry and check a limit |
-| Optics | Scale and geometry in text | Pinepaper ray diagram, only for the setup | Numeric: predict the changed setup |
-| Relativity and quantum physics | Observers, states, and measurements in text | Nothing else unless a distribution must be read off a plot | Short text: separate the invariant from the trajectory |
-| Experimental physics | Calibration and uncertainty in text | Simulation, only when the learner varies a calibration or condition | Numeric: report the fit and one plausible error source |
-| Computational physics | Discretization and initial state in text | Simulation, only when the learner varies the step and compares with the analytic limit | Code text: compare with the analytic behavior |
+- **Build:** Start with one oscillator, then coupled locations. A wave transports a
+  disturbance without carrying each particle along its full path.
+- **Research:** Inspect a waves chapter for the relation between the oscillator and
+  propagation. Check the boundary conditions and whether the model is dispersive.
+- **Show and check:** A snapshot shows spatial structure. Motion separates particle
+  motion from propagation. Linked time plots explain phase. Controls compare frequency
+  and wave speed.
 
-Name the system, frame, approximation, and prediction in text before any
-media. One lesson keeps one system, one set of units, and one set of
-initial conditions across every representation.
+### Thermodynamics
+
+- **Build:** Start with a bounded system and an energy transfer before naming the law.
+  Heat and work describe transfers. Temperature is not stored heat.
+- **Research:** Use a thermodynamics chapter and any needed property table. Check sign
+  conventions, process assumptions, and the range of the data.
+- **Show and check:** A boundary diagram identifies transfers. An energy ledger checks
+  the balance. A process path shows state changes. Compare two paths with the same
+  endpoints.
+
+### Electricity and magnetism
+
+- **Build:** Start with sources and a test charge or simple circuit before a field
+  formula. Field, force, potential, and potential energy are different quantities.
+- **Research:** Use an electromagnetism or circuits chapter that defines the quantities.
+  Inspect apparatus documentation when interpreting a real measurement.
+- **Show and check:** A field map shows directions. Equipotentials explain work. A
+  circuit diagram tracks connections. A simulation compares charge, geometry, or
+  resistance.
+
+### Optics
+
+- **Build:** Start with a light source, an obstacle, a scale, and an observation. A ray
+  model and a wave model explain different features of the setup.
+- **Research:** Choose a geometrical- or wave-optics source to match the scale. Inspect
+  the approximation before applying a ray or diffraction formula.
+- **Show and check:** A ray diagram locates an image. Wavefront motion explains
+  interference. An intensity plot connects to observations. Controls test aperture or
+  wavelength.
+
+### Relativity
+
+- **Build:** Start with two observers describing the same events and measurements. A
+  coordinate difference need not be a difference in an invariant quantity.
+- **Research:** Use a relativity text that defines clocks, synchronization, frames, and
+  the transformation. Check the physical assumptions before using a diagram.
+- **Show and check:** Use a spacetime diagram with labeled events. Work through one
+  transformation. Use Manim to coordinate observers when sequence matters. Compare an
+  invariant across both descriptions.
+
+### Quantum physics
+
+- **Build:** Start with a preparation, a measurement, and the distribution of possible
+  outcomes. An amplitude is not a probability, and a state is not a hidden classical
+  trajectory.
+- **Research:** Use a quantum text for the state, observable, and probability rule.
+  Inspect the original experimental setup when explaining an empirical result.
+- **Show and check:** Pair an apparatus diagram with an outcome distribution and a
+  worked amplitude calculation. Simulate repeated measurements under stated assumptions.
+  Distinguish this teaching model from measured evidence.
+
+### Experimental physics
+
+- **Build:** Start with a measurement question and an instrument reading. A fitted line
+  can hide bias. Precision does not establish accuracy.
+- **Research:** Inspect the instrument manual, calibration method, and original
+  measurements. Use a laboratory-methods source to assess uncertainty and fit quality.
+- **Show and check:** An apparatus diagram explains measurement. Data with uncertainty
+  and residual plots test the fit. Compare calibration or sampling choices.
+
+### Computational physics
+
+- **Build:** Start with a simple physical rule and a finite numerical step. A smooth
+  computed trajectory can still be unstable or physically wrong.
+- **Research:** Use a numerical-methods source plus a known analytic or limiting case.
+  Check discretization, solver tolerances, and conservation error.
+- **Show and check:** A step table connects the rule to code. A plot compares analytic
+  and numerical results. Vary the time step and inspect conservation error.
+
+## Source use
+
+Use [the source-use guide](../references/source-use.md). Catalog entries are
+leads; inspect the relevant section before using it. Match the source to the
+subfield and question. Start with an accessible explanation, then inspect the
+technical argument or evidence needed for the agreed depth. Record the section,
+its job, and any access limit in the course research notes.

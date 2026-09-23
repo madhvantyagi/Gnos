@@ -85,6 +85,12 @@ def _course_contract():
     return course_fingerprint, validate_course
 
 
+def _course_content_fingerprint(plan):
+    sys.path.insert(0, str(ROOT / 'skills/course-design/scripts'))
+    from course_contract import course_content_fingerprint
+    return course_content_fingerprint(plan)
+
+
 def _course_workspace():
     sys.path.insert(0, str(ROOT / 'skills/course-design/scripts'))
     from course_workspace import create_workspace, read_plan, workspace_path, write_plan
@@ -144,8 +150,11 @@ def resolve_enrolled_plan(learners_root: Path, learner_id: str, entry: dict) -> 
     if plan['id'] != course_id:
         raise ValueError(f"Canonical course plan ID mismatch for {course_id!r}")
     actual = _course_contract()[0](plan)
+    content_fingerprint = _course_content_fingerprint(plan)
     expected = entry.get('plan_fingerprint')
-    if actual != expected or plan['revision'] != entry.get('plan_revision'):
+    # Accept exact legacy snapshots, while new enrollments ignore lesson_ids,
+    # which publishing updates without changing course content or revision.
+    if expected not in (actual, content_fingerprint) or plan['revision'] != entry.get('plan_revision'):
         raise ValueError(
             f"Stale course plan reference for {course_id!r}: "
             f"enrollment expects revision {entry.get('plan_revision')} / {expected}, "
@@ -301,19 +310,22 @@ def mutate(root, learner, command, payload=None):
             course_fingerprint, validate_course = _course_contract()
             create_workspace, _, workspace_path, write_plan = _course_workspace()
             plan = validate_course(payload)
+            plan_content_fingerprint = _course_content_fingerprint(plan)
             previous = data.setdefault('courses', {}).get(plan['id'])
             if previous:
                 previous_plan = (validate_course(previous['plan']) if 'plan' in previous
                                  else resolve_enrolled_plan(root, learner, previous))
                 previous_fingerprint = course_fingerprint(previous_plan)
-                if previous_fingerprint != course_fingerprint(plan) and plan['revision'] <= previous_plan['revision']:
+                previous_content_fingerprint = _course_content_fingerprint(previous_plan)
+                if (previous_content_fingerprint != plan_content_fingerprint and
+                        plan['revision'] <= previous_plan['revision']):
                     raise ValueError('A changed course plan requires a higher revision')
-                if previous_fingerprint == course_fingerprint(plan) and 'plan' not in previous:
+                if previous_content_fingerprint == plan_content_fingerprint and 'plan' not in previous:
                     return 'Already enrolled; unchanged'
             else:
                 previous_plan = None
             # The canonical workspace must exist before the state can refer to it.
-            if previous and previous_plan and previous_fingerprint != course_fingerprint(plan):
+            if previous and previous_plan and previous_content_fingerprint != plan_content_fingerprint:
                 workspace = workspace_path(root, learner, plan['id'])
                 if (workspace / 'course.json').exists():
                     write_plan(workspace, plan, expected_fingerprint=previous_fingerprint)
@@ -328,13 +340,13 @@ def mutate(root, learner, command, payload=None):
             entry = dict(status=status,
                          plan_ref=f"courses/{plan['id']}/course.json",
                          plan_revision=plan['revision'],
-                         plan_fingerprint=course_fingerprint(plan),
+                         plan_fingerprint=plan_content_fingerprint,
                          completion_history=completions)
             if status == 'completed' and previous and previous.get('completed_at'):
                 entry['completed_at'] = previous['completed_at']
             data['courses'][plan['id']] = entry
         elif command == 'migrate-courses':
-            course_fingerprint, validate_course = _course_contract()
+            _, validate_course = _course_contract()
             create_workspace, _, _, _ = _course_workspace()
             migrations = {}
             for course_id, old in data.get('courses', {}).items():
@@ -349,7 +361,7 @@ def mutate(root, learner, command, payload=None):
                 entry = dict(status=old['status'],
                              plan_ref=f"courses/{plan['id']}/course.json",
                              plan_revision=plan['revision'],
-                             plan_fingerprint=course_fingerprint(plan),
+                             plan_fingerprint=_course_content_fingerprint(plan),
                              completion_history=list(old.get('completion_history', [])))
                 if old.get('completed_at'):
                     entry['completed_at'] = old['completed_at']

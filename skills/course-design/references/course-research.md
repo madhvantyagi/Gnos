@@ -1,78 +1,79 @@
-# Search before you promise a course
+# Research the course route
 
-Search first. Do not copy the first syllabus you see.
-Use books, course sites, and docs you can open.
+Search for the material needed to build each step of the course. Do not copy
+one syllabus or assign one book to every topic. A source can help with the
+order of ideas, the first explanation of one concept, a precise derivation,
+or an exercise. Say which job it does.
 
-## Scale to the agreed depth and length
+## Match the source to the step
 
-The `depth` and `length` recorded in `course.json` decide how much to
-search and what to take:
+For each topic, write down the question the learner should be able to answer
+and the knowledge needed before it. Look for a readable explanation of that
+step. Open the section and check its prerequisites. If it begins with symbols
+or terms the learner has not met, find an earlier explanation or give that
+idea its own topic.
 
-| depth | research effort |
+Use a technical chapter or paper when its exact method, evidence, or limits
+matter. A course that ends at a research method may use a paper near the end
+without teaching the opening concepts from that paper. Explain the paper's
+terms before asking the learner to read its derivation.
+
+The course depth changes how far you check an idea, not how hard the first
+source must be:
+
+| Depth | Check while planning |
 | --- | --- |
-| `survey` | One main source for the route is enough; take definitions and the step order. |
-| `working` | Main source plus one contrast source that changes or checks a step; take exercise ideas from both. |
-| `mastery` | Two or more sources, including a primary or academic one; take the derivation path, counterexamples, and harder exercises. |
+| `survey` | Find a sound first explanation and check the order of the central ideas. |
+| `working` | Also check an example or exercise that requires the learner to use each main idea. |
+| `mastery` | Also inspect the derivation, assumptions, limits, and a case where the method needs care. |
 
-A short length means fewer topics per source and lighter media; a term
-means enough material to fill it honestly. Do not inflate a survey into
-a mastery bibliography, and do not promise a term on one skimmed page.
+Choose the few sources that do these jobs well. Add another only when it
+answers a question the existing sources leave open. A short course should
+cover fewer steps fully; a longer course can give difficult steps their own
+topics. Do not use a source count as a proxy for depth.
 
-## Where to look
+## Search and verify
 
-- **Books:** open textbook contents, for example `site:openstax.org <topic> contents`.
-- **Course sites:** syllabus and prerequisites, for example `site:ocw.mit.edu <topic> syllabus`.
-- **Docs and papers:** for software read the installed version.
-  For disputed topics read the paper itself, not a summary.
-- The starter list `skills/subject/references/resources.json`
-  is ideas only. Every course starts empty. Search fills it.
+Start with books, open course pages, official documentation, primary records,
+and papers suited to the subject. `skills/subject/references/resources.json`
+is a list of leads, not a preselected bibliography. For changing software,
+check the installed version. For a research claim, open the original work.
 
-One main source for order plus one second source to test it is enough.
-The second source counts when it changes a step, not when it repeats it.
+Record the actual section you read, what it establishes, and its audience.
+A landing page may confirm a title but not a chapter's teaching content. A
+search snippet is a lead, not proof. If a page is inaccessible, mark it that
+way and use a source you can inspect.
 
-## What to take
+## Save the useful notes
 
-- the definition in the author's words, plus page or section
-- what must come before this step
-- one exercise idea that shows a wrong idea fast
-- who it is written for, and could you open it
+Keep `RESEARCH.md` beside `course.json`. A small table is enough:
 
-A search snippet is a lead, not proof. If you did not open it,
-say so.
+| Topic or concept | Source and section | Job in the course | What you checked | Gap |
+| --- | --- | --- | --- | --- |
+| First encounter with probability | Introductory chapter, named section | Explain chance through a small case | Read the example and its prerequisites | Conditional cases come later |
 
-## What to save
-
-Keep short notes beside `course.json`. Only sources you will use
-move into `course.json/sources`.
-
-1. `RESEARCH.md` — small table: step, source and section,
-   what you checked, what is still open, what you chose.
-2. `course-research.json` — same facts, short form:
+Use `course-research.json` when structured notes help. Keep `used_in` tied to
+topic IDs and state what the source contributes. For example:
 
 ```json
 {
-  "goal": "predict small changes with derivatives",
+  "goal": "compare uncertain outcomes",
   "sources": [
     {
-      "id": "mit-1802-sec2",
-      "title": "MIT 18.02 notes",
-      "url": "https://ocw.mit.edu/example/18-02-notes",
-      "opened_sections": ["Chain rule examples"],
-      "gives": ["plain definition", "step order", "sign exercise"],
+      "id": "openstax-expected-value",
+      "title": "OpenStax Introductory Statistics 2e",
+      "url": "https://openstax.org/books/introductory-statistics-2e/pages/4-2-mean-or-expected-value-and-standard-deviation",
+      "opened_sections": ["4.2 Mean or Expected Value and Standard Deviation"],
+      "role": "Introduce a probability-weighted average through a small table",
       "trust": "opened",
-      "used_in": ["chain-rule"]
+      "used_in": ["expected-return"]
     }
   ],
-  "open_questions": ["fluency unverified"]
+  "open_questions": ["Learner's fluency with probability is unverified"]
 }
 ```
 
-Rules:
-
-- `id` must match the key you use in `course.json/sources`.
-- `trust` is `opened` only when you read it. Else use `snippet`
-  and do not call it checked.
-- `used_in` lists step IDs it supports. Empty means you skipped it.
-- `queries` are optional. For a small course, skip them.
-  Keep only what you use. Ten searched links do not belong here,
-  only the two or three you teach from.
+The `id` must match `course.json/sources`. Only sources used by the route
+belong in that course record. Its topic `resource_ids` select the sources for
+that topic. Give each recorded source its real section and verification note.
+Do not describe unopened material as checked.

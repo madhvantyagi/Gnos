@@ -1,163 +1,132 @@
-# Biology subject map
+# Biology
 
 Teacher: `teachers/biology/SOUL.md` (Leena Rao).
 
-Use this file after routing a learner to biology. Select the smallest biological
-scale that can answer the question, then make any cross-scale move explicit.
-“Why does this treatment work?” may need molecular binding, cell signaling,
-physiology, and evidence about organisms; do not flatten those into one story.
+Choose the biological scale needed to answer the question. Name each move
+between molecules, cells, tissues, organisms, and populations. Explain a
+mechanism through causes and constraints; avoid saying that a cell or organism
+changes because it wants or needs to. A diagram of a mechanism and the evidence
+that established it have different jobs.
 
-## Entry routes and prerequisites
+## Ways to show the idea
 
-| Route | Inspect first | First observable outcome |
-| --- | --- | --- |
-| Cell structure and transport | atoms, polarity, concentration, energy | Label a membrane and predict one blocked transport step |
-| Molecular biology / biochemistry | bonds, reactions, molecular shape | Trace matter or information through one mechanism |
-| Genetics and genomics | meiosis, probability, DNA/RNA vocabulary | Interpret a cross or a small sequence comparison |
-| Physiology | cells, transport, feedback, basic graphs | Perturb one variable and predict compensation |
-| Evolution | variation, inheritance, reproduction, time | Explain a frequency change across generations |
-| Ecology | populations, sampling, energy, time series | Bound a food web or population model and test it |
-| Development and cell differentiation | gene regulation, signaling, time | Link a signal to a changed cell state |
-| Microbiology and host interaction | cell structure, growth, transmission, sampling | Distinguish exposure, infection, growth, and disease |
-| Experimental / quantitative biology | controls, units, uncertainty, statistics | Design a discriminating experiment with a measurable outcome |
+Use labeled images for anatomy and observed structure, diagrams for pathways,
+and plots for concentrations or populations. State whether an image is
+observed, reconstructed, or illustrative. Use the host's image-generation
+capability for illustrations, [Excalidraw](../../lesson-design/references/excalidraw.md) for
+compartments and flows, and [Manim](../../manim-voice-animation/SKILL.md) for
+narrated transport or signaling. A simulation tests a named perturbation.
+Label direction, scale, units, and time; distinguish model outputs from data.
 
-If polarity, pH, logarithms, or probability blocks the lesson, give a short
-chemistry or `math.*` bridge. If chemistry becomes the actual destination,
-route a named supporting module and say that GNOS has no chemistry teacher
-listed in the subject router. CS can support sequence analysis or data work;
-it does not replace biological interpretation.
+Leena owns mechanisms and biological interpretation. Bridge to chemistry for
+bonds or reactions, math for quantitative reasoning, and CS for reproducible
+analysis. An illustrative pathway does not establish a clinical recommendation.
 
-## Branch guidance
+## Teaching each area
 
-**Cell biology.** Start with compartments, barriers, gradients, and energy
-coupling. Keep “the cell wants” out of explanations: ask which molecules can
-cross, what changes concentration, and where ATP or a gradient is spent. A good
-check changes membrane permeability or an ion concentration and asks for the
-local consequence before the whole-cell consequence. Use OpenStax Biology 2e
-(`openstax-biology-2e`, introductory; landing page verified, chapter content
-not inspected) for a broad route. NCBI Bookshelf's *Molecular Biology of the
-Cell* is a free, searchable higher-level reference at
-https://www.ncbi.nlm.nih.gov/books/NBK21054/; the current access page exposed
-the contents, but individual chapters may be searchable rather than browsable.
+Choose the matching section. Its order suggests how to build the topic; it is
+not a complete syllabus. Course design uses the starting point and source
+checks. Lesson design chooses the views that explain the difficult steps.
+Treat the named confusion as a possibility, not a diagnosis of this learner.
 
-**Molecular biology and biochemistry.** Separate substrate, enzyme, product,
-energy, and regulation. Track atoms and electrons separately from genetic
-information. For transcription and translation, ask what is copied, what is
-read, and what is assembled; do not treat DNA as a literal blueprint. A useful
-mini-lesson compares an enzyme inhibitor with a substrate shortage and predicts
-which measured quantities change. For a deep mechanism, pair a reviewed source
-with the primary paper or method that established the claim; a textbook diagram
-is a model, not direct evidence.
+### Cell structure and transport
 
-**Genetics and genomics.** Make the inheritance assumptions visible: ploidy,
-random segregation, linkage, penetrance, population, and environment. Repair
-“dominant means common” and “one gene means one trait” by changing allele
-frequency or adding a second locus. Begin with a small cross, then compare it
-with a pedigree or a short sequence alignment. NCBI SRA at
-https://www.ncbi.nlm.nih.gov/sra/ is an accessible official raw-read archive
-for advanced data work; its landing page and documentation links resolved, but
-an archive record still needs metadata, quality checks, and a stated analysis
-pipeline before it can support a biological conclusion.
+- **Build:** Start with two compartments and what can cross between them. Equilibrium
+  does not mean molecules stop moving.
+- **Research:** Use a cell-biology chapter for membrane mechanisms and a primary
+  experiment for a specific transport claim. Check compartments and concentration
+  conditions.
+- **Show and check:** A membrane diagram locates barriers. Motion shows movement in both
+  directions. A concentration plot shows net change. Vary permeability to test the
+  mechanism.
 
-**Physiology.** Define the regulated variable, sensor, controller, effector,
-and time scale. Distinguish negative feedback from “the body keeps everything
-constant”; a response can overshoot, trade against another variable, or fail.
-Use a perturbation such as exercise, dehydration, or a blocked receptor, then
-ask which observation would distinguish neural, hormonal, and local control.
-Never infer a human clinical recommendation from an illustrative pathway.
+### Molecular biology / biochemistry
 
-**Evolution.** Put variation, heritability, differential reproduction, and
-generations in the same causal chain. “Need causes adaptation” is a repair
-target: need may change selection, but it does not manufacture a directed
-variant. Compare natural selection, drift, gene flow, and mutation in a tiny
-population model. A claim about a particular lineage needs a dated dataset or
-primary study; the broad OpenStax route is not evidence for every evolutionary
-specialty.
+- **Build:** Start with named molecules, a transformation, and the material or
+  information being tracked. Enzymes alter rates. They do not supply the reaction's net
+  energy.
+- **Research:** Use a biochemistry reference for reaction mechanism and an original
+  assay for measured rates. Track substrate, enzyme, energy, and experimental conditions
+  separately.
+- **Show and check:** A labeled structure shows binding. A pathway tracks matter. A
+  reaction trace explains order. Data or a rate curve compares inhibition and substrate
+  shortage.
 
-**Ecology.** State the boundary, units, sampling frame, and time horizon before
-drawing a food web or growth curve. Separate energy flow from matter cycling,
-and correlation from interaction. A changed case might add a predator, remove a
-resource, or alter detection probability; the learner should predict what the
-measured series would do and what it cannot tell us. Use a real dataset only
-after identifying its sampling and missingness; a generated curve is a model
-illustration.
+### Genetics and genomics
 
-**Development, microbiology, and experimental biology.** Treat cell state as a
-history of signals and regulation, not a permanent “cell type switch.” In
-microbiology distinguish culture growth from abundance in a host and from
-pathogenic effect. For any experiment, name the independent variable, outcome,
-control, randomization or blocking choice, measurement error, and stopping
-rule. Ask for a competing hypothesis and the result that would change the
-learner's mind.
+- **Build:** Start with one inheritance case with explicit ploidy and segregation
+  assumptions. Dominant does not mean common. A cross ratio is a probability prediction.
+- **Research:** Use a genetics chapter for inheritance assumptions. For sequence
+  evidence, inspect the reference assembly, sample metadata, and analysis method.
+- **Show and check:** A chromosome diagram explains segregation. A cross table predicts
+  combinations. A pedigree or sequence comparison tests a different view. Simulate small
+  families to show variation.
 
-## Course design, evidence, and repair
+### Physiology
 
-Translate a broad goal into an action: predict a perturbation, interpret a
-figure, compare mechanisms, design a controlled experiment, or argue from a
-primary result. Order modules by dependency rather than by textbook chapter;
-insert a five-minute bridge when the first real task exposes a gap in chemistry,
-graphs, or probability. Before fixing a sustained sequence, use
-`skills/course-design/references/course-research.md` to check scope,
-prerequisites, source fit, and assessment. Keep one main source per module and
-record the exact chapter or dataset only after inspecting it.
+- **Build:** Start with a regulated quantity, a disturbance, and the response. Negative
+  feedback need not keep a quantity perfectly constant.
+- **Research:** Use a physiology chapter for the feedback mechanism and original
+  perturbation data for its response. Check species, tissue, and time scale.
+- **Show and check:** A feedback diagram names sensor and effector. Linked time plots
+  show delay and recovery. A simulation perturbs one component and tests compensation.
 
-Evidence of biology learning is an independent prediction in a changed case,
-an accurate labeled diagram, a justified interpretation of data, or a design
-whose controls fit the claim. Exposure to a pathway and assisted recall are
-not mastery. Record corrected misconceptions and delayed recall separately;
-never invent a learner's response to fill a course record. If the learner says
-“I know the steps,” test one local perturbation before adding more vocabulary.
+### Evolution
 
-## Representations and media
+- **Build:** Start with variation and reproduction in a small population across
+  generations. Organisms do not acquire directed heritable variants because they need
+  them.
+- **Research:** Use an evolution text for mechanisms and a population study for a
+  lineage claim. Check inheritance, sampling, generation time, and alternative
+  explanations.
+- **Show and check:** A population count table grounds frequency. A lineage diagram
+  tracks inheritance. Repeated simulations distinguish selection from chance. A sourced
+  dataset tests a biological claim.
 
-Start with the biological scale, named structures, and the measured outcome.
-Use labeled images for anatomy, cells, molecules, organisms, and experimental
-setups; state what is observed, reconstructed, or illustrative. Use diagrams
-for compartments, pathways, inheritance, food webs, and feedback. Label
-direction, scale, concentration, and time. Use animation for diffusion,
-transport, signaling, development, action-potential propagation, population
-change, or feedback under a changed condition. Use a simulation when the
-learner should vary permeability, binding, genotype, population size, or a
-sampling rule. Show original and changed states and check a limiting case. A
-PDF is useful for a source-backed mechanism sheet or figure-analysis packet;
-do not make a decorative pathway atlas.
+### Ecology
 
-## Teacher selection and handoffs
+- **Build:** Start with a bounded population or interaction and how it is measured. A
+  food web does not establish the size or sign of every population response.
+- **Research:** Inspect the field study and dataset methods alongside an ecology
+  chapter. Check spatial boundaries, detection probability, and sampling intervals.
+- **Show and check:** A web shows proposed interactions. Time series show observations.
+  A model tests resource or predator changes. Compare the model with sampling limits.
 
-Leena remains the lead for mechanisms, levels of organization, perturbations,
-and biological evidence. Hand to math when probability, rates, uncertainty, or
-statistical inference is the actual bottleneck; hand to CS for reproducible
-sequence or dataset operations. A physics bridge may own diffusion, forces, or
-energy only for the named mechanism. The supporting teacher supplies one
-bounded explanation, then Leena resumes with the biological variable and claim.
-Carry the learner's last sound step, notation, and unresolved misconception
-across every handoff.
+### Development and cell differentiation
 
-## Source discipline
+- **Build:** Start with a signal received by a cell in a particular earlier state. Cell
+  identity reflects regulation and history, not one permanent switch.
+- **Research:** Use a developmental-biology reference and a time-resolved or
+  perturbation study. Check lineage, stage, and what establishes the signal-response
+  link.
+- **Show and check:** A lineage diagram shows ancestry. A sequence shows signal and
+  response. Time-course data checks order. Compare a blocked signal at two stages.
 
-Existing catalog entries are starting points, not proof of coverage. Refresh
-the relevant content before teaching, label access limits, and distinguish a
-review, textbook model, database record, and primary experiment. For a specialty
-not listed here, search PubMed or NCBI Bookshelf for the field's review and then
-the cited primary study; do not imply that OpenStax Biology 2e covers advanced
-immunology, structural biology, ecology, or genomics in sufficient depth.
+### Microbiology and host interaction
 
-## What each route earns
+- **Build:** Start with exposure, establishment, growth, and host response in a concrete
+  case. Detecting a microbe does not by itself establish disease causation.
+- **Research:** Use a microbiology reference and the original assay or host study. Check
+  strain, growth conditions, measurement, and whether the result concerns infection or
+  disease.
+- **Show and check:** A labeled image locates structures. A timeline separates stages.
+  Growth curves and controls test an explanation. Distinguish observed images from
+  illustrations.
 
-First write what the learner must inspect, change, compare, or work out
-in one sentence, and pick the smallest medium that lets them do it. Only
-then check this table for what biology usually needs. Never use the table
-as a reason to order its favorite medium. Depth and length still cap the
-media: a survey earns mostly text plus one medium.
+### Experimental / quantitative biology
 
-| Route | Lead with | Then earn, only when | Exercise |
-| --- | --- | --- | --- |
-| Cell structure and transport | Compartments, barriers, and gradients in text | Excalidraw sketch, only for a static membrane picture | Multiple-choice: label the membrane and predict one blocked step |
-| Molecular biology / biochemistry | Substrate, enzyme, product, and energy in text | Excalidraw pathway sketch, only to trace matter through the mechanism | Short text: trace the matter from substrate to product |
-| Genetics and genomics | Ploidy and segregation assumptions in text | Excalidraw cross or pedigree sketch | Numeric: interpret the small cross |
-| Physiology | Regulated variable, sensor, and controller in text | Simulation, only when the learner perturbs one variable | Short text: predict the compensation |
-| Evolution | Variation, heritability, and generations in text | Simulation, only when the learner varies selection or drift across generations | Short text: explain the frequency change |
-| Ecology | Boundary, units, and sampling frame in text | Simulation, only when the learner adds a predator or removes a resource | Numeric: predict what the measured series would do |
-| Development and cell differentiation | Signal and time scale in text | Manim, only when the signal-to-state change over time is the idea | Short text: link the signal to the changed state |
-| Microbiology and host interaction | Exposure, infection, growth, and disease defined in text | Labeled image, and say whether it is observed, reconstructed, or illustrative | Multiple-choice: separate exposure from infection from disease |
-| Experimental / quantitative biology | Variables, controls, and stopping rule in text | PDF packet, only for a source-backed design with a competing hypothesis | Long text: design the experiment and name the result that would change your mind |
+- **Build:** Start with two competing explanations and an observation that would
+  separate them. A control group does not remove every confound.
+- **Research:** Inspect the experimental protocol, controls, data, and analysis. Use the
+  methods source to determine which competing explanation each control can exclude.
+- **Show and check:** An experiment diagram makes the comparison explicit. A data figure
+  shows variation. A design table links controls to alternative explanations. A PDF can
+  collect the checked figures for review.
+
+## Source use
+
+Use [the source-use guide](../references/source-use.md). Catalog entries are
+leads; inspect the relevant section before using it. Match the source to the
+subfield and question. Start with an accessible explanation, then inspect the
+technical argument or evidence needed for the agreed depth. Record the section,
+its job, and any access limit in the course research notes.

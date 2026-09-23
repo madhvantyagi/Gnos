@@ -43,6 +43,16 @@ in the portal's restricted sandbox. PDFs and unknown formats still receive an
 accurate title, purpose, metadata, and safe Open or Download action. A missing
 preview must not make the manifest claim disappear or expose neighboring files.
 
+For a simulation, record the HTML's intended canvas in
+`metadata.dimensions`, for example `{"width": 1280, "height": 800}`. The
+width must be a whole number from 320 to 2400 pixels and the height from 480
+to 1600 pixels. The registry rejects dimensions outside those limits. The
+viewer uses those values to size its iframe, with a 1280 by 800 fallback for
+older artifacts that lack them.
+The HTML must also resize its own content; frame dimensions alone cannot fix
+a fixed-width chart or controls that overflow on a phone. Inspect the result
+inside the portal at wide and narrow widths before registering it.
+
 ## Mutation workflow
 
 Before registering a worker result, the coordinator checks that its artifact

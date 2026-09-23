@@ -13,7 +13,7 @@ sys.path.insert(0, str(ROOT / "skills/course-design/scripts"))
 sys.path.insert(0, str(ROOT / "skills/learner-tracking/scripts"))
 
 import course_edits  # noqa: E402
-from course_contract import course_fingerprint  # noqa: E402
+from course_contract import course_content_fingerprint, course_fingerprint  # noqa: E402
 from course_workspace import create_workspace, read_plan  # noqa: E402
 import learner_state  # noqa: E402
 
@@ -168,7 +168,7 @@ class CourseEditTests(unittest.TestCase):
                          "Learner requested clearer wording")
         enrolled = self.enrollment()
         self.assertEqual(enrolled["plan_revision"], 2)
-        self.assertEqual(enrolled["plan_fingerprint"], new_fingerprint)
+        self.assertEqual(enrolled["plan_fingerprint"], course_content_fingerprint(revised))
 
     def test_retire_topic_with_evidence_keeps_id_and_events(self):
         before = json.loads((self.root / "alex" / "state.json").read_text())
@@ -187,10 +187,11 @@ class CourseEditTests(unittest.TestCase):
         self.assertEqual(after["events"], before["events"])
         expected_enrollment = dict(before["courses"]["gradient-descent"])
         expected_enrollment["plan_revision"] = 2
-        expected_enrollment["plan_fingerprint"] = new_fingerprint
+        expected_enrollment["plan_fingerprint"] = course_content_fingerprint(read_plan(self.workspace))
         self.assertEqual(after["courses"]["gradient-descent"], expected_enrollment)
         self.assertEqual(learner_state.read_state(self.root, "alex")["events"], [])
-        self.assertEqual(self.enrollment()["plan_fingerprint"], new_fingerprint)
+        self.assertEqual(self.enrollment()["plan_fingerprint"],
+                         course_content_fingerprint(read_plan(self.workspace)))
 
     def test_add_and_reorder_future_topics_preserve_current_identity(self):
         added = copy.deepcopy(self.plan["chapters"][0]["topics"][1])
@@ -222,7 +223,8 @@ class CourseEditTests(unittest.TestCase):
         self.assertEqual([topic["id"] for topic in plan["chapters"][0]["topics"]],
                          ["local-change", "momentum", "step-size", "gradient"])
         self.assertEqual(plan["revision"], 3)
-        self.assertEqual(self.enrollment()["plan_fingerprint"], fingerprint)
+        self.assertEqual(self.enrollment()["plan_fingerprint"],
+                         course_content_fingerprint(read_plan(self.workspace)))
 
     def test_rejects_current_identity_id_and_concept_mutations(self):
         for action in (

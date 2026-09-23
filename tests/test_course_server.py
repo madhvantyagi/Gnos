@@ -15,6 +15,18 @@ from tests.test_lesson_contract import valid_v2_course
 from portal_interactions import read_attempts
 
 
+class CourseServerReadinessTests(unittest.TestCase):
+    def test_server_rejects_an_outline_without_a_ready_current_lesson(self):
+        from serve_course import create_server
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = create_workspace(Path(temporary), 'alex', valid_v2_course())
+            portal = workspace / 'portal'
+            portal.mkdir(exist_ok=True)
+            (portal / 'index.html').write_text('<html>Old outline</html>')
+            with self.assertRaisesRegex(ValueError, 'no ready lesson'):
+                create_server(workspace, port=0)
+
+
 class CourseServerTests(unittest.TestCase):
     def setUp(self):
         from serve_course import create_server
@@ -23,7 +35,7 @@ class CourseServerTests(unittest.TestCase):
         plan = valid_v2_course()
         plan['chapters'][0]['topics'][0]['exercise_ids'].append('explain-gradient')
         self.workspace = create_workspace(Path(self.temp.name), 'alex', plan)
-        lesson = open_lesson()
+        lesson = open_lesson(plan)
         lesson['exercises'][1]['solution'] = r'The sign of $f\prime(x)$ predicts local change.'
         publish_lesson(self.workspace, lesson)
         portal = self.workspace / 'portal'
@@ -94,6 +106,16 @@ class CourseServerTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertIn(self.server.session_token, body)
         self.assertNotIn('predicts local change', body)
+
+    def test_server_stops_serving_an_old_page_when_current_lesson_becomes_draft(self):
+        lesson_path = self.workspace / 'lessons/slope-introduction/lesson.json'
+        lesson = json.loads(lesson_path.read_text())
+        lesson['publication'] = 'draft'
+        lesson_path.write_text(json.dumps(lesson))
+
+        status, body = self.request('/portal/')
+        self.assertEqual(status, 400)
+        self.assertIn('no ready lesson', body)
 
     def test_invalid_response_is_not_saved(self):
         status, _ = self.request('/api/exercises/predict-change/attempts',

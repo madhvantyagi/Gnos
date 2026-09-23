@@ -2,65 +2,127 @@
 
 Teacher: `teachers/economics/SOUL.md` (Nadia Vale).
 
-Route by the decision or claim. Keep the decision maker, alternatives,
-constraints, comparison, time, units, and held-constant conditions visible. A
-graph is a model, not a photograph of an economy.
+Choose the branch by the decision or claim. Name the people or institutions,
+their choices, constraints, time horizon, and the comparison. Separate model
+assumptions, accounting identities, empirical findings, and value judgments.
+Date current figures and policy claims.
 
-| Area | Inspect first | Evidence of progress |
-| --- | --- | --- |
-| Microeconomics | Alternatives, constraints, margin | Predict a changed choice or incidence |
-| Macroeconomics | Stocks, flows, accounting, horizon | Distinguish nominal, real, per-person, aggregate |
-| Econometrics | Estimand, comparison, identification | State what makes the estimate interpretable |
-| Game theory | Players, timing, information, payoffs | Find best responses after one condition changes |
-| Labor, public, development | Institutions, bargaining, distribution | Compare totals and who gains or pays |
-| Behavioral economics | Baseline model, treatment, measurement | Separate preference, belief, attention, and framing |
-| Economic history | Dated institutions, sources, comparability | Put a mechanism beside historical evidence |
-| Finance, money, environment | Timing, risk, accounting, physical limits | Track claims and units without equating price with welfare |
+## Ways to show the idea
 
-Keep movement along a curve separate from a shift; accounting identities from
-behavioral assumptions; correlation and prediction from causation; positive
-claims from normative judgments. Date current figures and policy claims.
+For a new curve, work through a few values and explain its axes and units.
+Use plotted graphs and equations whenever the mechanism is quantitative;
+economics does not need a separate math lesson to use them. Use
+[Excalidraw](../../lesson-design/references/excalidraw.md) for institutional or flow structure,
+[Pinepaper](../../lesson-design/references/pinepaper.md) for linked curves, and
+[Manim](../../manim-voice-animation/SKILL.md) for narrated adjustment over time.
+An interactive graph tests comparative statics; a simulation tests a sequence
+under stated rules. A smooth path is not a forecast or a causal finding.
 
-Use a numerical table before a new graph. Label axes, units, direction, changed
-condition, and assumptions. For detailed branch guidance, sources, examples,
-and advanced visual patterns, read
-[the economics reference](../references/economics.md). For animated adjustment,
-feedback, games, stock-flow systems, or polished vector graphics, also read
-[the Pinepaper workflow](../references/pinepaper.md).
+Read [the economics reference](../references/economics.md) for deeper model
+and visual patterns. Nadia keeps the economic question and interpretation;
+math supplies a needed derivation and history supplies dated context.
 
-## Representation profile
+## Teaching each area
 
-Start with the decision maker, constraints, held-constant conditions, and a
-small numerical table. Then draw the graph. Use interactive graphs for
-comparative statics, incidence, elasticity, or estimation choices. Use a
-simulation for repeated markets, strategic choices, policy rules, sampling, or
-stock-flow models. Use animation for adjustment over time, feedback, lags,
-games, and movement through an accounting system. Narration is useful when it
-coordinates a changing graph with the mechanism and its assumptions. Keep
-current figures, policy dates, units, and source notes in text. A smooth path is
-the output of a stated model, not a forecast or causal result.
+Choose the matching section. Its order suggests how to build the topic; it is
+not a complete syllabus. Course design uses the starting point and source
+checks. Lesson design chooses the views that explain the difficult steps.
+Treat the named confusion as a possibility, not a diagnosis of this learner.
 
-Load those references only when needed. Nadia owns the economic model, estimand,
-evidence, and interpretation; math, CS, or history supplies one bounded bridge.
+### Microeconomics
 
-## What each area earns
+- **Build:** Start with one person's alternatives and a constraint before a curve. A
+  price change along a curve differs from a change in the curve's conditions.
+- **Research:** Use an introductory microeconomics chapter for choice and comparative
+  statics. Inspect its assumptions before borrowing a graph.
+- **Show and check:** A numerical table grounds the trade-off. A graph shows the
+  relation. A control changes one constraint. A worked comparison explains incidence or
+  choice.
 
-First write what the learner must inspect, change, compare, or work out
-in one sentence, and pick the smallest medium that lets them do it. Only
-then check this table for what economics usually needs. Never use the
-table as a reason to order its favorite medium. Depth and length still
-cap the media: a survey earns mostly text plus one medium.
+### Macroeconomics
 
-| Area | Lead with | Then earn, only when | Exercise |
-| --- | --- | --- | --- |
-| Microeconomics | Decision maker, constraints, and a small numerical table in text | Simulation, only when the learner varies a constraint and watches incidence or elasticity move | Numeric: predict the changed choice |
-| Macroeconomics | Stocks, flows, horizon, and accounting in text | Manim, only when the adjustment over time is the lesson | Numeric: separate nominal, real, per-person, and aggregate |
-| Econometrics | Estimand and comparison stated in text | Simulation, only when the learner varies the sample or specification | Short text: state what makes the estimate interpretable |
-| Game theory | Players, timing, information, and payoffs in text | Simulation, only when one condition changes and best responses must be recomputed | Numeric: find the best response after the change |
-| Labor, public, development | Institutions and distribution in text | Simulation, only when the learner varies the policy rule | Numeric: compare totals and say who gains or pays |
-| Behavioral economics | Baseline model and treatment in text | Simulation, only when the learner varies the framing | Multiple-choice: separate preference, belief, attention, and framing |
-| Economic history | Dated institutions and sources in text | Nothing else; the argument is mechanism beside evidence | Long text: put the mechanism beside the historical evidence |
-| Finance, money, environment | Timing, risk, and accounting in text | Manim, only when claims move through time and the path matters | Numeric: track the claims and units without calling price welfare |
+- **Build:** Start with a flow over a period and a stock at a date. Accounting
+  identities do not explain behavior. Nominal and real changes differ.
+- **Research:** Use national-accounting definitions and an inspected macroeconomics
+  chapter. For data, read the official series metadata, units, adjustments, and
+  revisions.
+- **Show and check:** A stock-flow diagram locates quantities. A dated table establishes
+  units. Linked time plots show a model's adjustment. Compare assumptions before
+  treating a path as a forecast.
 
-Draw the graph only after the table and the held-constant conditions.
-Keep current figures, policy dates, units, and source notes in text.
+### Econometrics
+
+- **Build:** Start with a question, the comparison being made, and a small dataset. A
+  strong association or good prediction does not identify a causal effect.
+- **Research:** Use an econometrics chapter for the estimator and an original study for
+  the empirical claim. Inspect comparison groups, identification, data, and uncertainty.
+- **Show and check:** A scatterplot shows association. A study-design diagram shows
+  selection. Simulated confounding tests interpretation. Code and output connect the
+  estimate to the data.
+
+### Game theory
+
+- **Build:** Start with two players, available actions, and what each knows. The best
+  joint outcome need not be stable under individual choices.
+- **Research:** Inspect a game-theory section with explicit timing and information.
+  Check whether the solution assumes simultaneous moves, commitment, or repeated play.
+- **Show and check:** A payoff table explains incentives. A game tree shows timing. Mark
+  best responses. Change information or payoffs to test the conclusion.
+
+### Labor, public, development
+
+- **Build:** Start with a policy or institution and the people facing its constraints. A
+  larger total can conceal losses for some groups.
+- **Research:** Use an original policy evaluation with administrative or survey data.
+  Inspect eligibility, implementation, affected groups, and the comparison used.
+- **Show and check:** A distribution table separates gains and costs. A mechanism
+  diagram explains channels. A graph or policy model compares assumptions against
+  observed evidence.
+
+### Behavioral economics
+
+- **Build:** Start with a baseline prediction and a choice that it struggles to explain.
+  A changed response can reflect beliefs, attention, measurement, or preferences.
+- **Research:** Inspect the experiment and replication or review evidence. Check
+  incentives, sample, manipulation, and what the measure can distinguish.
+- **Show and check:** A choice table compares conditions. An experiment diagram
+  distinguishes explanations. Sourced effect plots show uncertainty. A toy model
+  illustrates a stated mechanism.
+
+### Economic history
+
+- **Build:** Start with a dated decision or pattern and how its records were made. A
+  modern model cannot supply historical actors' unrecorded motives.
+- **Research:** Pair a scholarly historical account with dated records and series
+  metadata. Check whether categories and coverage stay comparable.
+- **Show and check:** Pair a series with source excerpts. Use a dated map or timeline
+  for context. Compare record coverage before explaining a change.
+
+### Finance and money
+
+- **Build:** Start with dated payments, claims, and the institution connecting them.
+  Profit, cash, present value, and risk answer different questions.
+- **Research:** Use a finance or monetary-economics chapter for the model. Inspect
+  institutional definitions and dated series metadata for real claims or rates.
+- **Show and check:** Use a cash-flow timeline and ledger, then a discounting or risk
+  graph. Use controls to vary rates or payment timing. Trace each plotted value to the
+  corresponding payment and assumption.
+
+### Environmental and resource economics
+
+- **Build:** Start with a physical resource or emission and a choice about its use. A
+  market price need not include external costs. Physical stocks require their own
+  balance.
+- **Research:** Pair an economics chapter with physical measurement sources and a policy
+  evaluation. Check units, time horizon, discounting, and uncertainty.
+- **Show and check:** Connect a physical stock-flow diagram to marginal cost and benefit
+  curves. Use an interactive graph for taxes or caps and a simulation for depletion over
+  time. Keep modeled welfare separate from observed outcomes.
+
+## Source use
+
+Use [the source-use guide](../references/source-use.md). Catalog entries are
+leads; inspect the relevant section before using it. Match the source to the
+subfield and question. Start with an accessible explanation, then inspect the
+technical argument or evidence needed for the agreed depth. Record the section,
+its job, and any access limit in the course research notes.

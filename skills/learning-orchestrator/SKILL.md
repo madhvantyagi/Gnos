@@ -1,6 +1,6 @@
 ---
 name: learning-orchestrator
-description: 'Entry point. Start every GNOS turn here: read the request, route it to a subject, teacher, course, or learner record, then teach. After any course build or change, enroll, ask to show it, render the page, and return the link.'
+description: 'Entry point. Start every GNOS turn here: read the request, route it to a subject, teacher, course, or learner record, then teach. After a course build or change, enroll, finish the current lesson, then offer its page.'
 ---
 
 # Learning orchestrator — the entry point
@@ -40,22 +40,32 @@ Paths below are relative to the repository root.
 4. Load a media skill only when that medium is useful or requested:
    `pdf`, `manim`, `image`, `diagram` (pinepaper or excalidraw), or
    `simulation`. Read supporting references at the point of use. Media
-   is earned, not default: no subject requires it, and no course needs
-   it on every topic.
+   is chosen for what it teaches. Every ready lesson needs at least two
+   distinct teaching forms, but no subject requires a particular media tool.
    For generated images, use the host's existing image-generation skill or
    tool as directed by the subject skill; there is no local GNOS image skill.
-   During course work, load `skills/course-viewer/SKILL.md`. After a
-   course plan is written or changed, enroll it under the learner's name
+   After a course plan is written or changed, enroll it under the learner's name
    (or the default `learner`) that same turn. Continue with lesson design and
-   its teaching reference to author, review, and publish the current lesson.
-   An explicitly requested outline can stop at planning. Ask this exact
-   question: "want to see the course now?" unless already requested or approved.
-   This controls opening the viewer; it must not replace lesson authoring.
-   On yes, render the viewer page and
+   its teaching reference. It briefs one subagent per block, waits for each
+   block's dependencies, reviews and assembles the results, then publishes the
+   current lesson:
+   publish as `draft`, run the review checklist, write `design_receipt`,
+   set to `ready`, validate with `validate_lesson.py`, publish with
+   `course_workspace.py publish`, then register its checked artifacts.
+   An explicitly requested outline can stop at planning and render with
+   `--outline-only`; call it an outline. Otherwise, wait until the current
+   lesson is published as `ready` before asking this exact question:
+   "Do you want to see the course now?" unless already requested or approved.
+   On yes, load `skills/course-viewer/SKILL.md`, render the viewer page, and
    reply with the `portal/` link and what to click:
-   `python3 skills/course-viewer/scripts/render_viewer.py learners/<learner>/courses/<course-id> --require-current-lesson`.
-   Never end a course turn without either rendering the page or asking
-   to render it. Chat teaching or RESEARCH.md is not a substitute for
+   `python3 skills/course-viewer/scripts/render_viewer.py learners/<learner>/courses/<course-id>`.
+   The normal render fails without a `ready` current lesson carrying a matching
+   `design_receipt`, so a missing or stale lesson sends the turn back to
+   lesson-design instead of producing a page. Do not link an earlier portal
+   file when the render fails. Never end a teaching turn with
+   an outline render when a lesson was promised: end with either the
+   receipt-backed page or the published `draft` plus the concrete next step.
+   Chat teaching or RESEARCH.md is not a substitute for
    the page.
 
 The explicit loader is `python3 skills/learning-orchestrator/scripts/assemble_context.py --subject math`.
@@ -63,7 +73,10 @@ Use `--learner <id>` for a known record — it defaults to `learner`, and a
 missing default record is skipped silently, so no ID is needed to start.
 Use `--course-id <id>` for an enrolled course, or `--course <path>` for an
 explicit plan. Add `--mode course` when designing.
-Add `--media pdf|manim|image|diagram|simulation|pinepaper|excalidraw` when
+Use `--mode lesson` while building the current lesson. After the learner
+asks to see it or answers yes, use `--mode viewer` to load the viewing
+instructions for that enrolled course. Add
+`--media pdf|manim|image|diagram|simulation|pinepaper|excalidraw` when
 a representation skill or tool reference is needed this turn.
 With one active enrolled course the loader selects it; with several, it asks
 for an explicit course ID. Learner evidence is scoped to the selected course.

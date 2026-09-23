@@ -33,12 +33,12 @@ def validate():
             if not name or name.group(1) != path.parent.name:
                 errors.append(f'{path.relative_to(ROOT)}: frontmatter name must match folder')
     for required in (
-        ('skills/learning-orchestrator/SKILL.md', 'want to see the course now?'),
-        ('skills/course-design/SKILL.md', 'want to see the course now?'),
+        ('skills/learning-orchestrator/SKILL.md', 'Do you want to see the course now?'),
+        ('skills/course-design/SKILL.md', 'Do you want to see the course now?'),
         ('skills/course-design/SKILL.md', 'Do not stop at'),
-        ('skills/course-viewer/SKILL.md', 'even with zero lessons'),
+        ('skills/course-viewer/SKILL.md', '--outline-only'),
         ('skills/learner-tracking/SKILL.md', 'Never render lessons, viewer pages'),
-        ('skills/lesson-design/SKILL.md', 'representation_id'),
+        ('skills/lesson-design/SKILL.md', 'Choose the block type while drafting'),
         ('skills/lesson-design/SKILL.md', 'Only the coordinator'),
     ):
         path = ROOT / required[0]

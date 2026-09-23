@@ -33,7 +33,9 @@ from learner_state import mutate as mutate_learner_state, read_state  # noqa: E4
 from test_course_workspace import valid_lesson, valid_v2_course  # noqa: E402
 
 
-def open_lesson():
+def open_lesson(course=None):
+    from course_contract import course_content_fingerprint, validate_course
+    from test_course_workspace import valid_v2_course as base_plan
     lesson = valid_lesson("ready")
     lesson["exercises"] = [
         lesson["exercises"][0],
@@ -52,7 +54,22 @@ def open_lesson():
         "concepts": ["math.derivative"],
         "purpose": "Check explanation.",
         "exercise_id": "explain-gradient",
+        "production": {
+            "skill_route": "skills/subject/SKILL.md",
+            "brief": "Ask the learner to explain how slope sign predicts local change.",
+            "must_include": ["A connection between sign and change"],
+            "continuity": ["Build on the slope and ratio blocks."],
+            "acceptance_checks": ["The prompt requires an explanation of the relationship."],
+            "depends_on_block_ids": ["slope-equation"],
+        },
     })
+    target = validate_course(course if course is not None else base_plan())
+    lesson["design_receipt"] = {
+        "designed_at": lesson["updated_at"],
+        "course_fingerprint": course_content_fingerprint(target),
+        "skill_route": "skills/lesson-design/SKILL.md",
+        "review": "pass",
+    }
     return lesson
 
 
@@ -66,7 +83,7 @@ class PortalInteractionTests(unittest.TestCase):
             "predict-change", "explain-gradient",
         ]
         self.workspace = create_workspace(self.root, "alex", plan)
-        publish_lesson(self.workspace, open_lesson())
+        publish_lesson(self.workspace, open_lesson(plan))
         mutate_learner_state(self.root, "alex", "enroll", plan)
 
     def tearDown(self):

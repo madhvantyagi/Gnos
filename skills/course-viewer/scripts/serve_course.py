@@ -16,7 +16,7 @@ sys.path.insert(0, str(ROOT / 'skills/course-design/scripts'))
 from artifact_manifest import read_manifest, ready_artifacts
 from course_workspace import read_plan
 from portal_interactions import exercise_state, reveal_solution, submit_attempt
-from render_viewer import render_rich_text
+from render_viewer import build_portal_view, render_rich_text, require_current_lesson
 
 _API = re.compile(r'/api/exercises/([a-z0-9]+(?:-[a-z0-9]+)*)(?:/(attempts|reveal))?')
 
@@ -63,6 +63,8 @@ class CourseHandler(BaseHTTPRequestHandler):
                 self.send_json(200, exercise_state(self.server.workspace, match[1]))
                 return
             if path in ('/', '/portal/', '/portal/index.html'):
+                plan = read_plan(self.server.workspace)
+                require_current_lesson(build_portal_view(self.server.workspace, {}), plan)
                 page = (self.server.workspace / 'portal/index.html').read_text()
                 meta = f'<meta name="gnos-session" content="{self.server.session_token}">'
                 self.send_bytes(200, page.replace('</head>', meta + '</head>', 1).encode(),
@@ -123,7 +125,8 @@ class CourseHandler(BaseHTTPRequestHandler):
 
 def create_server(workspace, port=8080):
     workspace = Path(workspace).resolve()
-    read_plan(workspace)
+    plan = read_plan(workspace)
+    require_current_lesson(build_portal_view(workspace, {}), plan)
     server = HTTPServer(('127.0.0.1', port), CourseHandler)
     server.workspace = workspace
     server.session_token = secrets.token_urlsafe(32)

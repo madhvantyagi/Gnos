@@ -1,5 +1,6 @@
 """Course viewer render tests: a fresh course still shows a page."""
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -15,10 +16,14 @@ from tests.test_course_contract_v2 import valid_v2_course  # noqa: E402
 from tests.test_lesson_contract import valid_lesson  # noqa: E402
 
 RENDER = ROOT / "skills/course-viewer/scripts/render_viewer.py"
+sys.path.insert(0, str(ROOT / "skills/course-viewer/scripts"))
+import render_viewer  # noqa: E402
 
 
 def plan_with_reps():
     plan = valid_v2_course()
+    plan["chapters"][0]["topics"][0]["subtopics"] = [
+        "Slope from nearby points", "Slope at one point"]
     plan["chapters"][0]["topics"][0]["representations"] = [
         {"id": "m", "kind": "manim", "concept": "math.derivative",
          "purpose": "Show slope."},
@@ -36,46 +41,229 @@ def plan_with_reps():
     return plan
 
 
-def lesson_with_reps():
-    lesson = valid_lesson()
+def lesson_with_reps(plan=None):
+    from course_contract import course_content_fingerprint, validate_course
+    from tests.test_course_contract_v2 import valid_v2_course as base_plan
+    target_plan = plan if plan is not None else plan_with_reps()
+    validated = validate_course(target_plan)
+    lesson = valid_lesson(validated)
     for block, representation_id in zip(lesson["blocks"], ("t", "m", "s", "e")):
         block["representation_id"] = representation_id
+    lesson["design_receipt"] = {
+        "designed_at": lesson["updated_at"],
+        "course_fingerprint": course_content_fingerprint(validated),
+        "skill_route": "skills/lesson-design/SKILL.md",
+        "review": "pass",
+    }
     return lesson
 
 
 class ViewerTests(unittest.TestCase):
+    def test_simulation_iframe_uses_bounded_metadata_dimensions(self):
+        artifact = {
+            "id": "sim", "type": "simulation", "title": "Simulation",
+            "mime_type": "text/html", "location": {"path": "artifacts/sim.html"},
+            "metadata": {"dimensions": {"width": 1440, "height": 900}},
+        }
+
+        html = render_viewer.media_element(artifact, "generated")
+        self.assertIn('class="simulation-frame"', html)
+        self.assertIn('width="1440" height="900"', html)
+        self.assertIn("--simulation-max-height:900px", html)
+        self.assertIn('class="media simulation-media"', render_viewer.render_media(
+            artifact, "generated", Path(".")))
+
+    def test_simulation_dimensions_fall_back_when_out_of_bounds(self):
+        artifact = {
+            "id": "sim", "type": "simulation", "title": "Simulation",
+            "mime_type": "text/html", "location": {"path": "artifacts/sim.html"},
+            "metadata": {"dimensions": {"width": 99999, "height": 20}},
+        }
+
+        html = render_viewer.media_element(artifact, "generated")
+        self.assertIn('width="1280" height="800"', html)
+        self.assertIn("--simulation-max-height:800px", html)
+
+    def test_simulation_iframe_uses_portrait_height_on_mobile_and_tablet(self):
+        text = self.render("--outline-only")
+
+        self.assertIn(
+            ".media iframe.simulation-frame{height:clamp(480px,62.5vw,var(--simulation-max-height,800px));}",
+            text,
+        )
+        mobile_start = text.index("@media (max-width:1100px)")
+        mobile_end = text.index("@media (prefers-reduced-motion:reduce)", mobile_start)
+        mobile_css = text[mobile_start:mobile_end]
+        self.assertIn(".media iframe{height:300px;}", mobile_css)
+        self.assertIn(
+            ".media iframe.simulation-frame{height:min(var(--simulation-max-height,800px),max(760px,150vw));}",
+            mobile_css,
+        )
+
+    def test_mixed_lesson_blocks_keep_readable_labels_and_preview_media_order(self):
+        concept = "artificial-intelligence.agent-environment"
+        lesson = {
+            "id": "agent-loop", "course_id": "rl-basics", "topic_id": "agent-loop",
+            "title": "The agent loop", "purpose": "Connect a prediction to an action.",
+            "teacher": "math", "updated_at": "2026-09-23T12:00:00Z",
+            "concepts": [concept], "exercises": [{
+                "id": "predict-action", "prompt": "Which action should the agent choose?",
+                "response_type": "short-text", "evaluation": {"mode": "manual"},
+                "success_criteria": ["Connect the observation to the action."],
+            }],
+            "blocks": [
+                {"id": "intro", "type": "explanation", "label": "Start with the loop",
+                 "concepts": [concept], "purpose": "Introduce the sequence.",
+                 "text": "The agent observes, chooses, and receives feedback."},
+                {"id": "code", "type": "code", "label": "A small example",
+                 "concepts": [concept], "purpose": "Make the sequence concrete.",
+                 "code": "observation = env.observe()\naction = policy(observation)\n"},
+                {"id": "equation", "type": "equation", "label": "The update",
+                 "concepts": [concept], "purpose": "Show the return update.",
+                 "equation": "G_t = R_{t+1} + \\gamma G_{t+1}"},
+                {"id": "source", "type": "source", "label": "Read more",
+                 "concepts": [concept], "purpose": "See the formal definition.",
+                 "source_id": "rl-text", "text": "Use this chapter to check the formal terms."},
+                {"id": "exercise", "type": "exercise", "label": "Try a prediction",
+                 "concepts": [concept], "purpose": "Check the learner's model.",
+                 "exercise_id": "predict-action", "text": "Now try the loop in a new case."},
+                {"id": "simulation", "type": "simulation", "label": "Predict first",
+                 "concepts": [concept], "purpose": "Watch the rollout respond.",
+                 "artifact_id": "sim-html",
+                 "text": "Before moving the slider, predict which action earns more.",
+                 "caption": "The vertical marker shows the chosen action."},
+                {"id": "interpretation", "type": "explanation", "label": "What changed",
+                 "concepts": [concept], "purpose": "Interpret the rollout.",
+                 "text": "The higher return came from the action with better feedback."},
+                {"id": "diagram", "type": "diagram",
+                 "concepts": [concept], "purpose": "Show the data flow.",
+                 "artifact_id": "loop-diagram", "text": "Follow each arrow once."},
+                {"id": "video", "type": "voice-animation", "label": "Watch it unfold",
+                 "concepts": [concept], "purpose": "Animate one decision cycle.",
+                 "artifact_id": "loop-video", "text": "Watch where the reward enters."},
+                {"id": "handout", "type": "artifact", "label": "Keep the handout",
+                 "concepts": [concept], "purpose": "Review the loop later.",
+                 "artifact_id": "loop-handout", "text": "The handout puts the three steps on one page."},
+            ],
+        }
+        artifacts = {
+            "sim-html": {"id": "sim-html", "type": "simulation", "title": "Rollout simulator",
+                         "purpose": "Adjust one choice at a time.", "mime_type": "text/html",
+                         "location": {"path": "artifacts/sim.html"}, "metadata": {}},
+            "loop-diagram": {"id": "loop-diagram", "type": "diagram", "title": "Agent loop",
+                             "purpose": "Observation, action, feedback.", "mime_type": "image/png",
+                             "location": {"path": "artifacts/loop.png"}, "metadata": {}},
+            "loop-video": {"id": "loop-video", "type": "voice-animation", "title": "One cycle",
+                           "purpose": "See one complete turn.", "mime_type": "video/mp4",
+                           "location": {"path": "artifacts/loop.mp4"}, "metadata": {}},
+            "loop-handout": {"id": "loop-handout", "type": "pdf", "title": "Agent loop handout",
+                             "purpose": "Review the sequence.", "mime_type": "application/pdf",
+                             "location": {"path": "artifacts/loop.pdf"}, "metadata": {"pages": 1}},
+        }
+        sources = {"rl-text": {"title": "Reinforcement Learning: An Introduction",
+                                "sections": ["Chapter 3"], "url": "https://example.org/rl"}}
+
+        rendered = render_viewer.render_lesson(
+            lesson, 1, 1, None, None, artifacts, sources, Path("."), {}, course_id="rl-basics")
+
+        self.assertIn('class="block-label">A small example</div>', rendered)
+        self.assertIn('class="block-label">diagram</div>', rendered)
+        labels = re.findall(r'<div class="block-label">(.*?)</div>', rendered)
+        self.assertTrue(labels)
+        self.assertTrue(all(concept not in label for label in labels))
+        self.assertIn("observation = env.observe()\naction = policy(observation)\n", rendered)
+        template = (ROOT / "skills/course-viewer/references/example.html").read_text()
+        self.assertIn("white-space:pre;word-break:normal;overflow-wrap:normal", template)
+        self.assertIn("tab-size:2;overflow-x:auto", template)
+        self.assertIn(".block p{margin:8px 0;font-size:16px;}", template)
+        self.assertNotIn("max-width:72ch", template)
+        self.assertIn(".lesson .block .card{box-sizing:border-box;max-width:800px;}", template)
+        self.assertIn(".lesson .block .card.exercise{max-width:none;}", template)
+        self.assertIn('class="math math-display"', rendered)
+        self.assertIn('class="card exercise"', rendered)
+        self.assertIn('class="simulation-frame"', rendered)
+        self.assertIn("<img", rendered)
+        self.assertIn("<video", rendered)
+        self.assertIn("open source", rendered)
+        self.assertIn('class="card media-resource"', rendered)
+        self.assertIn("Agent loop handout", rendered)
+        self.assertLess(rendered.index("Use this chapter"), rendered.index("open source"))
+        self.assertLess(rendered.index("Now try the loop"), rendered.index('class="card exercise"'))
+        preview = rendered.index("Before moving the slider")
+        caption = rendered.index("The vertical marker")
+        simulator = rendered.index('class="simulation-frame"')
+        interpretation = rendered.index("The higher return came")
+        self.assertLess(preview, caption)
+        self.assertLess(caption, simulator)
+        self.assertLess(simulator, interpretation)
+
+    def test_new_course_shows_formats_from_finished_lesson(self):
+        plan = valid_v2_course()
+        del plan["chapters"][0]["topics"][0]["outcome"]
+        workspace = create_workspace(self.root, "sam", plan)
+        from course_contract import validate_course
+        publish_lesson(workspace, valid_lesson(validate_course(plan)))
+        result = subprocess.run([sys.executable, str(RENDER), str(workspace)],
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        html = (workspace / "portal" / "index.html").read_text()
+        self.assertIn('class="chip manim"', html)
+        self.assertIn('class="chip simulation"', html)
+        self.assertNotIn('data-outcome=', html)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
-        self.workspace = create_workspace(self.root, "alex", plan_with_reps())
+        self.plan = plan_with_reps()
+        self.workspace = create_workspace(self.root, "alex", self.plan)
 
-    def render(self):
+    def render(self, *flags):
         result = subprocess.run(
-            [sys.executable, str(RENDER), str(self.workspace)],
+            [sys.executable, str(RENDER), str(self.workspace), *(flags or ("--outline-only",))],
             capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         return (self.workspace / "portal" / "index.html").read_text()
 
-    def test_zero_lesson_course_still_renders_contents_and_plan(self):
-        text = self.render()
+    def test_explicit_outline_renders_without_a_lesson(self):
+        text = self.render("--outline-only")
         self.assertIn("Slope as local change", text)
+        self.assertIn("Slope from nearby points", text)
+        self.assertIn('data-td="subtopics"', text)
+        self.assertIn('data-subtopics="Slope from nearby points · Slope at one point"', text)
         self.assertIn("chip manim", text)
         self.assertIn("No ready lessons yet", text)
         self.assertNotIn("success_criteria", text)
+
+    def test_default_render_rejects_course_without_current_lesson(self):
+        result = subprocess.run([sys.executable, str(RENDER), str(self.workspace)],
+                                capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("lesson-design", result.stderr)
+        self.assertFalse((self.workspace / "portal" / "index.html").exists())
+
+    def test_default_render_rejects_a_draft_current_lesson(self):
+        draft = lesson_with_reps(self.plan)
+        draft["publication"] = "draft"
+        draft.pop("design_receipt")
+        publish_lesson(self.workspace, draft)
+        result = subprocess.run([sys.executable, str(RENDER), str(self.workspace)],
+                                capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("no ready lesson", result.stderr)
 
     def test_lesson_delivery_requires_a_ready_current_lesson(self):
         result = subprocess.run([sys.executable, str(RENDER), str(self.workspace),
                                  '--require-current-lesson'], capture_output=True, text=True)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('lesson-design', result.stderr)
-        publish_lesson(self.workspace, lesson_with_reps())
+        publish_lesson(self.workspace, lesson_with_reps(self.plan))
         result = subprocess.run([sys.executable, str(RENDER), str(self.workspace),
                                  '--require-current-lesson'], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_ready_lesson_flips_chips_and_shows_media(self):
-        publish_lesson(self.workspace, lesson_with_reps())
+        publish_lesson(self.workspace, lesson_with_reps(self.plan))
         video = self.workspace / "artifacts/videos/slope-video.mp4"
         video.parent.mkdir(parents=True, exist_ok=True)
         video.write_bytes(b"fake")

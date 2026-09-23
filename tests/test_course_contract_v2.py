@@ -96,6 +96,24 @@ def valid_v1_course():
 
 
 class CourseContractV2Tests(unittest.TestCase):
+    def test_topic_subtopics_are_ordered_nonempty_distinct_titles(self):
+        plan = valid_v2_course()
+        topic = plan["chapters"][0]["topics"][0]
+        topic["subtopics"] = ["Slope from nearby points", "Slope at one point"]
+        self.assertEqual(contract.validate_course(plan), plan)
+        for invalid in ([], [" ", "Slope at one point"],
+                        ["Slope at one point", "slope at one point"]):
+            topic["subtopics"] = invalid
+            with self.assertRaises(ValueError):
+                contract.validate_course(plan)
+
+    def test_topic_can_leave_teaching_choices_to_lesson_design(self):
+        plan = valid_v2_course()
+        topic = plan["chapters"][0]["topics"][0]
+        del topic["outcome"]
+        self.assertNotIn("representations", topic)
+        self.assertEqual(contract.validate_course(plan), plan)
+
     def test_teacher_neutral_subject_is_valid_without_a_teacher(self):
         plan = valid_v2_course()
         topic = plan["chapters"][0]["topics"][0]

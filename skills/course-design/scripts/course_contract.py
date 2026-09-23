@@ -62,6 +62,19 @@ def course_fingerprint(data):
     return hashlib.sha256(payload.encode()).hexdigest()
 
 
+def course_content_fingerprint(data):
+    """Fingerprint of the course content that lesson-design builds against.
+
+    Excludes `lesson_ids` because publishing a lesson registers its own ID
+    and must not invalidate the receipt it was built with.
+    """
+    content = copy.deepcopy(data)
+    for topic in course_topics(content):
+        topic["lesson_ids"] = []
+    payload = json.dumps(content, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(payload.encode()).hexdigest()
+
+
 def course_topics(data):
     return [topic for chapter in data["chapters"] for topic in chapter["topics"]]
 
@@ -203,8 +216,13 @@ def _validate_v2(data):
             if topic_id in topic_ids:
                 raise ValueError(f"Duplicate topic ID: {topic_id}")
             topic_ids.add(topic_id)
-            for key in ("title", "outcome"):
-                nonempty(topic.get(key), f"{topic_id}.{key}")
+            nonempty(topic.get("title"), f"{topic_id}.title")
+            if "subtopics" in topic:
+                subtopics = strings(topic["subtopics"], f"{topic_id}.subtopics", required=True)
+                if len({title.strip().casefold() for title in subtopics}) != len(subtopics):
+                    raise ValueError(f"{topic_id}.subtopics must have distinct titles")
+            if "outcome" in topic:
+                nonempty(topic["outcome"], f"{topic_id}.outcome")
             if topic.get("state") not in PLANNING_STATES:
                 raise ValueError(f"{topic_id}: invalid planning state")
             if "teacher" not in topic:

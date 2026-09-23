@@ -28,11 +28,11 @@ def media_paths(media):
         'image': ['skills/subject/SKILL.md'],
         'diagram': ['skills/subject/SKILL.md'],
         'simulation': [
-            'skills/course-design/references/representation-choices.md',
+            'skills/lesson-design/references/representation-choices.md',
             'skills/course-design/references/artifact-manifest.md',
         ],
-        'pinepaper': ['skills/subject/references/pinepaper.md'],
-        'excalidraw': ['skills/subject/references/excalidraw.md'],
+        'pinepaper': ['skills/lesson-design/references/pinepaper.md'],
+        'excalidraw': ['skills/lesson-design/references/excalidraw.md'],
     }
     return mapping.get(media, [])
 
@@ -63,20 +63,19 @@ def selected_paths(subject, mode='lesson', media=None, course=None):
             'skills/course-design/SKILL.md',
             'skills/course-design/references/course-contract.md',
             'skills/course-design/references/course-research.md',
-            'skills/course-design/references/representation-choices.md',
             'skills/learner-tracking/SKILL.md',
             'skills/learner-tracking/references/adaptive-lifecycle.md',
-            'skills/course-viewer/SKILL.md',
         ]
-    if course is not None:
+    if course is not None and mode == 'lesson':
         paths += [
             'skills/lesson-design/SKILL.md',
             'skills/lesson-design/references/lesson-design.md',
             'skills/lesson-design/references/lesson-contract.md',
-            'skills/course-design/references/representation-choices.md',
+            'skills/lesson-design/references/representation-choices.md',
             'skills/course-design/references/artifact-manifest.md',
-            'skills/course-viewer/SKILL.md',
         ]
+    if course is not None and mode == 'viewer':
+        paths.append('skills/course-viewer/SKILL.md')
     if media:
         paths += media_paths(media)
     return list(dict.fromkeys(paths))
@@ -85,7 +84,7 @@ def selected_paths(subject, mode='lesson', media=None, course=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--subject', choices=SUBJECTS, required=True)
-    parser.add_argument('--mode', choices=('lesson', 'course'), default='lesson')
+    parser.add_argument('--mode', choices=('lesson', 'course', 'viewer'), default='lesson')
     parser.add_argument('--media', choices=('pdf', 'manim', 'image', 'diagram', 'simulation', 'pinepaper', 'excalidraw'))
     parser.add_argument('--learner', help='Learner folder name; defaults to %(default)s')
     parser.set_defaults(learner='learner')
@@ -126,6 +125,8 @@ def main():
                     if selected_id not in enrolled:
                         raise ValueError('Requested course is not enrolled')
                     course = module.resolve_enrolled_plan(args.learners_root, args.learner, enrolled[selected_id])
+        if args.mode == 'viewer' and course is None:
+            raise ValueError('Viewer mode needs an enrolled or explicit course')
         if args.manifest:
             print('\n'.join(selected_paths(args.subject, args.mode, args.media, course)))
             return

@@ -18,7 +18,7 @@
 
 ## What is GNOS?
 
-GNOS is a teaching harness made of skills, scripts, and visual tools. Tell it what you want to learn and how deep you want to go. It uses course materials such as university syllabi, textbooks, and documentation to plan a route, then teaches the next useful lesson.
+GNOS is a teaching harness made of skills, scripts, and visual tools. Tell it what you want to learn. For a course, it asks how deep you want to go and how much time you have, uses course materials such as university syllabi, textbooks, and documentation to plan a route, then builds the first lesson. Subagents make its lesson blocks; GNOS reviews and joins them before asking if you want to see the course.
 
 As you work, GNOS records what you tried, where your reasoning broke, and what you could do independently. It uses that evidence to adjust upcoming lessons and exercises. The course grows with you.
 
@@ -27,10 +27,28 @@ As you work, GNOS records what you tried, where your reasoning broke, and what y
 Just ask GNOS to show your course in the browser. It routes the request to the `course-viewer` skill, which renders the curriculum and current lesson as a study page. Open a topic to read its lesson, work through exercises, and follow its sources and learning materials.
 
 <p align="center">
-  <img src="assets/course-viewer.png" alt="GNOS course viewer showing a course curriculum and selected topic details" width="100%" />
+  <img src="assets/course-viewer.png" alt="GNOS course viewer showing a course curriculum and selected topic details" width="720" />
 </p>
 
 <p align="center"><em>Browse the curriculum and open a topic to study it in the course viewer.</em></p>
+
+A true slideshow can't run inside a README, so here is the closest thing — click each frame to expand it:
+
+<details>
+<summary><strong>Frame 1 · Curriculum</strong> — chapters and topics with their states</summary>
+<br />
+<p align="center">
+  <img src="assets/course-viewer-curriculum.png" alt="Close-up of the course viewer curriculum list" width="420" />
+</p>
+</details>
+
+<details>
+<summary><strong>Frame 2 · Topic details</strong> — outcome, formats, evidence, and sources</summary>
+<br />
+<p align="center">
+  <img src="assets/course-viewer-topic.png" alt="Close-up of the course viewer topic details panel" width="300" />
+</p>
+</details>
 
 ## Why does learning with AI still feel hard?
 
@@ -66,14 +84,14 @@ Frontier models know a great deal, but a good answer is only one part of teachin
 
 ### Use GNOS with another agent
 
-For another agent that can read local files, clone the repo, open it as your workspace, and start with:
+1. **Any agent that reads local files:** Clone the repo, open it as your workspace, and send:
 
-> Read `AGENTS.md`, then `skills/learning-orchestrator/SKILL.md`. Help me learn [topic].
+   ```
+   Read `AGENTS.md`, then `skills/learning-orchestrator/SKILL.md`. Help me learn [topic].
+   ```
 
-For a longer course, tell GNOS your goal, starting point, desired depth, and how much time you have. For a single question, just ask it. [See the teaching entry point](skills/learning-orchestrator/SKILL.md).
+2. **Shape the course:** For a longer course, also give your goal, starting point, desired depth, and time. For a single question, just ask it.
 
 ## Help it grow
 
-There is room for better visuals, transcription and spoken lessons, more subjects, and stronger ways to measure learning. If you use AI to teach yourself difficult things, try GNOS and [share what worked or broke](https://github.com/madhvantyagi/Gnos/issues). Contributions are welcome.
-
-Built by a self-learner, for self-learners. If it helps you learn something hard, [star the repo](https://github.com/madhvantyagi/Gnos/stargazers) so others can find it.
+GNOS grows through its users. If it helps you learn something hard, [share what worked or broke](https://github.com/madhvantyagi/Gnos/issues) and [star the repo](https://github.com/madhvantyagi/Gnos/stargazers) so others can find it.

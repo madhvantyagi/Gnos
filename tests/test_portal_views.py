@@ -52,8 +52,10 @@ class PortalViewTests(unittest.TestCase):
         self.root = Path(self.tempdir.name)
         plan = valid_v2_course()
         plan["chapters"][0]["topics"][0]["lesson_ids"] = ["slope-introduction"]
+        plan["chapters"][0]["topics"][0]["subtopics"] = [
+            "Slope from nearby points", "Slope at one point"]
         self.workspace = create_workspace(self.root, "alex", plan)
-        lesson = valid_lesson("ready")
+        lesson = valid_lesson("ready", plan)
         publish_lesson(self.workspace, lesson)
         artifact_path = self.workspace / "artifacts/generated/gradient-video.bin"
         artifact_path.write_bytes(b"artifact")
@@ -94,6 +96,8 @@ class PortalViewTests(unittest.TestCase):
         self.assertEqual(view["course"]["current"]["topic_id"], "local-change")
         self.assertEqual(view["contents"][0]["topics"][0]["progress"]["evidence"], "practicing")
         self.assertEqual(view["contents"][0]["topics"][0]["lesson_ids"], ["slope-introduction"])
+        self.assertEqual(view["contents"][0]["topics"][0]["subtopics"],
+                         ["Slope from nearby points", "Slope at one point"])
         self.assertEqual(view["lessons"]["recent"][0]["topic_id"], "local-change")
 
     def test_portal_payload_never_contains_private_answer_data(self):

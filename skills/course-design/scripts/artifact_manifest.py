@@ -96,6 +96,14 @@ def _validate_artifact_shape(artifact):
         json.dumps(artifact["metadata"], ensure_ascii=False, allow_nan=False)
     except (TypeError, ValueError) as exc:
         raise ValueError(f"{artifact_id}.metadata must be JSON data") from exc
+    if artifact["type"] == "simulation" and "dimensions" in artifact["metadata"]:
+        dimensions = artifact["metadata"]["dimensions"]
+        if not isinstance(dimensions, dict) or set(dimensions) != {"width", "height"}:
+            raise ValueError(f"{artifact_id}.metadata.dimensions needs width and height")
+        for name, minimum, maximum in (("width", 320, 2400), ("height", 480, 1600)):
+            value = dimensions[name]
+            if isinstance(value, bool) or not isinstance(value, int) or not minimum <= value <= maximum:
+                raise ValueError(f"{artifact_id}.metadata.dimensions.{name} must be {minimum}-{maximum} pixels")
     if artifact.get("status") not in ARTIFACT_STATUSES:
         raise ValueError(f"{artifact_id}.status must be draft, ready, archived, or failed")
     created = _timestamp(artifact.get("created_at"), f"{artifact_id}.created_at")

@@ -5,11 +5,26 @@
 before teaching from it, especially for changing software, empirical claims,
 and current policy. A successful page request is not content verification.
 
-For a course module, choose one main source that fits the outcome and starting
-level. Prefer official documentation, university materials, primary records,
-open textbooks, and papers. Inspect the relevant content before citing a page
+Choose sources for the idea being taught, not for an entire subject at once.
+An introductory explanation may need an accessible textbook section or course
+page. A derivation may need a more technical chapter. A claim about a new
+method may need its paper. Prefer original and authoritative sources that the
+learner can actually read. Inspect the relevant section before citing a page
 number or recommending an exercise. Mark inaccessible sources and use another
 source rather than inventing what the missing page says.
+
+For each topic, record what each source contributes: the first explanation,
+the precise rule or evidence, or a useful example or exercise. Start the
+lesson with the plainest sound explanation that covers the needed idea. Bring
+in a harder source when it resolves a question the learner can now ask. Do
+not send the learner to a paper just because the final course goal involves
+research. Explain the paper's symbols and assumptions before using its result.
+Do not force the same source to serve every concept in a chapter.
+Use the source to check the teaching, then explain the idea in the teacher's
+own words with the lesson's running example. A link does not replace a missing
+explanation. When the source itself is part of the lesson, identify the passage,
+figure, or result to inspect and explain what it establishes. Keep copied
+material short, attributed, and within its permitted use.
 
 Use publisher or institution download links for PDFs. Discover the current PDF
 from the landing page; never manufacture a URL. Respect each item's license,
