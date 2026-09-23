@@ -1,16 +1,69 @@
 {
-  "title": "Why subtract the slope?",
   "aspect_ratio": "16:9",
-  "voice": "explainer-male",
-  "scenes": [{
-    "id": "GradientStep",
-    "title": "A local direction, a finite step",
-    "concept_target": "The sign of the derivative gives a local descent direction, but step size controls the actual update.",
-    "narration_cues": [
-      {"cue_id":"start","text":"Start at x equals two on the curve x squared. The loss is four.","sync_target":"Show quadratic and starting point","duration":4,"pause_after":0.4},
-      {"cue_id":"slope","text":"The slope here is positive four. A small move to the left lowers the loss.","sync_target":"Show the tangent and slope label","duration":4,"pause_after":0.4},
-      {"cue_id":"step","text":"With a learning rate of point two, subtract point eight. The next x is one point two, and the loss falls to one point four four.","sync_target":"Move the point using the update rule","duration":6,"pause_after":1},
-      {"cue_id":"limit","text":"The direction came from local information. A much larger step can overshoot. Predict what happens if the learning rate becomes one point two.","sync_target":"Keep the result visible and pose the changed case","duration":6,"pause_after":1}
-    ]
-  }]
+  "concept_id": "gradient-descent-update",
+  "prerequisite": "Reading a derivative as the slope of a curve at a point.",
+  "scenes": [
+    {
+      "concept_target": "The sign of the derivative gives a local descent direction, but step size controls the actual update.",
+      "id": "GradientStep",
+      "narration_cues": [
+        {
+          "change": "Title, axes, curve, starting point, and loss readout appear.",
+          "cue_id": "start",
+          "duration": 4,
+          "pause_after": 0.4,
+          "sync_target": "Show quadratic and starting point",
+          "text": "Start at x equals two on the curve x squared. The loss is four.",
+          "visible_objects": [
+            "title",
+            "axes",
+            "curve f(x) = x^2",
+            "point at x = 2",
+            "loss readout 4"
+          ]
+        },
+        {
+          "change": "Tangent reveals the local slope of 4.",
+          "cue_id": "slope",
+          "duration": 4,
+          "pause_after": 0.4,
+          "sync_target": "Show the tangent and slope label",
+          "text": "The slope here is positive four. A small move to the left lowers the loss.",
+          "visible_objects": [
+            "tangent at x = 2",
+            "slope label 4"
+          ]
+        },
+        {
+          "change": "Point steps to x = 1.2 and the loss falls to 1.44.",
+          "cue_id": "step",
+          "duration": 6,
+          "pause_after": 1,
+          "sync_target": "Move the point using the update rule",
+          "text": "With a learning rate of point two, subtract point eight. The next x is one point two, and the loss falls to one point four four.",
+          "visible_objects": [
+            "moving point",
+            "loss readout",
+            "update rule 2 - 0.2 x 4 = 1.2"
+          ]
+        },
+        {
+          "change": "Result holds while the overshoot case is posed.",
+          "cue_id": "limit",
+          "duration": 6,
+          "pause_after": 1,
+          "sync_target": "Keep the result visible and pose the changed case",
+          "text": "The direction came from local information. A much larger step can overshoot. Predict what happens if the learning rate becomes one point two.",
+          "visible_objects": [
+            "held result x = 1.2, loss 1.44",
+            "eta = 1.2 prompt"
+          ]
+        }
+      ],
+      "title": "A local direction, a finite step"
+    }
+  ],
+  "success_check": "The learner predicts the next x and loss for a given step size, or explains why a large step overshoots.",
+  "title": "Why subtract the slope?",
+  "voice": "explainer-male"
 }

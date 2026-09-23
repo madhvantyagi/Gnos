@@ -1,44 +1,90 @@
 # Political science
 
-## Route by task
+Identify the jurisdiction, period, actors, rule, and claim. Distinguish formal
+rules from practice, state from government, and normative arguments from
+empirical claims. Explain competing positions fairly and weigh their evidence.
 
-| Area | Inspect first | Teaching decision |
-| --- | --- | --- |
-| Political theory | Arguments, concepts, normative premises | Compare a claim with its strongest objection |
-| Comparative politics | Institutions, cases, measurement | Compare mechanisms while checking case selection |
-| International relations | Actors, interests, information | State competing explanations and observable implications |
-| Public policy and administration | Implementation, incentives, outcomes | Trace policy design through implementation and effects |
-| Political behavior | Surveys, turnout, representation | Inspect measurement, selection, and uncertainty |
-| Research methods | Causal inference, source criticism | Match evidence to a descriptive or causal claim |
+## Ways to show the idea
 
-## Prerequisites and distinctions
+Use [Excalidraw](../../lesson-design/references/excalidraw.md) for authority and implementation
+chains, and [Pinepaper](../../lesson-design/references/pinepaper.md) for linked institutions or
+coalitions. Use tables for election rules and graphs for political data.
+A simulation can test seat allocation under a changed rule; it cannot establish
+how voters would respond. Use narrated motion for an important sequence while
+keeping assumed mechanisms separate from observed events.
+Read [the political-science reference](../references/political-science.md)
+for detailed process and election patterns.
 
-Distinguish formal rules from practice, state from government, and empirical claims from normative arguments. Identify jurisdiction, period, actors, and comparison. Explain competing positions fairly without giving unsupported claims equal evidentiary weight.
+Political science owns institutional interpretation. History supplies context,
+economics or psychology supplies a named mechanism, and math checks inference.
+No political-science teacher is assigned by default.
 
-## Mini lesson and evidence
+## Teaching each area
 
-Compare two electoral systems under the same hypothetical vote totals. Explain which representation outcomes follow from the rules and which claims need behavioral evidence.
+Choose the matching section. Its order suggests how to build the topic; it is
+not a complete syllabus. Course design uses the starting point and source
+checks. Lesson design chooses the views that explain the difficult steps.
+Treat the named confusion as a possibility, not a diagnosis of this learner.
 
-Evidence of progress is an independent explanation or solution under a changed
-condition, with assumptions and limitations stated. A repeated definition alone
-is not evidence of transfer.
+### Political theory
 
-## Handoffs and representations
+- **Build:** Start with a concrete political choice and the reasons offered for it. A
+  normative premise differs from an empirical prediction.
+- **Research:** Inspect the original argument in a reliable edition and a serious
+  scholarly objection. Separate normative premises from empirical claims.
+- **Show and check:** A short excerpt grounds the argument. An argument map connects
+  premises. A contrasting case tests the strongest objection.
 
-History owns chronology and source context; economics supports incentives; psychology supports political behavior; math supports measurement. Political science owns institutional mechanisms and political concepts.
-Use a worked example, diagram, source comparison, or executable model according
-to the reasoning gap. Keep one lead teacher and reuse shared concept IDs.
+### Comparative politics
 
-For an institutional process, coalition, election mechanism, policy chain, or
-other relation-rich graphic, read
-[the political-science reference](../references/political-science.md). If motion
-or a polished vector deliverable materially helps, also read
-[the Pinepaper workflow](../references/pinepaper.md). Load neither for a simple
-definition or source comparison.
+- **Build:** Start with a rule operating in a named institution and case. Formal rules
+  do not establish how power works in practice.
+- **Research:** Use constitutional or institutional records and comparative research.
+  Check jurisdiction, period, case selection, and evidence about actual practice.
+- **Show and check:** An institutional diagram shows authority. A case table compares
+  mechanisms. Records test practice. Explain what case selection leaves uncertain.
 
-## Source selection
+### International relations
 
-Use constitutional and legislative texts, official election data, original research, and inspected theory texts. Verify current laws and officeholders; distinguish what a rule says from evidence about enforcement.
-No curated source entries are supplied specifically for this subject yet.
-Inspect suitable sources before assigning a sustained course; follow
-[the source-use guide](../references/source-use.md).
+- **Build:** Start with actors, alternatives, information, and a dated decision. A
+  plausible motive does not distinguish competing explanations.
+- **Research:** Pair a theory chapter with dated diplomatic records and scholarly case
+  analysis. Check which observations distinguish the competing explanations.
+- **Show and check:** A decision tree shows available choices. An evidence table
+  compares predictions. A dated map or timeline establishes constraints.
+
+### Public policy and administration
+
+- **Build:** Start with a policy goal and the steps from adoption to delivery. Passing a
+  rule does not establish implementation or effects.
+- **Research:** Inspect the policy text, implementation records, and evaluation methods.
+  Separate legal adoption, delivery, take-up, and measured effects.
+- **Show and check:** A process diagram follows responsibilities. A comparison table
+  checks outcomes. A model varies a stated implementation assumption.
+
+### Political behavior
+
+- **Build:** Start with a behavior, its measure, and who was sampled. Survey answers,
+  turnout, and population preferences need different evidence.
+- **Research:** Inspect the questionnaire or administrative definition and dataset
+  methodology. Check field dates, weights, nonresponse, and population coverage.
+- **Show and check:** A questionnaire excerpt exposes measurement. A distribution plot
+  shows variation. A sampling simulation explains uncertainty. Compare groups before
+  generalizing.
+
+### Research methods
+
+- **Build:** Start with a descriptive or causal question and a possible comparison.
+  Controlling for more variables does not automatically remove bias.
+- **Research:** Use a research-methods chapter and the original study or replication.
+  Inspect measurement, selection, and the assumptions needed for the claim.
+- **Show and check:** A study-design diagram shows selection. A data table grounds the
+  comparison. A simulated confound tests inference. Sourced estimates show uncertainty.
+
+## Source use
+
+Use [the source-use guide](../references/source-use.md). Catalog entries are
+leads; inspect the relevant section before using it. Match the source to the
+subfield and question. Start with an accessible explanation, then inspect the
+technical argument or evidence needed for the agreed depth. Record the section,
+its job, and any access limit in the course research notes.

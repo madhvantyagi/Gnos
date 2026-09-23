@@ -1,101 +1,84 @@
-# Economics depth and visual patterns
+# Economics: mechanisms, graphs, and evidence
 
-Read this reference when an economics lesson needs deeper branch guidance,
-source selection, a substantial example, or an advanced diagram or animation.
-The concise route remains in [the subject guide](../subjects/economics.md).
+Start with the [subject guide](../subjects/economics.md). Use this reference
+when a lesson needs to connect a model to a graph, work through a policy
+comparison, or interpret data. Choose tools through
+[lesson design](../../lesson-design/references/representation-choices.md).
 
-## Branch guidance
+## Develop a choice before drawing its curve
 
-**Microeconomics.** Name the agent, feasible alternatives, objective or
-preference, constraints, and margin. Start with a numerical table. A price
-change causes movement along a fixed demand curve unless another condition
-changes the relationship.
+Give the decision maker a few feasible alternatives and a constraint. Work
+through their consequences before introducing the general rule. To distinguish
+sunk cost from opportunity cost, compare a nonrefundable ticket with a resalable
+ticket. Explain which consequence changes when the choice changes.
 
-**Macroeconomics.** Label stocks, flows, accounting identities, behavioral
-assumptions, equilibrium conditions, and empirical claims separately. Ask
-whether a value is nominal or real, aggregate or per person, adjusted how, and
-measured over which dates.
+For a new quantitative relation, calculate a few values and map each to its
+point on the graph. Label axes, units, and held-constant conditions. Show a
+movement along a fixed curve separately from a shift caused by a changed
+condition. Keep the original curve visible and explain why the new intersection
+answers the economic question. An interactive graph can test another condition;
+its output remains conditional on the model.
 
-**Econometrics.** Start with whose outcome, which treatment, which comparison,
-and which time window. Then inspect selection, confounding, interference,
-measurement, missingness, and the identification assumption. A regression
-coefficient needs units and a comparison group before policy interpretation.
+## Explain adjustment over time
 
-**Game theory.** Put players, timing, information, actions, and payoffs in the
-same model. Solve best responses before naming equilibrium. Change information
-or commitment and test whether the equilibrium changes.
+Start from a stock at a date and the flows that change it over a period.
+Write one update, work one period, and then extend the sequence. Keep accounting
+identities separate from assumptions about behavior. For debt, inventories,
+or population, connect the stock-flow diagram to the time series using the
+same units and time step.
 
-**Labor, public, and development.** Ask who receives the benefit, pays the
-cost, or has bargaining power. Separate statutory assignment from incidence,
-and efficiency from the stated distributional criterion.
+Use narrated motion to explain a lag or feedback loop. Use a simulation to
+compare a rule, initial state, or response parameter. Explain an unstable or
+unexpected result from the update rule. Do not call a smooth model path a
+forecast without evidence about its assumptions and fit.
 
-**Behavioral economics.** Use a meaningful baseline, then distinguish changes
-in preference, belief, attention, framing, learning, and implementation. Check
-population, incentives, treatment, replication, and external validity.
+## Make strategic dependence visible
 
-**Economic history.** Put model mechanisms beside dated evidence about law,
-organizations, technology, labor, and distribution. A counterfactual model does
-not establish what historical actors knew or which institutions existed.
+For simultaneous choices, use a payoff table and explain one player's best
+response while holding the other player's choice fixed. Then reverse the
+perspective. This gives equilibrium a reason before giving it a name.
 
-## Teaching patterns
+For sequential choices, use a tree with timing and information marked. Keep
+unknown information distinct from an unavailable action. Change commitment,
+information, or a payoff and recompute the choices. Use motion when the order
+of decisions is the difficulty; use a still when comparison needs time.
 
-Compare a nonrefundable ticket with a resalable ticket to separate sunk cost
-from opportunity cost. Compare a randomized offer with an observational wage
-gap to expose the identification assumption. In a policy example, show total
-surplus or output alongside incidence and distribution rather than collapsing
-them into one “better” result.
+## Explain what an estimate can establish
 
-## Pinepaper patterns
+Name the outcome, population, treatment or exposure, comparison group, and time
+window. Compare a randomized offer with an observational wage difference.
+Explain which alternative causes the design addresses and which remain.
+Translate a coefficient into units and a concrete comparison before discussing
+statistical uncertainty or policy meaning.
 
-Read [the Pinepaper workflow](pinepaper.md) before using the MCP tools.
+Use data plots for observed patterns, a study diagram for selection, and a
+simulation for a stated confounding mechanism. Label causal arrows as
+assumptions. A moving arrow cannot establish causation. Inspect the original
+study's methods, data definitions, missingness, and identification argument;
+a title or abstract is not enough.
 
-### Curves and comparative statics
+## Keep distribution and physical quantities visible
 
-Begin with a table and a labeled static graph. Animate either movement along a
-fixed curve or a shift of the whole relationship, never both without explicit
-labels. Preserve the original curve faintly, mark the changed condition, and
-show the old and new equilibrium values with units.
+In a policy comparison, show the total and the groups who gain or pay. Explain
+the welfare criterion before calling one outcome better. Transfers should
+balance when the model says they do; statutory responsibility may differ from
+economic incidence.
 
-### Dynamic adjustment and feedback
+For environmental or resource questions, connect physical stocks and flows to
+the economic decision. Keep physical units distinct from prices. For finance,
+connect each discounted amount to its dated cash flow. Graphs and equations
+belong in these lessons whenever they explain the mechanism, even when the
+course is not labeled mathematics.
 
-For inflation, inventories, expectations, debt, growth, or cobweb dynamics,
-show the stock-flow structure, update rule, time step, and lag. Animate one
-period at a time and place the time series beside the mechanism. A simulated
-path is conditional on the assumed equations and parameters.
+## Research the model and the observation separately
 
-### Games and strategic interaction
+`openstax-economics` and `core-economy` are introductory catalog leads. Inspect
+the relevant section before adopting its assumptions. For real series, inspect
+the provider's definitions, units, frequency, coverage, adjustments, and
+revisions; FRED, BLS, and BEA are possible routes for US data. For a causal
+claim, inspect the original study. For an institutional or historical claim,
+use dated records and the relevant scholarship.
 
-Use a game tree for sequence and information, a payoff matrix for simultaneous
-choice, and a network only when relationships among many actors matter. Let the
-learner choose an action or information change, then update best responses and
-payoffs from the same model.
-
-### Causal and policy diagrams
-
-Keep causal assumptions, observed variables, selection, and policy
-implementation stages distinct. Animate the proposed mechanism as a hypothesis,
-then place the empirical comparison or missing evidence beside it. Do not use
-motion to imply causation that the research design does not identify.
-
-### Distribution
-
-When an aggregate changes, keep totals and group outcomes visible together.
-Flows between groups should balance when they represent transfers. Label whose
-welfare criterion is being applied.
-
-## Sources and handoffs
-
-`openstax-economics` and `core-economy` are introductory starting points. For US
-data, inspect the exact FRED, BLS, or BEA series, including units, frequency,
-seasonal adjustment, coverage, revisions, and dates. For causal or theoretical
-claims, inspect the paper's methods and data rather than relying on the title or
-abstract alone.
-
-Nadia leads incentives, equilibrium, identification, evidence, and the
-positive/normative boundary. Ben supports algebra, calculus, probability, or
-uncertainty; Theo supports data and simulation; history owns chronology and
-source context. Carry the economic quantity, comparison, units, and unresolved
-assumption through the handoff.
-
-Use Pinepaper for interactive models or animated vector explanation, Manim for
-a narrated rendered lesson, and a PDF for a reusable model-and-evidence sheet.
+Use Nadia's voice throughout. A mathematical bridge should return to the same
+economic quantity and question. A historical bridge should preserve source
+limits instead of supplying an imagined motive.

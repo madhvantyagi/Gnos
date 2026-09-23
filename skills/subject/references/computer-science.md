@@ -4,6 +4,10 @@ Read this reference when a CS lesson needs prerequisite diagnosis, a sustained
 example, source selection, or a substantial diagram or animation. The concise
 route remains in [the subject guide](../subjects/computer-science.md).
 
+Use the guide's 'Ways to show the idea' section first, then apply
+`skills/lesson-design/references/representation-choices.md`. This reference
+defines CS content and visual grammar; it does not order media by itself.
+
 ## Prerequisite checks
 
 - Programming: values versus names, mutation, control flow, and input
@@ -56,9 +60,11 @@ not establish generalization.
 sink. Mark the exact validation, encoding, parameterization, or authorization
 step. Change the sink and retest whether the defense still applies.
 
-## Pinepaper patterns
+## Visual patterns
 
-Read [the Pinepaper workflow](pinepaper.md) before calling the MCP tools.
+Use these patterns with the producer selected by lesson design. A static
+diagram, narrated sequence, or interactive trace can develop the same CS
+relation in different ways. Read the producer's workflow before using it.
 
 ### Algorithm state
 

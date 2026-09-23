@@ -9,7 +9,7 @@ import tempfile
 import unittest
 
 ROOT=Path(__file__).resolve().parents[1]
-SCRIPTS=ROOT/'skills/manim-voice-animation-skill/scripts'
+SCRIPTS=ROOT/'skills/manim-voice-animation/scripts'
 sys.path.insert(0,str(SCRIPTS))
 import render_pipeline as pipeline
 

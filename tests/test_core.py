@@ -8,11 +8,94 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-STATE = ROOT / 'skills/understanding-user-learning/scripts/learner_state.py'
+STATE = ROOT / 'skills/learner-tracking/scripts/learner_state.py'
 COURSE = ROOT / 'skills/course-design/scripts/validate_course.py'
 
 
 class LearnerTests(unittest.TestCase):
+    def test_memory_curriculum_uses_subtopics_when_outcome_is_absent(self):
+        from tests.test_course_contract_v2 import valid_v2_course
+
+        plan = valid_v2_course()
+        topic = plan["chapters"][0]["topics"][0]
+        topic.pop("outcome", None)
+        topic["subtopics"] = ["Slope from nearby points", "Slope at one point"]
+        sys.path.insert(0, str(ROOT / "skills/learner-tracking/scripts"))
+        import memory_views
+
+        rendered = memory_views.curriculum({"status": "active"}, [], plan)
+
+        self.assertIn(
+            "Outcome: Study Slope as local change, including Slope from nearby points, Slope at one point.",
+            rendered,
+        )
+
+        topic["outcome"] = "Predict local change."
+        legacy_rendered = memory_views.curriculum({"status": "active"}, [], plan)
+        self.assertIn("Outcome: Predict local change.", legacy_rendered)
+
+    def test_teacher_neutral_accounting_course_loads_without_persona(self):
+        from tests.test_course_contract_v2 import valid_v2_course
+
+        course = valid_v2_course()
+        topic = course["chapters"][0]["topics"][0]
+        topic.update({
+            "subject": "accounting",
+            "teacher": None,
+            "skill_routes": [
+                "skills/subject/SKILL.md",
+                "skills/subject/subjects/accounting.md",
+            ],
+        })
+        course_path = self.root / "accounting-course.json"
+        course_path.write_text(json.dumps(course))
+        loader = ROOT / "skills/learning-orchestrator/scripts/assemble_context.py"
+        result = subprocess.run([
+            sys.executable, str(loader), "--subject", "accounting", "--mode", "course",
+            "--course", str(course_path), "--learners-root", str(self.root),
+        ], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("skills/subject/subjects/accounting.md", result.stdout)
+        self.assertNotIn("teachers/accounting/SOUL.md", result.stdout)
+        direct = subprocess.run([
+            sys.executable, str(loader), "--subject", "accounting", "--manifest",
+        ], capture_output=True, text=True)
+        self.assertEqual(direct.returncode, 0, direct.stderr)
+        self.assertNotIn("teachers/accounting/SOUL.md", direct.stdout)
+
+    def test_teacher_neutral_accounting_course_renders_curriculum(self):
+        from tests.test_course_contract_v2 import valid_v2_course
+
+        course = valid_v2_course()
+        topic = course["chapters"][0]["topics"][0]
+        topic.update({
+            "subject": "accounting",
+            "teacher": None,
+            "skill_routes": [
+                "skills/subject/SKILL.md",
+                "skills/subject/subjects/accounting.md",
+            ],
+        })
+        course_path = self.root / "accounting-course.json"
+        course_path.write_text(json.dumps(course))
+        enrolled = self.call("enroll", "alex", "--course", str(course_path))
+        self.assertEqual(enrolled.returncode, 0, enrolled.stderr)
+        curriculum = self.root / "alex/memory/courses/gradient-descent/CURRICULUM.md"
+        self.assertIn("Lead teacher: No assigned teacher", curriculum.read_text())
+
+    def test_harness_reports_subject_and_teacher_counts_separately(self):
+        harness = ROOT / "skills/learning-orchestrator/scripts/validate_harness.py"
+        result = subprocess.run([sys.executable, str(harness)], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("12 subjects, 6 teachers", result.stdout)
+
+    def test_harness_validates_version_two_examples_and_composed_lessons(self):
+        harness = ROOT / "skills/learning-orchestrator/scripts/validate_harness.py"
+        result = subprocess.run([sys.executable, str(harness)], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("version-2 courses", result.stdout)
+        self.assertIn("composed lessons", result.stdout)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
@@ -35,6 +118,144 @@ class LearnerTests(unittest.TestCase):
         result = self.call('summary', learner)
         self.assertEqual(result.returncode, 0, result.stderr)
         return json.loads(result.stdout)
+
+    def state(self, learner='alex'):
+        return json.loads((self.root / learner / 'state.json').read_text())
+
+    def enroll(self, learner='alex', plan=None):
+        plan = plan or CourseTests().course()
+        path = self.root / 'course.json'
+        path.write_text(json.dumps(plan))
+        result = self.call('enroll', learner, '--course', str(path))
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_enrollment_stores_canonical_reference_not_embedded_plan(self):
+        self.enroll()
+        entry = self.state()['courses']['test-course']
+        self.assertNotIn('plan', entry)
+        self.assertEqual(entry['plan_ref'], 'courses/test-course/course.json')
+        self.assertEqual(len(entry['plan_fingerprint']), 64)
+
+    def test_legacy_embedded_plan_migrates_once_without_losing_events(self):
+        plan = CourseTests().course()
+        legacy_event = dict(id='first', date='2026-01-01', course_id='motion',
+                            covered=['math.derivative'], attempts=[],
+                            interpretation='', next_step='Try a new slope problem.')
+        legacy = dict(schema_version=1, learner_id='alex', profile={},
+                      courses={'test-course': dict(plan=plan, status='active',
+                                                   completion_history=[])},
+                      events=[legacy_event])
+        folder = self.root / 'alex'
+        folder.mkdir()
+        (folder / 'state.json').write_text(json.dumps(legacy))
+
+        first = self.call('migrate-courses', 'alex')
+        self.assertEqual(first.returncode, 0, first.stderr)
+        migrated = self.state()
+        self.assertEqual(migrated['events'], [legacy_event])
+        self.assertTrue((self.root / 'alex/courses/test-course/course.json').exists())
+        self.assertNotIn('plan', migrated['courses']['test-course'])
+
+        second = self.call('migrate-courses', 'alex')
+        self.assertEqual(second.returncode, 0, second.stderr)
+        self.assertEqual(self.state(), migrated)
+
+    def test_stale_canonical_plan_reference_is_rejected(self):
+        self.enroll()
+        canonical = self.root / 'alex/courses/test-course/course.json'
+        changed = json.loads(canonical.read_text())
+        changed['title'] = 'Changed title'
+        canonical.write_text(json.dumps(changed))
+        result = self.call('summary', 'alex')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('Stale course plan reference', result.stderr)
+
+    def test_stale_plan_blocks_record_profile_and_retract_without_state_write(self):
+        self.enroll()
+        self.assertEqual(self.call('record', 'alex', '--event', self.event()).returncode, 0)
+        canonical = self.root / 'alex/courses/test-course/course.json'
+        changed = json.loads(canonical.read_text())
+        changed['title'] = 'Changed title'
+        canonical.write_text(json.dumps(changed))
+        before = (self.root / 'alex/state.json').read_bytes()
+
+        profile = self.root / 'profile.json'
+        profile.write_text(json.dumps({'goals': ['Repair stale state']}))
+        commands = [
+            ('record', 'alex', '--event', self.event(id='second')),
+            ('profile', 'alex', '--file', str(profile)),
+            ('retract', 'alex', '--event-id', 'first'),
+        ]
+        for command in commands:
+            result = self.call(*command)
+            self.assertNotEqual(result.returncode, 0, command[0])
+            self.assertIn('Stale course plan reference', result.stderr)
+            self.assertEqual((self.root / 'alex/state.json').read_bytes(), before, command[0])
+
+    def test_stale_later_course_leaves_all_memory_views_unchanged(self):
+        first = CourseTests().course()
+        second = CourseTests().course()
+        second['id'] = 'second-course'
+        self.enroll(plan=first)
+        self.enroll(plan=second)
+        state_path = self.root / 'alex/state.json'
+        sys.path.insert(0, str(ROOT / 'skills/learner-tracking/scripts'))
+        import learner_state
+        changed_state = self.state()
+        changed_state['profile'] = {'goals': ['Would change first view']}
+        summary = learner_state.summarize(changed_state, learners_root=self.root, learner_id='alex')
+        memory_files = sorted((self.root / 'alex/memory').rglob('*'))
+        before = {path: path.read_bytes() for path in memory_files if path.is_file()}
+
+        canonical = self.root / 'alex/courses/second-course/course.json'
+        changed = json.loads(canonical.read_text())
+        changed['title'] = 'Stale second course'
+        canonical.write_text(json.dumps(changed))
+
+        import memory_views
+        with self.assertRaisesRegex(ValueError, 'Stale course plan reference'):
+            memory_views.write_views(state_path, changed_state, summary)
+        after = {path: path.read_bytes() for path in before}
+        self.assertEqual(after, before)
+
+    def test_malformed_legacy_completion_history_is_rejected_without_migration(self):
+        plan = CourseTests().course()
+        legacy = dict(schema_version=1, learner_id='alex', profile={},
+                      courses={'test-course': dict(plan=plan, status='active',
+                                                   completion_history='not-a-list')},
+                      events=[])
+        folder = self.root / 'alex'
+        folder.mkdir()
+        state_path = folder / 'state.json'
+        state_path.write_text(json.dumps(legacy))
+        before = state_path.read_bytes()
+
+        result = self.call('migrate-courses', 'alex')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('completion_history must be a list', result.stderr)
+        self.assertEqual(state_path.read_bytes(), before)
+        self.assertFalse((self.root / 'alex/courses/test-course').exists())
+
+    def test_v2_curriculum_renders_chapters_and_topics(self):
+        from tests.test_course_workspace import valid_v2_course
+        self.enroll(plan=valid_v2_course())
+        curriculum = self.root / 'alex/memory/courses/gradient-descent/CURRICULUM.md'
+        rendered = curriculum.read_text()
+        self.assertIn('Chapter 1: Local change', rendered)
+        self.assertIn('Topic 1: Slope as local change', rendered)
+        self.assertNotIn("['modules']", rendered)
+
+    def test_revision_enrollment_preserves_completed_history(self):
+        self.enroll()
+        self.assertEqual(self.call('complete-course', 'alex', '--course-id', 'test-course').returncode, 0)
+        revised = CourseTests().course()
+        revised['revision'] = 2
+        revised['title'] = 'Motion, revised'
+        self.enroll(plan=revised)
+        entry = self.state()['courses']['test-course']
+        self.assertEqual(entry['status'], 'active')
+        self.assertEqual(entry['completion_history'][0]['revision'], 1)
+        self.assertNotIn('completed_at', entry)
 
     def test_exposure_is_not_demonstrated_and_retry_does_not_duplicate(self):
         event = self.event()
@@ -67,6 +288,28 @@ class LearnerTests(unittest.TestCase):
         result = self.call('record','alex','--event',self.event(id='bad',date='2099-01-01'))
         self.assertNotEqual(result.returncode,0)
         self.assertEqual((self.root/'alex/state.json').read_bytes(),before)
+
+    def test_portal_evidence_record_requires_enrolled_canonical_course(self):
+        self.enroll()
+        sys.path.insert(0, str(ROOT / 'skills/learner-tracking/scripts'))
+        import learner_state
+        event = dict(id='portal-attempt-fixed', date='2026-01-01', course_id='test-course',
+                     covered=['math.derivative'],
+                     attempts=[dict(concept='math.derivative', task='Find slope',
+                                    response='1', result='correct', help='none',
+                                    kind='application')],
+                     interpretation='The learner applied the slope rule.',
+                     next_step='Apply it to a new example.')
+        self.assertTrue(learner_state.record_event(self.root, 'alex', event).startswith('Saved '))
+
+        canonical = self.root / 'alex/courses/test-course/course.json'
+        changed = json.loads(canonical.read_text())
+        changed['title'] = 'Changed canonical plan'
+        canonical.write_text(json.dumps(changed))
+        before = (self.root / 'alex/state.json').read_bytes()
+        with self.assertRaisesRegex(ValueError, 'Stale course plan reference'):
+            learner_state.record_event(self.root, 'alex', dict(event, id='portal-attempt-next'))
+        self.assertEqual((self.root / 'alex/state.json').read_bytes(), before)
 
     def test_isolation_path_validation_and_retraction(self):
         self.assertEqual(self.call('record','alex','--event',self.event()).returncode,0)
@@ -113,13 +356,144 @@ class LearnerTests(unittest.TestCase):
         self.assertEqual(self.call('enroll','alex','--course',str(path)).returncode,0)
         self.call('record','alex','--event',self.event(course_id='test-course',next_step='Resume slope here'))
         self.call('record','alex','--event',self.event(id='other',date='2026-01-02',course_id='history',next_step='Read a diary'))
-        loader=ROOT/'skills/learning/scripts/assemble_context.py'
-        result=subprocess.run([sys.executable,str(loader),'--subject','math','--learner','alex',
+        loader=ROOT/'skills/learning-orchestrator/scripts/assemble_context.py'
+        result=subprocess.run([sys.executable,str(loader),'--subject','math','--mode','course','--learner','alex',
                                '--learners-root',str(self.root),'--course-id','test-course'],capture_output=True,text=True)
         self.assertEqual(result.returncode,0,result.stderr)
         self.assertIn('Resume slope here',result.stdout)
         self.assertIn('Predict motion',result.stdout)
         self.assertNotIn('Read a diary',result.stdout)
+
+    def test_course_mode_loads_adaptive_guidance_and_current_topic_routes(self):
+        from tests.test_course_contract_v2 import valid_v2_course
+
+        course_path = self.root / 'course.json'
+        course_path.write_text(json.dumps(valid_v2_course()))
+        loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
+        result = subprocess.run([
+            sys.executable, str(loader), '--subject', 'math', '--mode', 'course',
+            '--course', str(course_path), '--learners-root', str(self.root),
+        ], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('skills/learner-tracking/references/adaptive-lifecycle.md', result.stdout)
+        self.assertNotIn('skills/course-design/references/lesson-contract.md', result.stdout)
+        self.assertNotIn('--- INSTRUCTIONS: skills/lesson-design/references/representation-choices.md ---', result.stdout)
+        self.assertNotIn('--- INSTRUCTIONS: skills/course-viewer/SKILL.md ---', result.stdout)
+        self.assertIn('skills/subject/subjects/math.md', result.stdout)
+        self.assertIn('teachers/math/SOUL.md', result.stdout)
+        self.assertIn('--- COURSE DATA:', result.stdout)
+
+    def test_lesson_mode_with_course_loads_lesson_design(self):
+        from tests.test_course_contract_v2 import valid_v2_course
+
+        course_path = self.root / 'course.json'
+        course_path.write_text(json.dumps(valid_v2_course()))
+        loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
+        result = subprocess.run([
+            sys.executable, str(loader), '--subject', 'math',
+            '--course', str(course_path), '--learners-root', str(self.root),
+        ], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('skills/lesson-design/SKILL.md', result.stdout)
+        self.assertIn('skills/lesson-design/references/lesson-contract.md', result.stdout)
+        self.assertIn('skills/lesson-design/references/lesson-design.md', result.stdout)
+        self.assertIn('--- INSTRUCTIONS: skills/lesson-design/references/representation-choices.md ---', result.stdout)
+        self.assertNotIn('--- INSTRUCTIONS: skills/course-viewer/SKILL.md ---', result.stdout)
+        self.assertIn('--- COURSE DATA:', result.stdout)
+
+    def test_viewer_mode_loads_viewer_after_course_selection(self):
+        from tests.test_course_contract_v2 import valid_v2_course
+
+        course_path = self.root / 'course.json'
+        course_path.write_text(json.dumps(valid_v2_course()))
+        loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
+        result = subprocess.run([
+            sys.executable, str(loader), '--subject', 'math', '--mode', 'viewer',
+            '--course', str(course_path), '--learners-root', str(self.root),
+        ], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('--- INSTRUCTIONS: skills/course-viewer/SKILL.md ---', result.stdout)
+        self.assertNotIn('--- INSTRUCTIONS: skills/lesson-design/references/representation-choices.md ---', result.stdout)
+        self.assertIn('--- COURSE DATA:', result.stdout)
+
+    def test_viewer_mode_requires_a_course(self):
+        loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
+        result = subprocess.run([
+            sys.executable, str(loader), '--subject', 'math', '--mode', 'viewer',
+            '--learners-root', str(self.root),
+        ], capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('course', result.stderr)
+
+    def test_enrolled_lesson_context_includes_lesson_authoring_guidance(self):
+        from tests.test_course_contract_v2 import valid_v2_course
+        course = valid_v2_course()
+        course_path = self.root / 'course.json'
+        course_path.write_text(json.dumps(course))
+        loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
+        result = subprocess.run([
+            sys.executable, str(loader), '--subject', 'math', '--mode', 'lesson',
+            '--course', str(course_path), '--learners-root', str(self.root),
+        ], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn((ROOT / 'skills/lesson-design/references/lesson-design.md').read_text(), result.stdout)
+
+    def test_course_mode_rejects_subject_mismatch(self):
+        from tests.test_course_contract_v2 import valid_v2_course
+
+        course_path = self.root / 'course.json'
+        course_path.write_text(json.dumps(valid_v2_course()))
+        loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
+        result = subprocess.run([
+            sys.executable, str(loader), '--subject', 'physics', '--mode', 'course',
+            '--course', str(course_path), '--learners-root', str(self.root),
+        ], capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('does not match the current course topic', result.stderr)
+
+    def test_local_doubt_manifest_does_not_load_course_design(self):
+        loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
+        result = subprocess.run([
+            sys.executable, str(loader), '--subject', 'math', '--manifest',
+        ], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotIn('skills/course-design/SKILL.md', result.stdout)
+        self.assertNotIn('skills/course-design/references/', result.stdout)
+
+    def test_image_and_diagram_context_load_without_a_local_image_skill(self):
+        loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
+        for media in ('image', 'diagram'):
+            with self.subTest(media=media):
+                command = [sys.executable, str(loader), '--subject', 'math',
+                           '--media', media, '--learners-root', str(self.root)]
+                result = subprocess.run(command, capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn((ROOT / 'skills/subject/SKILL.md').read_text(), result.stdout)
+                manifest = subprocess.run(command + ['--manifest'], capture_output=True, text=True)
+                self.assertEqual(manifest.returncode, 0, manifest.stderr)
+                for path in manifest.stdout.splitlines():
+                    self.assertTrue((ROOT / path).is_file(), path)
+
+
+    def test_diagram_tool_context_loads_the_selected_lesson_workflow(self):
+        loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
+        for media in ('excalidraw', 'pinepaper'):
+            with self.subTest(media=media):
+                command = [sys.executable, str(loader), '--subject', 'math',
+                           '--media', media, '--learners-root', str(self.root)]
+                workflow = f'skills/lesson-design/references/{media}.md'
+                result = subprocess.run(command, capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn(f'--- INSTRUCTIONS: {workflow} ---', result.stdout)
+                self.assertIn((ROOT / workflow).read_text(), result.stdout)
+                manifest = subprocess.run(command + ['--manifest'], capture_output=True, text=True)
+                self.assertEqual(manifest.returncode, 0, manifest.stderr)
+                paths = manifest.stdout.splitlines()
+                self.assertIn(workflow, paths)
+                other = 'pinepaper' if media == 'excalidraw' else 'excalidraw'
+                self.assertNotIn(f'skills/lesson-design/references/{other}.md', paths)
+                for path in paths:
+                    self.assertTrue((ROOT / path).is_file(), path)
 
 
 class CourseTests(unittest.TestCase):

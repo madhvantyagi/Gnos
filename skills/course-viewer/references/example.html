@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>course-viewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Oxanium:wght@200..800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  if (window.renderMathInElement) {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: "$$", right: "$$", display: true},
+        {left: "\\[", right: "\\]", display: true},
+        {left: "\\(", right: "\\)", display: false},
+        {left: "$", right: "$", display: false}
+      ],
+      throwOnError: false
+    });
+  }
+});
+</script>
+<style>
+:root{
+  --paper:#F6F4EE;
+  --paper-deep:#E3DED3;
+  --card:#F2EFE7;
+  --code-bg:#E1DBCE;
+  --row-selected:#E0DFDC;
+  --ink:#111318;
+  --ink-soft:#3F434B;
+  --ink-muted:#5B5850;
+  --ink-faint:#8B867A;
+  --navy:#1A2332;
+  --divider:#C9C3B8;
+  --divider-strong:#B7AFA0;
+  --teal:#155E63;
+  --teal-deep:#0E4A4E;
+  --ochre:#8A6D3B;
+  --plum:#5E2B4D;
+  --plum-soft:#6B2F4A;
+  --done:#2F6B4F;
+  --locked:#A09A8A;
+  --warn:#96590A;
+  --title-font:"Oxanium","Montserrat",sans-serif;
+  --body-font:"Source Serif 4",Georgia,"Times New Roman","STIX Two Text",serif;
+  --mono-font:"IBM Plex Mono",ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+*,*::before,*::after{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--body-font);
+  font-size:15px;
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:#F2E3C2;color:var(--ink);}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:2px;}
+a{color:var(--teal);text-decoration:none;}
+a:hover{color:var(--teal-deep);text-decoration:underline;}
+pre,code{font-family:var(--mono-font);}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+
+/* ---- topbar ---- */
+.topbar{
+  background:var(--paper);
+  border-bottom:1px solid var(--divider);
+  position:sticky;top:0;z-index:20;overflow:hidden;
+}
+.topbar-inner{
+  max-width:1500px;margin:0 auto;padding:4px 28px;
+  display:grid;grid-template-columns:320px minmax(0,1fr);align-items:center;
+  gap:clamp(28px,5vw,72px);
+}
+.gnos-logo{
+  display:block;width:320px;height:107px;overflow:hidden;flex:none;
+  line-height:0;text-decoration:none;
+}
+.gnos-logo img{width:320px;height:107px;display:block;object-fit:contain;}
+.gnos-logo:hover{text-decoration:none;filter:brightness(1.04);}
+.top-tabs{
+  width:auto;max-width:100%;min-width:0;justify-self:end;align-self:center;margin-bottom:0;
+  overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--divider-strong) transparent;
+}
+.top-tabs::-webkit-scrollbar{height:4px;}
+.top-tabs::-webkit-scrollbar-track{background:transparent;}
+.top-tabs::-webkit-scrollbar-thumb{background:var(--divider-strong);border-radius:999px;}
+.top-tabs ul{list-style:none;margin:0;padding:0;display:flex;justify-content:flex-start;gap:clamp(22px,3vw,48px);width:max-content;}
+.top-tabs button{
+  appearance:none;background:none;border:0;cursor:pointer;
+  font-family:var(--mono-font);font-size:16px;font-weight:400;color:var(--teal);
+  padding:10px 2px 12px;letter-spacing:.01em;border-bottom:2px solid transparent;
+}
+.top-tabs button:hover{color:var(--teal-deep);}
+.top-tabs button.active{color:var(--ink);font-weight:700;border-bottom-color:var(--teal);}
+.all-courses{
+  display:none;font-family:var(--body-font);font-size:18px;color:var(--teal);
+  text-decoration:none;white-space:nowrap;
+}
+.all-courses:hover{color:var(--teal-deep);text-decoration:underline;}
+
+/* ---- page shell ---- */
+.page{max-width:1560px;margin:0 auto;padding:0 28px 90px;}
+.hero{
+  display:block;padding:64px 0 54px;
+}
+.hero.hero-display{padding-top:64px;}
+.hero-title-row{display:flex;align-items:flex-start;gap:20px;min-width:0;}
+.hero-title-row.is-display{height:auto;}
+.hero-title{
+  margin:0;font-family:var(--title-font);
+  font-size:clamp(64px,8.5vw,118px);
+  font-weight:700;letter-spacing:-.03em;line-height:.95;color:#090A0E;
+  font-style:normal;text-rendering:geometricPrecision;
+  overflow-wrap:anywhere;
+  -webkit-font-smoothing:antialiased;
+}
+.hero-title-display{
+  font-size:clamp(72px,6.25vw,150px);
+  letter-spacing:-.045em;line-height:.88;overflow-wrap:normal;
+}
+.hero-rev{
+  flex:none;margin-top:22px;padding-left:18px;border-left:2px solid var(--divider-strong);
+  font-size:15px;color:var(--ink-muted);white-space:nowrap;
+}
+.hero-subtitle{
+  margin:24px 0 0;font-size:18px;line-height:1.6;color:var(--ink);
+}
+.hero-meta{
+  margin:52px 0 0;padding:24px 0 0;border-left:0;border-top:1px solid var(--divider);
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px;align-content:start;
+}
+.meta-row{display:grid;gap:4px;}
+.hero-meta dt{
+  font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ochre);
+}
+.hero-meta dd{margin:0;font-size:14px;line-height:1.5;color:var(--ink);}
+.hero-meta a{color:var(--teal);}
+
+/* ---- overview layout ---- */
+.overview-layout{
+  display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);
+  gap:48px;align-items:start;margin-top:8px;
+}
+.curriculum-title,.td-heading{
+  margin:0 0 20px;font-size:23px;font-weight:700;line-height:1.2;color:var(--navy);
+}
+.curr-chapter{margin:0 0 30px;}
+.curr-chapter-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:0 0 4px;}
+.curr-kicker{
+  font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ochre);
+  white-space:nowrap;
+}
+.curr-chapter-title{font-size:16px;font-weight:700;color:var(--navy);}
+.curr-topics{border-bottom:1px solid var(--divider);}
+.curr-row{
+  display:grid;grid-template-columns:48px minmax(0,1fr) auto 28px;
+  align-items:baseline;gap:12px;width:100%;
+  padding:13px 10px;border:0;border-top:1px solid var(--divider);
+  background:none;cursor:pointer;text-align:left;font:inherit;color:var(--navy);
+}
+.curr-row:hover{background:#EFEAD9;}
+.curr-row:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;}
+.curr-num{font-size:13px;color:#6E6A5E;}
+.curr-name{font-size:14px;font-weight:400;overflow-wrap:anywhere;}
+.curr-state{font-size:13px;font-weight:500;white-space:nowrap;}
+.curr-state.disp-current{color:var(--navy);}
+.curr-state.disp-planned{color:var(--plum-soft);}
+.curr-chev{font-size:20px;line-height:1;text-align:right;color:var(--navy);}
+.curr-row.is-selected{
+  background-color:var(--row-selected);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.58'/%3E%3C/svg%3E"),linear-gradient(135deg,rgba(255,255,255,.34) 0%,rgba(255,255,255,0) 42%,rgba(17,19,24,.10) 75%,rgba(17,19,24,.22) 100%);
+  background-size:180px 180px,cover;
+  background-blend-mode:overlay,normal;
+  border-top-color:#BFB8AA;
+  border-bottom:1px solid #BFB8AA;
+  box-shadow:inset 0 1px rgba(255,255,255,.24),inset 0 -1px rgba(17,19,24,.06);
+}
+.curr-row.is-selected:hover{background-color:#DDDCD9;}
+.curr-row.is-selected .curr-name{color:var(--plum);font-weight:500;}
+.curr-row.is-dimmed{opacity:.6;}
+
+/* ---- topic details ---- */
+.topic-details{
+  border-left:1px solid var(--divider);
+  padding:2px 0 12px 32px;
+  position:sticky;top:84px;min-width:0;
+}
+.td-eyebrow{
+  margin:16px 0 0;font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.14em;color:var(--ochre);
+}
+.td-title{margin:8px 0 0;font-size:23px;font-weight:700;line-height:1.3;color:var(--plum);}
+.td-fields{margin:22px 0 0;}
+.td-field{margin:0 0 20px;}
+.td-label{margin:0 0 4px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--ochre);}
+.td-value{margin:0;font-size:14px;line-height:1.65;color:var(--ink);}
+.td-value.td-state{color:var(--plum-soft);font-weight:500;}
+.td-sources a{color:var(--teal);}
+
+/* ---- tabs / lessons / shared (restyled, hooks unchanged) ---- */
+.tab{display:none;}
+.tab.active{display:block;}
+h2.sec{
+  font-size:12px;font-weight:700;color:var(--ink-muted);
+  text-transform:uppercase;letter-spacing:.1em;
+  margin:40px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--divider);
+}
+.curriculum h2.sec:first-child{margin-top:0;}
+.page-title{font-family:var(--title-font);font-size:clamp(40px,5vw,72px);font-weight:700;line-height:.95;margin:0;letter-spacing:-.01em;}
+.page-goal{color:var(--ink);margin:12px 0 0;}
+.page-vision{color:var(--plum);margin:6px 0 0;font-size:14px;}
+.page-meta{margin-top:14px;font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.08em;border-top:1px solid var(--divider);padding-top:12px;}
+table{width:100%;border-collapse:collapse;font-size:13px;background:var(--card);border:1px solid var(--divider);}
+th{text-align:left;font-size:11px;color:var(--ochre);text-transform:uppercase;letter-spacing:.07em;padding:8px 12px;border-bottom:1px solid var(--divider-strong);background:var(--paper);}
+td{padding:10px 12px;border-bottom:1px solid var(--divider);vertical-align:top;}
+tr:hover td{background:#EFEAD9;}
+tr.current-row td{background:var(--row-selected);}
+.badge{display:inline-block;padding:1px 9px;font-size:11px;border:1px solid;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+.badge.current{color:var(--navy);border-color:var(--navy);}
+.badge.done{color:var(--done);border-color:var(--done);}
+.badge.planned,.badge.provisional{color:var(--plum-soft);border-color:var(--divider-strong);}
+.badge.retired,.badge.out-of-scope{color:var(--locked);border-color:var(--divider);text-decoration:line-through;}
+.lesson{margin:0 0 56px;scroll-margin-top:84px;border-top:1px solid var(--divider);padding-top:24px;}
+.lesson h3{font-size:22px;font-weight:700;line-height:1.3;margin:0;color:var(--navy);}
+.lesson .purpose{color:var(--ink-muted);margin-top:4px;}
+.lesson .meta{margin-top:10px;font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.07em;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 8px;}
+.chip{
+  font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+  border:1px solid var(--divider-strong);border-radius:999px;padding:2px 10px;
+  color:var(--ink-muted);display:inline-flex;align-items:center;gap:6px;background:var(--card);
+}
+.chip .status{width:6px;height:6px;border-radius:50%;background:var(--locked);}
+.chip.ready{color:var(--ink);border-color:var(--ink);}
+.chip.ready .status{background:var(--teal);}
+.chip.manim{color:var(--ink-muted);}
+.chip.manim.ready{border-color:var(--plum);color:var(--plum);}
+.chip.manim.ready .status{background:var(--plum);}
+.curr-chips-hidden{display:none;}
+.block{margin:24px 0;}
+.block .block-label{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;border-bottom:1px solid var(--divider);padding-bottom:4px;}
+.block p{margin:8px 0;font-size:16px;}
+.block .block-caption{font-size:13px;color:var(--ink-muted);margin:12px 0 0;}
+.block ul{margin:8px 0;padding-left:22px;}
+.block li{margin:5px 0;font-size:16px;}
+.block pre{box-sizing:border-box;width:min(100%,960px);margin:12px 0 16px;padding:16px 18px;background:var(--code-bg);border:1px solid var(--divider-strong);border-left:3px solid var(--teal);border-radius:6px;color:var(--ink);font-size:13px;line-height:1.65;tab-size:2;overflow-x:auto;white-space:pre;word-break:normal;overflow-wrap:normal;}
+.math{font-family:Georgia,'Times New Roman','STIX Two Text',serif;color:var(--ink);line-height:1.55;word-break:break-word;}
+.math-display{display:block;text-align:center;font-size:1.2em;padding:16px 14px;margin:12px 0;background:var(--card);border:1px solid var(--divider);border-radius:6px;overflow-x:auto;max-width:960px;}
+.math-empty{display:none;}
+.media{border:1px solid var(--divider-strong);border-radius:8px;overflow:hidden;background:var(--card);margin:10px 0;}
+.media.simulation-media{width:100%;margin:24px 0;}
+.media video,.media img{width:100%;display:block;height:auto;}
+.media iframe{width:100%;height:480px;border:0;background:#fff;display:block;}
+.media iframe.simulation-frame{height:clamp(480px,62.5vw,var(--simulation-max-height,800px));}
+.media .media-body{padding:12px 16px;border-top:1px solid var(--divider);background:var(--card);}
+.media .media-title{font-size:13px;font-weight:700;}
+.media .media-purpose{font-size:13px;color:var(--ink-muted);margin-top:2px;}
+.media .media-meta{font-size:12px;color:var(--ink-faint);margin-top:2px;}
+.media .missing{color:var(--warn);font-weight:700;}
+.card{border:1px solid var(--divider);border-left:3px solid var(--navy);border-radius:4px;padding:14px 16px;margin:10px 0;background:var(--card);}
+.card.exercise{border-left:1px solid var(--divider);}
+.lesson .block .card{box-sizing:border-box;max-width:800px;}
+.lesson .block .card.exercise{max-width:none;}
+.card .card-title{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.08em;}
+.card .prompt{margin:6px 0;font-size:14px;}
+.card .meta{font-size:12px;color:var(--ink-faint);margin-top:4px;}
+.card ul{margin:6px 0;padding-left:20px;font-size:14px;}
+.exercise-form{margin-top:10px;display:grid;gap:8px;}
+.exercise-label{display:grid;gap:6px;font-size:13px;color:var(--ink-muted);}
+.exercise-form input[type="text"],.exercise-form input[type="number"],.exercise-form textarea{width:100%;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1px solid var(--divider-strong);border-radius:6px;padding:8px 10px;}
+.exercise-form textarea{min-height:88px;resize:vertical;}
+.exercise-options{display:grid;gap:6px;margin:8px 0;}
+.exercise-options label{display:flex;gap:8px;align-items:baseline;font-size:14px;background:#fff;border:1px solid var(--divider);border-radius:6px;padding:8px 10px;cursor:pointer;}
+.exercise-actions button{appearance:none;border:1px solid var(--teal);background:var(--teal);color:#fff;font:inherit;font-size:13px;font-weight:600;border-radius:999px;padding:6px 16px;cursor:pointer;}
+.exercise-actions button:hover{background:var(--teal-deep);}
+.exercise-status{font-size:12px;color:var(--done);margin-top:6px;min-height:1.2em;}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;}
+.item{border:1px solid var(--divider);border-radius:6px;padding:14px;background:var(--card);display:flex;flex-direction:column;gap:6px;}
+.item .kind{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;}
+.item .t{font-size:14px;font-weight:700;}
+.item .p{font-size:13px;color:var(--ink-muted);flex:1;}
+.lesson-nav{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--divider);padding-top:14px;margin-top:8px;font-size:14px;font-weight:500;}
+.lesson-nav span{color:var(--ink-faint);font-size:12px;}
+.lesson-nav a[data-disabled="1"]{color:var(--locked);pointer-events:none;}
+.lesson-list{display:flex;flex-direction:column;gap:2px;margin-top:16px;}
+.lesson-list button{display:flex;gap:10px;align-items:baseline;width:100%;border:0;background:none;cursor:pointer;text-align:left;font:inherit;font-size:13px;color:var(--ink-muted);padding:7px 10px;border-radius:6px;}
+.lesson-list button:hover{background:#EFEAD9;}
+.lesson-list button.current{background:var(--row-selected);color:var(--ink);font-weight:700;}
+.lesson-list button.locked{color:var(--locked);cursor:default;}
+.lesson-list .num{font-size:11px;color:var(--ink-faint);min-width:24px;}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;}
+.dot.done{background:var(--done);}
+.dot.current{background:var(--teal);}
+.dot.locked{background:var(--locked);}
+.footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--divider);font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.07em;}
+
+@media (min-width:1101px) and (max-width:1300px){
+  .hero-rev{display:none;}
+}
+@media (max-width:1100px){
+  .topbar-inner{grid-template-columns:1fr auto;padding:10px 16px;gap:12px;}
+  .gnos-logo{width:220px;height:74px;}
+  .gnos-logo img{width:220px;height:74px;}
+  .top-tabs{grid-column:1 / -1;grid-row:2;width:100%;justify-self:stretch;align-self:auto;margin-bottom:0;overflow-x:auto;transform:none;}
+  .top-tabs ul{justify-content:flex-start;gap:22px;}
+  .top-tabs button{font-size:14px;padding:8px 2px 10px;white-space:nowrap;border-bottom-width:2px;}
+  .all-courses{font-size:13px;}
+  .page{padding:0 16px 60px;}
+  .hero,.hero.hero-display{grid-template-columns:1fr;gap:24px;padding:28px 0 24px;}
+  .hero-title-row.is-display{height:auto;}
+  .hero-title{font-size:clamp(48px,14vw,92px);line-height:.9;letter-spacing:-.04em;transform:none;}
+  .hero-title-display{font-size:clamp(48px,6.5vw,86px);line-height:.86;letter-spacing:-.05em;}
+  .hero-rev{margin-top:12px;}
+  .hero-subtitle{margin-top:14px;font-size:15px;}
+  .hero-meta{grid-template-columns:1fr;border-left:0;border-top:1px solid var(--divider);margin-top:26px;padding:20px 0 0;}
+  .overview-layout{grid-template-columns:1fr;gap:28px;}
+  .topic-details{border-left:0;border-top:1px solid var(--divider);padding:20px 0 0;position:static;}
+  .curr-row{grid-template-columns:36px minmax(0,1fr) auto 24px;gap:8px;}
+  .media iframe{height:300px;}
+  .media iframe.simulation-frame{height:min(var(--simulation-max-height,800px),max(760px,150vw));}
+  table{display:block;overflow-x:auto;}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto !important;transition:none !important;}
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+<!--VIEWER_BODY_START-->
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="gnos-logo" href="#" aria-label="GNOS home"><img src="gnos-logo.png" alt="GNOS" width="320" height="107"></a>
+    <nav class="top-tabs" aria-label="course sections">
+      <ul id="tabs" role="tablist">
+        <li><button data-tab="overview" class="active" role="tab" aria-selected="true">Overview</button></li>
+        <li><button data-tab="lessons" role="tab" aria-selected="false">Lessons</button></li>
+        <li><button data-tab="exercises" role="tab" aria-selected="false">Exercises</button></li>
+        <li><button data-tab="sources" role="tab" aria-selected="false">Sources</button></li>
+        <li><button data-tab="artifacts" role="tab" aria-selected="false">Artifacts</button></li>
+      </ul>
+    </nav>
+    <a class="all-courses" href="#">All courses &#8594;</a>
+  </div>
+</header>
+
+<section class="tab active" id="tab-overview">
+  <section class="hero hero-display" aria-labelledby="course-title">
+    <div class="hero-main">
+      <div class="hero-title-row is-display">
+        <h1 id="course-title" class="hero-title hero-title-display">Probability</h1>
+        <span class="hero-rev">Rev. 1</span>
+      </div>
+      <p class="hero-subtitle">For prediction, algorithms, and quantitative finance.</p>
+    </div>
+    <dl class="hero-meta">
+      <div class="meta-row"><dt>Field</dt><dd>Mathematics / Statistics</dd></div>
+      <div class="meta-row"><dt>Level</dt><dd>Undergraduate &#8594; Advanced</dd></div>
+      <div class="meta-row"><dt>Resources</dt><dd><a href="#">MIT 18.05</a> &middot; <a href="#">Harvard Stat 110</a></dd></div>
+    </dl>
+  </section>
+
+  <div class="overview-layout">
+    <section class="curriculum" aria-label="Curriculum">
+      <h2 class="curriculum-title">Curriculum</h2>
+      <section class="curr-chapter" data-chapter-id="model">
+        <h3 class="curr-chapter-head"><span class="curr-kicker">Chapter 01</span><span class="curr-chapter-title">Probability as a model</span></h3>
+        <div class="curr-topics">
+          <button type="button" class="curr-row" data-topic-id="outcomes" aria-label="01 Outcomes, events, and probability models — Current">
+            <span class="curr-num">01</span><span class="curr-name">Outcomes, events, and probability models</span><span class="curr-state disp-current">Current</span><span class="curr-chev">&#8250;</span>
+          </button>
+          <button type="button" class="curr-row is-selected" data-topic-id="bayes" aria-current="true" aria-label="02 Conditioning, independence, and Bayes — Planned">
+            <span class="curr-num">02</span><span class="curr-name">Conditioning, independence, and Bayes</span><span class="curr-state disp-planned">Planned</span><span class="curr-chev">&#8250;</span>
+          </button>
+          <button type="button" class="curr-row" data-topic-id="rvexp" aria-label="03 Random variables and expected value — Planned">
+            <span class="curr-num">03</span><span class="curr-name">Random variables and expected value</span><span class="curr-state disp-planned">Planned</span><span class="curr-chev">&#8250;</span>
+          </button>
+          <button type="button" class="curr-row" data-topic-id="joint" aria-label="04 Joint distributions, covariance, and total expectation — Planned">
+            <span class="curr-num">04</span><span class="curr-name">Joint distributions, covariance, and total expectation</span><span class="curr-state disp-planned">Planned</span><span class="curr-chev">&#8250;</span>
+          </button>
+        </div>
+      </section>
+      <section class="curr-chapter" data-chapter-id="prediction">
+        <h3 class="curr-chapter-head"><span class="curr-kicker">Chapter 02</span><span class="curr-chapter-title">Prediction from information and data</span></h3>
+        <div class="curr-topics">
+          <button type="button" class="curr-row" data-topic-id="likelihood" aria-label="05 Likelihood, priors, and posterior prediction — Planned">
+            <span class="curr-num">05</span><span class="curr-name">Likelihood, priors, and posterior prediction</span><span class="curr-state disp-planned">Planned</span><span class="curr-chev">&#8250;</span>
+          </button>
+          <button type="button" class="curr-row" data-topic-id="loss" aria-label="06 Expected loss, thresholds, and calibration — Planned">
+            <span class="curr-num">06</span><span class="curr-name">Expected loss, thresholds, and calibration</span><span class="curr-state disp-planned">Planned</span><span class="curr-chev">&#8250;</span>
+          </button>
+        </div>
+      </section>
+      <div class="lesson-list" id="lesson-list" aria-label="lessons" style="display:none">
+        <button data-lesson="0" class="current"><span class="num">01</span><span class="dot current"></span>Outcomes, events, and probability models</button>
+      </div>
+    </section>
+
+    <aside class="topic-details" id="topic-details" aria-label="Topic details" aria-live="polite">
+      <h2 class="td-heading">Topic details</h2>
+      <p class="td-eyebrow" data-td="eyebrow">Chapter 01 &middot; Topic 02</p>
+      <h3 class="td-title" data-td="title">Conditioning, independence, and Bayes</h3>
+      <dl class="td-fields">
+        <div class="td-field"><dt class="td-label">Subtopics</dt><dd class="td-value" data-td="subtopics">Conditional probability · Independence · Bayes' rule</dd></div>
+        <div class="td-field"><dt class="td-label">State</dt><dd class="td-value td-state" data-td="state">Planned</dd></div>
+        <div class="td-field"><dt class="td-label">Formats</dt><dd class="td-value" data-td="formats">Diagram &middot; Exercise</dd></div>
+        <div class="td-field"><dt class="td-label">Evidence</dt><dd class="td-value" data-td="evidence">Not started</dd></div>
+        <div class="td-field"><dt class="td-label">Sources</dt><dd class="td-value td-sources" data-td="sources"><a href="#">MIT 18.05</a> / <a href="#">Harvard Stat 110</a></dd></div>
+      </dl>
+    </aside>
+  </div>
+</section>
+
+<section class="tab" id="tab-lessons">
+  <h2 class="sec">Lessons</h2>
+  <p>No ready lessons yet. Publish a lesson, then render again.</p>
+</section>
+
+<section class="tab" id="tab-exercises">
+  <h2 class="sec">Exercises</h2>
+  <p>No exercises yet.</p>
+</section>
+
+<section class="tab" id="tab-sources">
+  <h2 class="sec">Sources</h2>
+  <table><tr><th>id</th><th>title</th><th>sections</th><th>checked</th></tr></table>
+</section>
+
+<section class="tab" id="tab-artifacts">
+  <h2 class="sec">Watch</h2>
+  <p>No ready artifacts yet.</p>
+</section>
+
+<div class="footer">rendered by course-viewer &middot; private evaluation criteria never appear here</div>
+
+<!--VIEWER_BODY_END-->
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var tabs = Array.prototype.slice.call(document.querySelectorAll("#tabs button"));
+  var sections = {};
+  tabs.forEach(function (button) {
+    sections[button.getAttribute("data-tab")] = document.getElementById("tab-" + button.getAttribute("data-tab"));
+  });
+  function activate(name) {
+    tabs.forEach(function (button) {
+      var on = button.getAttribute("data-tab") === name;
+      button.classList.toggle("active", on);
+      button.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    Object.keys(sections).forEach(function (key) {
+      if (sections[key]) sections[key].classList.toggle("active", key === name);
+    });
+  }
+  tabs.forEach(function (button) {
+    button.addEventListener("click", function () { activate(button.getAttribute("data-tab")); });
+  });
+
+  // Curriculum rows -> topic details panel
+  var panel = document.getElementById("topic-details");
+  var rows = Array.prototype.slice.call(document.querySelectorAll(".curr-row"));
+  function selectRow(row, focusPanel) {
+    if (!row) return;
+    rows.forEach(function (r) {
+      var on = r === row;
+      r.classList.toggle("is-selected", on);
+      if (on) r.setAttribute("aria-current", "true");
+      else r.removeAttribute("aria-current");
+    });
+    if (!panel) return;
+    var d = row.dataset || {};
+    function set(name, val) {
+      var el = panel.querySelector('[data-td="' + name + '"]');
+      if (el && val) el.textContent = val;
+    }
+    if (d.eyebrow) set("eyebrow", d.eyebrow);
+    if (d.title) set("title", d.title);
+    if (d.subtopics) set("subtopics", d.subtopics);
+    if (d.state) set("state", d.state);
+    if (d.formats) set("formats", d.formats);
+    if (d.evidence) set("evidence", d.evidence);
+    var srcEl = panel.querySelector('[data-td="sources"]');
+    if (srcEl && d.sourcesHtml) srcEl.innerHTML = d.sourcesHtml;
+    else if (d.sourcesText) set("sources", d.sourcesText);
+  }
+  rows.forEach(function (row) {
+    row.addEventListener("click", function () { selectRow(row, false); });
+    row.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectRow(row, false); }
+    });
+  });
+
+  // Lessons pager (kept for compatibility with rendered lessons)
+  var lessons = Array.prototype.slice.call(document.querySelectorAll(".lesson"));
+  var lessonButtons = Array.prototype.slice.call(document.querySelectorAll("#lesson-list button"));
+  var current = 0;
+  var startButton = document.querySelector("#lesson-list button.current");
+  if (startButton) {
+    current = Number(startButton.getAttribute("data-lesson")) || 0;
+  }
+  function goLesson(index) {
+    if (!lessons.length) return;
+    index = Math.max(0, Math.min(lessons.length - 1, Number(index) || 0));
+    current = index;
+    activate("lessons");
+    if (lessons[current]) lessons[current].scrollIntoView({ behavior: "smooth", block: "start" });
+    lessonButtons.forEach(function (button, i) {
+      button.classList.toggle("current", i === current);
+    });
+    updateNav();
+  }
+  function updateNav() {
+    var prev = document.getElementById("prev-link");
+    var next = document.getElementById("next-link");
+    if (prev) prev.setAttribute("data-disabled", current === 0 ? "1" : "0");
+    if (next) next.setAttribute("data-disabled", lessons.length && current === lessons.length - 1 ? "1" : "0");
+  }
+  lessonButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+      if (button.classList.contains("locked")) return;
+      goLesson(Number(button.getAttribute("data-lesson")));
+    });
+  });
+  var prevLink = document.getElementById("prev-link");
+  var nextLink = document.getElementById("next-link");
+  if (prevLink) prevLink.addEventListener("click", function (e) { e.preventDefault(); if (current > 0) goLesson(current - 1); });
+  if (nextLink) nextLink.addEventListener("click", function (e) { e.preventDefault(); if (current < lessons.length - 1) goLesson(current + 1); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+    if (!lessons.length) return;
+    goLesson(current + (e.key === "ArrowRight" ? 1 : -1));
+  });
+  document.addEventListener("click", function (e) {
+    var link = e.target.closest ? e.target.closest("a.goto") : null;
+    if (link) { e.preventDefault(); goLesson(Number(link.getAttribute("data-index"))); }
+  });
+  updateNav();
+
+  // Exercises: capture answers locally, persist to localStorage, never grade.
+  (function initExercises() {
+    if (document.documentElement.getAttribute("data-gnos-exercises") === "1") return;
+    document.documentElement.setAttribute("data-gnos-exercises", "1");
+    function storageKey(courseId, exerciseId) {
+      if (courseId) return "gnos:exercise:" + courseId + ":" + exerciseId;
+      return "gnos:exercise:" + exerciseId;
+    }
+    function getAnswer(form) {
+      var checked = form.querySelector('input[type="radio"][name="answer"]:checked');
+      if (checked) return checked.value;
+      var field = form.querySelector('textarea[name="answer"], input[name="answer"]');
+      if (field) return field.value;
+      return "";
+    }
+    function setAnswer(card, answer) {
+      var form = card.querySelector(".exercise-form");
+      if (!form) return;
+      var radios = form.querySelectorAll('input[type="radio"][name="answer"]');
+      if (radios && radios.length) {
+        Array.prototype.forEach.call(radios, function (r) { r.checked = (r.value === answer); });
+        return;
+      }
+      var field = form.querySelector('textarea[name="answer"], input[name="answer"]');
+      if (field) field.value = answer;
+    }
+    function setStatus(card, message) {
+      var el = card.querySelector(".exercise-status");
+      if (el) el.textContent = message;
+    }
+    function restoreCard(card) {
+      var exId = card.getAttribute("data-exercise-id") || "";
+      if (!exId) return;
+      var courseId = card.getAttribute("data-course-id") || "";
+      var raw = null;
+      try { raw = window.localStorage.getItem(storageKey(courseId, exId)); } catch (e) { raw = null; }
+      if (raw === null || raw === undefined || raw === "") return;
+      var answer = "";
+      try {
+        var parsed = JSON.parse(raw);
+        if (parsed && typeof parsed.answer === "string") answer = parsed.answer;
+        else if (typeof parsed === "string") answer = parsed;
+        else return;
+      } catch (e) { answer = raw; }
+      if (!answer) return;
+      setAnswer(card, answer);
+      setStatus(card, "Saved \u2713 Your answer was recorded locally. You can change it and save again.");
+    }
+    function syncCards(courseId, exId, answer, sourceCard) {
+      Array.prototype.forEach.call(document.querySelectorAll(".card.exercise"), function (card) {
+        if (card === sourceCard) return;
+        if ((card.getAttribute("data-exercise-id") || "") !== exId) return;
+        if ((card.getAttribute("data-course-id") || "") !== courseId) return;
+        setAnswer(card, answer);
+        setStatus(card, "Saved \u2713 Your answer was recorded locally. You can change it and save again.");
+      });
+    }
+    Array.prototype.forEach.call(document.querySelectorAll(".card.exercise"), restoreCard);
+    document.addEventListener("submit", function (e) {
+      var form = e.target;
+      if (!form || !form.classList || !form.classList.contains("exercise-form")) return;
+      e.preventDefault();
+      var card = form.closest ? form.closest(".card.exercise") : null;
+      if (!card) return;
+      var exId = card.getAttribute("data-exercise-id") || "";
+      var courseId = card.getAttribute("data-course-id") || "";
+      var answer = getAnswer(form);
+      var isChoice = !!form.querySelector('input[type="radio"][name="answer"]');
+      if (typeof answer === "string" && !isChoice) answer = answer.trim();
+      if (!answer) {
+        setStatus(card, "Please enter or choose an answer before saving.");
+        return;
+      }
+      try {
+        window.localStorage.setItem(storageKey(courseId, exId), JSON.stringify({ answer: answer, savedAt: new Date().toISOString() }));
+      } catch (err) { /* storage unavailable; still show recorded state */ }
+      setStatus(card, "Saved \u2713 Your answer was recorded locally. You can change it and save again.");
+      syncCards(courseId, exId, answer, card);
+    });
+  })();
+});
+</script>
+</body>
+</html>

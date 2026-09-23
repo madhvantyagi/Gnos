@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GNOS — how it flows</title>
+<style>
+:root{
+  --bg:#ffffff; --ink:#111113; --soft:#55565c; --faint:#8a8b90;
+  --side:#f7f7f8; --border:#e4e4e7; --strong:#d4d4d8;
+  --accent:#4f6df5; --accent-soft:#eef1fe;
+  --done:#2f9e63; --warn:#b45309; --code:#f6f6f7;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,"SF Pro Text",Inter,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:15px;line-height:1.65;}
+a{color:var(--accent);text-decoration:none;}
+a:hover{text-decoration:underline;}
+code,pre{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;}
+.top{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--border);}
+.top .wrap{max-width:960px;margin:0 auto;padding:12px 24px;display:flex;gap:20px;align-items:center;flex-wrap:wrap;}
+.top b{font-size:15px;}
+.top nav{display:flex;gap:16px;font-size:14px;}
+.wrap{max-width:960px;margin:0 auto;padding:40px 24px 120px;}
+h1{font-size:28px;margin:0 0 6px;}
+.sub{color:var(--soft);margin:0 0 8px;}
+h2{font-size:13px;font-weight:600;color:var(--soft);text-transform:uppercase;letter-spacing:.08em;
+  margin:56px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+p{margin:8px 0;max-width:70ch;}
+.step{border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:0;background:var(--bg);}
+.step .n{display:inline-block;min-width:30px;height:30px;line-height:28px;text-align:center;
+  border:1px solid var(--accent);color:var(--accent);border-radius:50%;font-weight:600;margin-right:10px;}
+.step h3{margin:0 0 4px;font-size:16px;display:inline;}
+.step p{margin:6px 0 0;color:var(--soft);font-size:14px;}
+.arrow{text-align:center;color:var(--faint);font-size:20px;line-height:1.4;}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0;}
+th{text-align:left;font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;
+  padding:8px 12px;border-bottom:1px solid var(--border);}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
+tr:hover td{background:var(--side);}
+pre{background:var(--code);border:1px solid var(--border);border-radius:8px;padding:14px 16px;
+  font-size:13px;overflow-x:auto;white-space:pre-wrap;word-break:break-word;}
+.key{font-size:14px;}
+.key td:first-child{white-space:nowrap;}
+.pill{display:inline-block;font-size:11px;border:1px solid var(--strong);border-radius:999px;
+  padding:1px 10px;color:var(--soft);text-transform:uppercase;letter-spacing:.05em;}
+.pill.in{color:var(--accent);border-color:var(--accent);}
+.pill.out{color:var(--done);border-color:var(--done);}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:12px 16px;
+  border-radius:0 8px 8px 0;font-size:14px;margin:16px 0;}
+.warn{border-left-color:var(--warn);background:#fef6ea;}
+.foot{margin-top:56px;padding-top:16px;border-top:1px solid var(--border);
+  font-size:12px;color:var(--faint);text-align:center;}
+@media (max-width:640px){.wrap{padding:24px 16px 80px;}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="wrap">
+    <b>GNOS flow</b>
+    <nav>
+      <a href="#flow">flow</a>
+      <a href="#skills">skills</a>
+      <a href="#scripts">scripts</a>
+      <a href="#lines">key lines</a>
+      <a href="#example">example</a>
+    </nav>
+  </div>
+</div>
+
+<div class="wrap">
+
+<h1>How GNOS flows</h1>
+<p class="sub">One page. Simple words. Read top to bottom in five minutes.</p>
+
+<p>GNOS is a teaching plugin. A learner asks something. The machine reads
+the request, makes a plan, saves the learner's progress, teaches, adapts,
+and shows a web page. Files hold the plan. Small scripts check the files,
+save them safely, and build the page.</p>
+
+<h2 id="flow">The flow, step by step</h2>
+
+<div class="step"><span class="n">1</span><h3>Ask</h3>
+<p>The learner writes anything. "Why divide by x here?" or "Teach me probability for finance over six weeks."</p></div>
+<div class="arrow">↓</div>
+<div class="step"><span class="n">2</span><h3>Route</h3>
+<p>The orchestrator skill reads the request and picks: short answer, one lesson, or a full course. Small doubt? Answer now, no files. Big goal? Build a course.</p></div>
+<div class="arrow">↓</div>
+<div class="step"><span class="n">3</span><h3>Research</h3>
+<p>For a course, the machine searches books and course sites. It writes down what it opened: definitions, order of topics, exercise ideas. Output: <code>course-research.json</code>.</p></div>
+<div class="arrow">↓</div>
+<div class="step"><span class="n">4</span><h3>Plan</h3>
+<p>The machine writes <code>course.json</code>: title, goal, chapters, topics, sources, one current topic. Each topic lists its representations — which part needs animation, image, simulation, or text. A checker script validates the shape.</p></div>
+<div class="arrow">↓</div>
+<div class="step"><span class="n">5</span><h3>Enroll</h3>
+<p>Name known? Use it. Not known? Save as <code>learner</code> and say so in one line. The plan is copied into the learner's folder. No "learner ID" talk.</p></div>
+<div class="arrow">↓</div>
+<div class="step"><span class="n">6</span><h3>Ask to show</h3>
+<p>Same turn, the machine asks: "want to see the course now?" On yes, it renders the page and returns the link. A course turn never ends without rendering or asking.</p></div>
+<div class="arrow">↓</div>
+<div class="step"><span class="n">7</span><h3>Teach and track</h3>
+<p>Teaching happens in chat. Every try, repeat, and stuck point is saved in the learner record. 1 repeat = rephrase. 2 = add a step. 3 = split or swap the source.</p></div>
+<div class="arrow">↓</div>
+<div class="step"><span class="n">8</span><h3>Make media</h3>
+<p>Each topic part goes to its skill: motion → Manim video, structure → image model, interaction → small HTML simulation, handout → PDF. Every file is registered in the manifest.</p></div>
+<div class="arrow">↓</div>
+<div class="step"><span class="n">9</span><h3>Show</h3>
+<p>The viewer script rebuilds one static page: sidebar, lessons, videos, images, simulations, exercises, sources. Chips flip from planned to ready as files arrive.</p></div>
+
+<div class="note">Two files never mix: <code>course.json</code> holds the <b>route</b> (what is next). <code>state.json</code> holds the <b>evidence</b> (what was hard). The route changes only when the evidence says so.</div>
+
+<h2 id="skills">The 8 skills — who calls whom</h2>
+<table>
+<tr><th>skill</th><th>starts when</th><th>reads next</th></tr>
+<tr><td><b>learning-orchestrator</b></td><td>every turn starts here</td><td>subject, teacher, course-design, learner-tracking, course-viewer</td></tr>
+<tr><td><b>course-design</b></td><td>goal needs many sessions</td><td>course-research → course-contract → representation-choices → learner-tracking → course-viewer</td></tr>
+<tr><td><b>learner-tracking</b></td><td>record, resume, adapt</td><td>evidence rules, memory, adaptive lifecycle → tells course-design what to change</td></tr>
+<tr><td><b>subject</b></td><td>pick expertise</td><td>one subject file + teacher SOUL (soul = voice and judgment)</td></tr>
+<tr><td><b>manim-voice-animation</b></td><td>topic says <code>kind: manim</code></td><td>storyboard → scene → registers video in manifest</td></tr>
+<tr><td><b>Host image generation</b></td><td>topic says <code>kind: image</code></td><td>Use the host's existing image skill or tool → inspect the result → coordinator registers it in the manifest</td></tr>
+<tr><td><b>pdf</b></td><td>topic says <code>kind: pdf</code></td><td>builds handout → registers it in manifest</td></tr>
+<tr><td><b>course-viewer</b></td><td>plan created, enrolled, or changed</td><td>reads course.json + lessons + manifest → writes the page</td></tr>
+</table>
+
+<h2 id="scripts">The scripts — when they run, what goes in and out</h2>
+<table>
+<tr><th>script</th><th>runs when</th><th>in → out</th></tr>
+<tr><td><code>assemble_context.py</code></td><td>start of a turn</td><td><span class="pill in">request</span> → <span class="pill out">paths of files to read</span></td></tr>
+<tr><td><code>validate_course.py</code></td><td>after writing a plan</td><td><span class="pill in">course.json</span> → <span class="pill out">valid, or an error line</span></td></tr>
+<tr><td><code>learner_state.py</code></td><td>enroll, record, resume</td><td><span class="pill in">init / enroll / record / summary</span> → <span class="pill out">saved state.json</span></td></tr>
+<tr><td><code>course_workspace.py</code></td><td>enroll, publish lesson</td><td><span class="pill in">plan, lesson</span> → <span class="pill out">safe workspace folders</span></td></tr>
+<tr><td><code>manage_artifact.py</code></td><td>a file is finished</td><td><span class="pill in">artifact.json</span> → <span class="pill out">manifest entry, status ready</span></td></tr>
+<tr><td><code>portal_views.py</code></td><td>before showing</td><td><span class="pill in">plan + lessons + manifest</span> → <span class="pill out">public data only (no answers)</span></td></tr>
+<tr><td><code>render_viewer.py</code></td><td>show or re-show</td><td><span class="pill in">workspace</span> → <span class="pill out">portal/index.html</span></td></tr>
+<tr><td><code>validate_harness.py</code></td><td>after any repo change</td><td><span class="pill in">whole repo</span> → <span class="pill out">8 skills valid, or errors</span></td></tr>
+</table>
+
+<p>Example commands, copy and run:</p>
+<pre>python3 skills/course-design/scripts/validate_course.py course.json
+python3 skills/learner-tracking/scripts/learner_state.py enroll alex --course course.json
+python3 skills/course-viewer/scripts/render_viewer.py learners/alex/courses/motion
+cd learners/alex/courses/motion &amp;&amp; python3 -m http.server 8080   # open /portal/
+python3 skills/learning-orchestrator/scripts/validate_harness.py
+python3 -m unittest discover -s tests</pre>
+
+<h2 id="lines">Key lines — where the flow is controlled</h2>
+<table class="key">
+<tr><td><code>assemble_context.py:24</code></td><td>Every turn loads the orchestrator first. Nothing else is read before it.</td></tr>
+<tr><td><code>assemble_context.py:43–53</code></td><td>Course mode also loads contract, research, representation rules, viewer. This list is how the viewer stays in the flow.</td></tr>
+<tr><td><code>validate_harness.py:36–44</code></td><td>Fails the build if the "want to see the course now?" sentence is ever deleted. The ask cannot silently regress.</td></tr>
+<tr><td><code>course_contract.py:15</code></td><td>The 7 allowed representation kinds: text, manim, image, simulation, diagram, pdf, exercise.</td></tr>
+<tr><td><code>course_contract.py:137</code></td><td>Revision notes must rise (1, 2, 3…). History cannot be rewritten.</td></tr>
+<tr><td><code>course_contract.py:280</code></td><td>Feedback on a topic: did the source work, which way now, how many repeats.</td></tr>
+<tr><td><code>learner_state.py:413–426</code></td><td>The learner commands: init, summary, record, enroll, complete-course. Enroll copies the plan into the learner folder.</td></tr>
+<tr><td><code>course_workspace.py:228</code></td><td><code>create_workspace</code>: makes the learner course folder and its manifest on enroll.</td></tr>
+<tr><td><code>course_workspace.py:277</code></td><td><code>publish_lesson</code>: a lesson counts only when marked ready. Drafts never show.</td></tr>
+<tr><td><code>artifact_manifest.py:20</code></td><td>The 14 required fields of every file. Missing one = rejected.</td></tr>
+<tr><td><code>artifact_manifest.py:213</code></td><td><code>register_artifact</code>: a finished file enters the manifest. Only ready files appear on the page.</td></tr>
+<tr><td><code>portal_views.py:381</code></td><td><code>build_portal_view</code>: strips private answers before anything is shown. The page can never leak criteria.</td></tr>
+<tr><td><code>render_viewer.py:22–23</code></td><td>The design template and its markers. The script fills the body between them.</td></tr>
+<tr><td><code>render_viewer.py:370</code></td><td><code>render_body</code>: builds sidebar, tabs, lessons, chips, tables into one page.</td></tr>
+<tr><td><code>render_viewer.py:448</code></td><td><code>main</code>: workspace in, <code>portal/index.html</code> out.</td></tr>
+</table>
+
+<h2 id="example">Worked example — probability course</h2>
+<p>A learner asks for probability for finance over six weeks. Watch the files change:</p>
+<pre>1. research  →  course-research.json   (MIT 18.05 opened, chain order checked)
+2. plan      →  course.json            (title, goal, 5 chapters, current = probability-models)
+3. check     →  validate_course.py     ("Valid: ... (12 topics)")
+4. enroll    →  learners/learner/courses/probability-.../course.json
+5. ask       →  "want to see the course now?"  →  yes
+6. render    →  portal/index.html      (contents + sources + plan chips, zero lessons yet)
+7. teach     →  chat + state.json      (try saved, repeat counted)
+8. stuck x2  →  revision 2            ("added composition bridge after 2 repeats")
+9. manim     →  artifacts/videos/...   (registered ready → chip flips ready)
+10. re-render →  portal/index.html      (video inline in the lesson)</pre>
+
+<div class="note warn">If the page is missing, check in order: was the plan enrolled? (<code>learners/&lt;name&gt;/courses/&lt;id&gt;/course.json</code> must exist) — was it rendered? (<code>portal/index.html</code> must exist) — only then start the server. Never render from a blueprint <code>outputs/</code> file.</div>
+
+<div class="foot">GNOS flow · generated from the repo itself · line numbers match the current tree</div>
+
+</div>
+</body>
+</html>

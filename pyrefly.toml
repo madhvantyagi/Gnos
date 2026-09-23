@@ -1,0 +1,6 @@
+search-path = [
+    ".",
+    "skills/course-design/scripts",
+    "skills/learner-tracking/scripts",
+    "skills/learning-orchestrator/scripts"
+]

@@ -1,6 +1,6 @@
 ---
 name: pdf
-description: Create GNOS lesson handouts and course PDFs with embedded fonts, equations, images, exercises, and source credits; render and inspect before delivery.
+description: Turn lesson content into a PDF handout; render and check it before delivery.
 ---
 
 # Lesson PDFs
@@ -8,6 +8,11 @@ description: Create GNOS lesson handouts and course PDFs with embedded fonts, eq
 Build a document the learner can return to without the conversation. Keep the
 teaching sequence visible: question, explanation, worked example, changed case.
 Use headings to mark conceptual changes rather than decorating every paragraph.
+
+Run the commands below with the project's `.venv/bin/python` when that
+environment is present. Check that interpreter before treating a missing
+package in the system Python as a missing PDF capability. For a fresh
+environment, install `skills/pdf/requirements.txt` there.
 
 1. Select the lesson's outcome and audience. Read only the necessary teacher and
    subject context. Do not print internal learner records or hidden assessment
@@ -27,6 +32,24 @@ Use headings to mark conceptual changes rather than decorating every paragraph.
    source links; extraction alone cannot establish visual quality.
 5. Extract text with `pdftotext` or `pypdf` and check for omissions or missing
    glyphs. Deliver the PDF with its editable source. State any unverified layout.
+
+## Register the artifact
+
+The viewer page shows the topic's `pdf` chip as ready only after the
+PDF is registered. Copy it into the course workspace, then register:
+
+```bash
+cp output/lesson.pdf learners/<learner>/courses/<course-id>/artifacts/documents/<slug>.pdf
+python3 skills/course-design/scripts/manage_artifact.py --learners-root learners \
+  register <learner-id> <course-id> --file artifact.json
+```
+
+Use `type: document`, `mime_type: application/pdf`, the topic's
+`lesson_id`, and `status: ready`. Then re-render the page:
+
+```bash
+python3 skills/course-viewer/scripts/render_viewer.py learners/<learner>/courses/<course-id>
+```
 
 ## Typography and figures
 

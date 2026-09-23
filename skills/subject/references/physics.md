@@ -4,6 +4,10 @@ Read this reference when a physics lesson needs detailed prerequisite checks,
 examples, source selection, or a substantial diagram or animation. The concise
 route remains in [the subject guide](../subjects/physics.md).
 
+Use the guide's 'Ways to show the idea' section first, then apply
+`skills/lesson-design/references/representation-choices.md`. This reference
+defines physical content and visual grammar; it does not order media by itself.
+
 ## Prerequisite checks
 
 - Mechanics: vectors, graph slopes, units, reference frame, and which object
@@ -46,9 +50,11 @@ sign convention.
 **Measurement.** Fit a line, inspect residuals, and vary a plausible calibration
 offset. Separate random scatter from systematic bias.
 
-## Pinepaper patterns
+## Visual patterns
 
-Read [the Pinepaper workflow](pinepaper.md) before using the MCP tools.
+Use these patterns with the producer selected by lesson design. Choose a
+still for inspection, motion for change, or a simulation for a controlled
+comparison. Read the producer's workflow before using it.
 
 ### Mechanics and free-body diagrams
 

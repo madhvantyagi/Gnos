@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import sys
 
-from course_contract import validate_course
+from course_contract import course_topics, validate_course
 
 
 def main():
@@ -16,7 +16,7 @@ def main():
         data = validate_course(json.loads(args.course.read_text()))
     except (OSError, ValueError) as exc:
         parser.exit(1, f'Invalid course: {exc}\n')
-    print(f"Valid: {data['title']} ({len(data['modules'])} modules)")
+    print(f"Valid: {data['title']} ({len(course_topics(data))} topics)")
 
 
 if __name__ == '__main__':
