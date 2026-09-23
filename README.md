@@ -27,7 +27,7 @@ As you work, GNOS records what you tried, where your reasoning broke, and what y
 Just ask GNOS to show your course in the browser. It routes the request to the `course-viewer` skill, which renders the curriculum and current lesson as a study page. Open a topic to read its lesson, work through exercises, and follow its sources and learning materials.
 
 <p align="center">
-  <img src="assets/course-viewer.png" alt="GNOS course viewer showing a course curriculum and selected topic details" width="720" />
+  <img src="assets/course-viewer-rl-to-grpo.png" alt="GNOS course viewer showing the RL to GRPO curriculum and selected topic details" width="100%" />
 </p>
 
 <p align="center"><em>Browse the curriculum and open a topic to study it in the course viewer.</em></p>
@@ -35,18 +35,18 @@ Just ask GNOS to show your course in the browser. It routes the request to the `
 A true slideshow can't run inside a README, so here is the closest thing — click each frame to expand it:
 
 <details>
-<summary><strong>Frame 1 · Curriculum</strong> — chapters and topics with their states</summary>
+<summary><strong>Frame 1 · Simulation</strong> — run route policies on the building grid</summary>
 <br />
 <p align="center">
-  <img src="assets/course-viewer-curriculum.png" alt="Close-up of the course viewer curriculum list" width="420" />
+  <img src="assets/lesson-simulation.png" alt="Grid simulation where the learner runs courier route policies" width="680" />
 </p>
 </details>
 
 <details>
-<summary><strong>Frame 2 · Topic details</strong> — outcome, formats, evidence, and sources</summary>
+<summary><strong>Frame 2 · Lesson video</strong> — watch a narrated lesson block</summary>
 <br />
 <p align="center">
-  <img src="assets/course-viewer-topic.png" alt="Close-up of the course viewer topic details panel" width="300" />
+  <img src="assets/lesson-video.png" alt="Rendered lesson video on the Bellman equation" width="680" />
 </p>
 </details>
 
