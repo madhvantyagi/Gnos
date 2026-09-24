@@ -9,7 +9,7 @@
       "source": {
         "source": "url",
         "url": "https://github.com/madhvantyagi/Gnos.git",
-        "ref": "codex"
+        "ref": "main"
       },
       "policy": {
         "installation": "AVAILABLE",

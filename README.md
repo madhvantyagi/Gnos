@@ -65,22 +65,24 @@ Frontier models know a great deal, but a good answer is only one part of teachin
 
 ### Use GNOS as a plugin
 
-1. **Codex:** Install the [Codex plugin](.codex-plugin/plugin.json) from this repo's marketplace:
+1. **Codex:** Install GNOS from this repository:
 
    ```sh
-   codex plugin marketplace add madhvantyagi/Gnos --ref codex
+   codex plugin marketplace add madhvantyagi/Gnos --ref main
    codex plugin add gnos@gnos
    ```
 
-   Start a new Codex task and ask it to teach you a topic.
+   Start a new task: “Use the GNOS learning-orchestrator skill to teach me [topic].”
 
-2. **Claude Code:** From the cloned repository root, load the [Claude Code plugin](.claude-plugin/plugin.json) for the session:
+2. **Claude Code:** Clone the repository and load GNOS for the session:
 
    ```sh
+   git clone https://github.com/madhvantyagi/Gnos.git
+   cd Gnos
    claude --plugin-dir .
    ```
 
-   In Claude Code, invoke `/gnos:learning-orchestrator`, then tell it what you want to learn. See the [Claude Code plugin guide](https://code.claude.com/docs/en/plugins) for other installation options.
+   Run `/gnos:learning-orchestrator Teach me [topic]` in Claude Code.
 
 ### Use GNOS with another agent
 
