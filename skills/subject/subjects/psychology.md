@@ -8,8 +8,9 @@ response.
 ## Ways to show the idea
 
 Use experiment diagrams, timelines, and measured distributions. Use
-[Excalidraw](../../lesson-design/references/excalidraw.md) for study structure and
-[Manim](../../manim-voice-animation/SKILL.md) when stimulus order or timing
+[Excalidraw](../../excalidraw/SKILL.md) for fixed study structure,
+[Pinepaper](../../pinepaper/SKILL.md) when a stimulus, response, and graph must
+share a clock, and [Manim](../../manim-voice-animation/SKILL.md) when timing
 needs narration. Audio or images may be the stimulus itself. A simulation can
 show sampling, measurement error, or confounding under stated assumptions.
 Connect the displayed result to what was actually measured.
@@ -31,8 +32,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
 - **Research:** Use an academic chapter for the proposed mechanism and the original task
   protocol for the finding. Inspect timing, scoring, comparison, and replication
   evidence.
-- **Show and check:** A stimulus sequence shows timing. An experiment diagram shows
-  comparison. Response distributions show variation. Compare a changed delay or task.
+- **Show and check:** An Excalidraw experiment diagram shows the comparison.
+  Use Pinepaper when a stimulus sequence and response trace must share the
+  same measured timing. A distribution shows variation across people. Compare
+  a changed delay or task.
 
 ### Development
 
@@ -40,8 +43,9 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   period can produce different explanations.
 - **Research:** Inspect a developmental study with its sampling and follow-up design.
   Check age, cohort, attrition, and whether comparisons follow the same people.
-- **Show and check:** A timeline distinguishes study designs. Trajectories show repeated
-  observations. A cohort table makes comparisons explicit.
+- **Show and check:** A timeline distinguishes study designs. A cohort table
+  makes comparisons explicit. Use Pinepaper for linked trajectories only
+  when the same participants and time points are documented across views.
 
 ### Social and personality
 
@@ -79,9 +83,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   measure may lack validity. Association may reflect a confound.
 - **Research:** Use a methods text plus the study protocol and analysis. Inspect
   operational definitions, reliability, validity, uncertainty, and replication.
-- **Show and check:** A measurement table connects construct to observations. A causal
-  diagram exposes alternatives. A sampling simulation shows uncertainty. Inspect
-  replication evidence.
+- **Show and check:** A measurement table connects construct to observations.
+  An Excalidraw causal diagram exposes alternatives. Use Pinepaper if a
+  labeled sampling model must update the distribution and estimate together.
+  Inspect replication evidence separately.
 
 ## Source use
 

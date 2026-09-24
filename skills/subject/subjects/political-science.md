@@ -6,8 +6,8 @@ empirical claims. Explain competing positions fairly and weigh their evidence.
 
 ## Ways to show the idea
 
-Use [Excalidraw](../../lesson-design/references/excalidraw.md) for authority and implementation
-chains, and [Pinepaper](../../lesson-design/references/pinepaper.md) for linked institutions or
+Use [Excalidraw](../../excalidraw/SKILL.md) for authority and implementation
+chains, and [Pinepaper](../../pinepaper/SKILL.md) for linked institutions or
 coalitions. Use tables for election rules and graphs for political data.
 A simulation can test seat allocation under a changed rule; it cannot establish
 how voters would respond. Use narrated motion for an important sequence while
@@ -41,8 +41,9 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   do not establish how power works in practice.
 - **Research:** Use constitutional or institutional records and comparative research.
   Check jurisdiction, period, case selection, and evidence about actual practice.
-- **Show and check:** An institutional diagram shows authority. A case table compares
-  mechanisms. Records test practice. Explain what case selection leaves uncertain.
+- **Show and check:** An Excalidraw diagram shows formal authority. A case
+  table compares practice. Use Pinepaper only when a documented rule change
+  must update several linked institutions. Records test what actually happened.
 
 ### International relations
 
@@ -59,8 +60,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   rule does not establish implementation or effects.
 - **Research:** Inspect the policy text, implementation records, and evaluation methods.
   Separate legal adoption, delivery, take-up, and measured effects.
-- **Show and check:** A process diagram follows responsibilities. A comparison table
-  checks outcomes. A model varies a stated implementation assumption.
+- **Show and check:** An Excalidraw process diagram follows responsibilities.
+  A comparison table checks outcomes. Use Pinepaper when varying a stated
+  delivery assumption must update the linked stages and modeled result.
+  Keep that result separate from measured effects.
 
 ### Political behavior
 
@@ -68,9 +71,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   turnout, and population preferences need different evidence.
 - **Research:** Inspect the questionnaire or administrative definition and dataset
   methodology. Check field dates, weights, nonresponse, and population coverage.
-- **Show and check:** A questionnaire excerpt exposes measurement. A distribution plot
-  shows variation. A sampling simulation explains uncertainty. Compare groups before
-  generalizing.
+- **Show and check:** A questionnaire excerpt exposes measurement. A sourced
+  distribution plot shows variation. Use Pinepaper for a sampling model only
+  when the sample and displayed estimate change together. Compare groups
+  before generalizing.
 
 ### Research methods
 

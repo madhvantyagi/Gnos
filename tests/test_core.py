@@ -481,7 +481,7 @@ class LearnerTests(unittest.TestCase):
             with self.subTest(media=media):
                 command = [sys.executable, str(loader), '--subject', 'math',
                            '--media', media, '--learners-root', str(self.root)]
-                workflow = f'skills/lesson-design/references/{media}.md'
+                workflow = f'skills/{media}/SKILL.md'
                 result = subprocess.run(command, capture_output=True, text=True)
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertIn(f'--- INSTRUCTIONS: {workflow} ---', result.stdout)
@@ -491,7 +491,7 @@ class LearnerTests(unittest.TestCase):
                 paths = manifest.stdout.splitlines()
                 self.assertIn(workflow, paths)
                 other = 'pinepaper' if media == 'excalidraw' else 'excalidraw'
-                self.assertNotIn(f'skills/lesson-design/references/{other}.md', paths)
+                self.assertNotIn(f'skills/{other}/SKILL.md', paths)
                 for path in paths:
                     self.assertTrue((ROOT / path).is_file(), path)
 

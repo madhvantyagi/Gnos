@@ -151,24 +151,32 @@ before drawing:
   image-generation instructions in `skills/subject/SKILL.md`, then read the
   host skill if it provides one. Do not create or look for a separate GNOS
   image-generation skill.
-- Pinepaper, which runs through the `pinepaper` MCP server defined in
-  `.mcp.json` and follows the workflow in
-  `skills/lesson-design/references/pinepaper.md`, draws exact relations that
-  have to be checked, such as a circuit, a field map, a ray diagram, or
-  a polished vector figure with synchronized states. The worker also
-  reads the active subject reference that the pinepaper guide points to,
-  such as the physics, math, economics, or computer-science reference.
-- Excalidraw, which runs through the `excalidraw` MCP server defined in
-  `.mcp.json` and follows the workflow in
-  `skills/lesson-design/references/excalidraw.md`, makes a quick inspectable
+- [Pinepaper](../../pinepaper/SKILL.md), which runs through the `pinepaper` MCP server
+  defined in `.mcp.json`, builds diagrams, charts, motion, or controls when
+  their states must stay linked. The worker reads only the skill's reference
+  for the selected visual job. The brief names the model or data source and
+  the required export so the worker can check both the scene and its file.
+- [Excalidraw](../../excalidraw/SKILL.md), which runs through the `excalidraw` MCP server
+  defined in `.mcp.json`, makes a quick inspectable
   sketch, such as a pointer diagram, a graph layout, or a trust
   boundary. The worker calls `read_me` before its first `create_view`
   call and builds only what that guide allows.
 
+These links select instructions for the chosen server. The worker must invoke
+the server's tools, inspect the returned scene, and hand back an export or
+working view. Merely linking the guide or naming the server in `skill_route`
+does not produce a diagram.
+Use `skills/pinepaper/SKILL.md` or `skills/excalidraw/SKILL.md` as the block's
+`skill_route`, and declare that same route in the lesson.
+
 Never ask an image model to produce exact data, small readable source
-text, or a relation that has to match code. That work belongs in
-pinepaper or excalidraw, where the relations stay editable and can be
-checked.
+text, or a relation that has to match code. Keep exact data in a table,
+code trace, or verified plot. Use Pinepaper or
+[Excalidraw](../../excalidraw/SKILL.md) for a diagram whose relations must
+be inspected. When the tool is Excalidraw, paste the exact text-element schema
+from `read_me` into the brief — field names and sizing rules, not a pointer
+to it. Make one acceptance check per label: each string must appear verbatim
+in the returned scene data.
 
 A good brief says what to draw and how it connects to the text, for
 example: "Draw the slope triangle for the worked example in the previous
@@ -272,7 +280,8 @@ or dates, or that teaches a different concept or purpose than the one you
 assigned. If the medium cannot teach the purpose, stop that block and revise
 the lesson block and brief. Return to course design only if the topic needs a
 new concept, source, or place in the sequence. Never accept a quiet
-substitution where the worker returns a different artifact instead. After
+substitution where the worker returns a different artifact instead. Follow
+every view link yourself; a view that opens empty fails. After
 all workers pass review, merge their fragments in lesson order. Follow the
 publication sequence in `skills/lesson-design/SKILL.md`: validate and publish
 the reviewed ready lesson, then register each checked artifact with

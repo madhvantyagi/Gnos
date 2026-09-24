@@ -104,9 +104,10 @@ labels. Validate that every declared relation is wired before export.
 ## Tool and medium decision
 
 - Use code plus a trace for ordinary debugging.
-- Use Excalidraw for a quick static relationship or boundary.
-- Use Pinepaper for polished vector work, synchronized changes, interaction, or
-  animated SVG export.
+- Use [Excalidraw](../../excalidraw/SKILL.md) for a quick static relationship or boundary.
+- Use [Pinepaper](../../pinepaper/SKILL.md) when a code step must update
+  pointers, graph state, or a visible trace together. Check its export format
+  before choosing a chart or learner control.
 - Use Manim when narration and a rendered lesson timeline are the deliverable.
 
 Do not duplicate the same scene across media unless the outputs serve different

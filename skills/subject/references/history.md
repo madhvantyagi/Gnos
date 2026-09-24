@@ -48,8 +48,10 @@ not merely add another quotation.
 
 For a map, state the date, scale, boundary source, and uncertain or reconstructed
 features. Compare regions only after checking their local chronologies. Motion
-can show a documented route or changing boundary; label a reconstruction and
-keep its evidence available beside it.
+can show a documented route or changing boundary. Use
+[Pinepaper](../../pinepaper/SKILL.md) only when the evidence supports each
+shown state. Label a reconstruction and keep its evidence available beside
+it. Use [Excalidraw](../../excalidraw/SKILL.md) for a fixed institutional map.
 
 For prices, wages, migration, or population, inspect units, coverage, collection
 rules, and missing data before plotting. Explain whether a change may reflect

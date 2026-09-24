@@ -115,11 +115,7 @@
       // The server returns escaped lesson prose with only renderer-owned math markup.
       area.innerHTML = '<h4>Worked answer</h4>' + result.html;
       area.hidden = false;
-      if (window.renderMathInElement) window.renderMathInElement(area, {
-        delimiters: [{left:'$$',right:'$$',display:true},{left:'\\[',right:'\\]',display:true},
-                     {left:'\\(',right:'\\)',display:false},{left:'$',right:'$',display:false}],
-        throwOnError: false
-      });
+      window.gnosRenderMath(area);
       status(card, 'Answer shown. Your saved response is unchanged.');
     } catch (error) { status(card, error.message); }
     finally { button.disabled = false; }

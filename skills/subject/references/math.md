@@ -26,8 +26,9 @@ on a graph, and in the difference quotient. Explain what is held fixed and
 what approaches a limit. Preserve axis scale during motion so the apparent
 slope does not change for a visual reason.
 
-Use animation when the approach to a tangent or accumulation is difficult to
-follow. Use a control when the learner should compare intervals or partitions.
+Use [Pinepaper](../../pinepaper/SKILL.md) when the secant, interval, and
+displayed value must change from one parameter. Use Manim when a narrated
+approach to a tangent or accumulation is the deliverable.
 State what the visual suggests and which limit argument establishes the result.
 For differential equations, connect a local slope to one numerical step, then
 to the trajectory. Keep the equation, initial state, time scale, and numerical
@@ -40,7 +41,8 @@ images. Match each matrix column to the corresponding basis image. Retain the
 original grid or vectors when comparing before and after. Contrast changing
 the vector with changing the coordinates used to describe it.
 
-Use a still for comparing bases and motion for following a transformation.
+Use an [Excalidraw](../../excalidraw/SKILL.md) still for comparing fixed
+bases and Pinepaper motion when following a transformation.
 Do not imply that an interpolation between matrices preserves invertibility,
 length, or another property unless it does. Check dimensions, a simple vector,
 and a degenerate case before accepting the visual.

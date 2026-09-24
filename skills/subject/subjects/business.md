@@ -6,9 +6,9 @@ One successful company case does not establish a universal strategy.
 
 ## Ways to show the idea
 
-Use [Excalidraw](../../lesson-design/references/excalidraw.md) for process and responsibility
-maps. Use tables for choices and cash, graphs for capacity or demand, and
-simulations for uncertain scenarios. Use
+Use [Excalidraw](../../excalidraw/SKILL.md) for fixed process and responsibility
+maps, [Pinepaper](../../pinepaper/SKILL.md) for linked process states or
+scenario graphs, and tables for exact choices and cash. Use
 [Manim](../../manim-voice-animation/SKILL.md) when work or information moving
 between stages explains a delay or failure. Keep case facts separate from
 illustrative numbers; a polished map does not establish actual behavior.
@@ -39,8 +39,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   not improve total throughput.
 - **Research:** Use operations research for the process model and actual process
   observations for inputs. Check service times, variation, and capacity assumptions.
-- **Show and check:** A process map locates stages. A capacity table identifies the
-  bottleneck. A queue simulation tests arrivals and service times.
+- **Show and check:** An Excalidraw process map locates stages. A capacity
+  table identifies the bottleneck. Use Pinepaper for arrivals and queue
+  length only when both follow the same stated service model. Test a changed
+  arrival rate or service time.
 
 ### Marketing
 
@@ -48,9 +50,9 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   intent, purchase, and retention measure different things.
 - **Research:** Inspect customer research and the experiment or analytics definitions.
   Check attribution, cohort selection, measurement period, and the outcome that matters.
-- **Show and check:** A journey or funnel shows stages. A cohort table separates
-  populations. An experiment diagram tests a claim. Compare outcomes under changed
-  assumptions.
+- **Show and check:** A funnel shows stages. A cohort table separates
+  populations. Use Pinepaper only when changing one cohort must update its
+  stage counts from the same data. An experiment diagram tests the claim.
 
 ### Organizations
 
@@ -68,9 +70,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
 - **Research:** Use company filings or a clearly labeled teaching case with finance
   definitions. Check cash timing, financing terms, and sensitivity to operating
   assumptions.
-- **Show and check:** A cash-flow timeline explains timing. A unit-economics table
-  exposes assumptions. Scenarios vary demand, price, or payment delay and explain cash
-  needs.
+- **Show and check:** A cash-flow timeline explains timing. A unit-economics
+  table exposes assumptions. Use Pinepaper if changing demand, price, or
+  payment delay must update cash balance and runway together. Reconcile a
+  selected scenario with the table.
 
 ## Source use
 

@@ -104,6 +104,12 @@ learner could inspect or change to understand it. Use the matching subfield
 section for its research checks and representation choices. Adapt them to the
 learner's question. Read deeper references when that section leaves a
 prerequisite, mechanism, or evidence question unresolved.
+For a visual block, specify the relation to reveal and the values or sources
+it must preserve. Use [Excalidraw](../excalidraw/SKILL.md) for a fixed sketch
+and [Pinepaper](../pinepaper/SKILL.md) when linked states, a chart tied to a
+scene, motion, or controls serve that relation. The media skill explains
+construction and export; the subject guide keeps the science or evidence
+correct.
 
 | Workflow | What it produces | Route |
 | --- | --- | --- |
@@ -111,8 +117,8 @@ prerequisite, mechanism, or evidence question unresolved.
 | Image generation | Still illustration or labeled image | The host's existing image-generation skill or tool, following the instructions below |
 | Manim voice animation | Narrated rendered motion with subtitles | `skills/manim-voice-animation/SKILL.md` |
 | PDF | Rendered and inspected handout or source packet | `skills/pdf/SKILL.md` |
-| Excalidraw MCP | Quick inspectable relationship, process, or boundary diagram | [Excalidraw workflow](../lesson-design/references/excalidraw.md) and the selected subject guide |
-| Pinepaper MCP | Polished vector, interactive relation, or animated SVG | [Pinepaper workflow](../lesson-design/references/pinepaper.md) and a linked subject reference |
+| Excalidraw MCP | Quick inspectable relationship, process, or boundary diagram | [Excalidraw workflow](../excalidraw/SKILL.md) and the selected subject guide |
+| Pinepaper MCP | Linked diagram, chart, motion, or interactive model | [Pinepaper workflow](../pinepaper/SKILL.md) and the selected subfield guidance |
 | Simulation | Learner-controlled graph or model | Self-contained HTML registered through `manage_artifact.py` |
 
 For generated images, invoke the host's existing image-generation skill

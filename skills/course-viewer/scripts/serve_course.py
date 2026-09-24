@@ -74,6 +74,9 @@ class CourseHandler(BaseHTTPRequestHandler):
             manifest = read_manifest(self.server.workspace)
             permitted = {item['location']['path'] for item in ready_artifacts(manifest)
                          if 'path' in item.get('location', {})}
+            vendor = Path(__file__).resolve().parents[1] / 'references' / 'vendor'
+            permitted.update('portal/assets/' + str(asset.relative_to(vendor))
+                             for asset in vendor.rglob('*') if asset.is_file())
             relative = path.removeprefix('/')
             if relative not in permitted:
                 self.send_json(404, {'error': 'Not found.'})

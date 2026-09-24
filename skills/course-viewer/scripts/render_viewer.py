@@ -2,7 +2,7 @@
 """Render one learner course workspace into a single static viewer page.
 
 Reads the validated course plan, ready lessons, and the artifact manifest,
-then writes a self-contained index.html with a left sidebar (tabs and
+then writes index.html and local viewer assets with a left sidebar (tabs and
 lesson list) and a scrolling main column: lessons with videos, images,
 simulations, exercises, sources, and resources. Only public projection
 fields are rendered; private evaluation criteria never appear.
@@ -12,6 +12,7 @@ import html
 import json
 import math
 import re
+import shutil
 import sys
 from pathlib import Path
 
@@ -23,6 +24,7 @@ from course_workspace import read_plan  # noqa: E402
 from course_contract import course_content_fingerprint  # noqa: E402
 
 TEMPLATE = ROOT / "skills/course-viewer/references/example.html"
+VENDOR = ROOT / "skills/course-viewer/references/vendor"
 LOGO_PNG = ROOT / "skills/course-viewer/references/gnos-logo.png"
 BODY_START = "<!--VIEWER_BODY_START-->"
 BODY_END = "<!--VIEWER_BODY_END-->"
@@ -411,11 +413,11 @@ def _render_outside(raw):
 
 
 def render_rich_text(raw):
-    """Escape prose, preserve $...$, $$...$$, \\(...\\), \\[...\\] for KaTeX auto-render."""
+    """Escape prose, preserving inline code and delimited math for the browser."""
     s = "" if raw is None else str(raw)
     if s == "":
         return ""
-    if "$" not in s and "\\(" not in s and "\\[" not in s:
+    if "$" not in s and "\\(" not in s and "\\[" not in s and "`" not in s:
         return _render_outside(s)
     out = []
     outside = []
@@ -428,6 +430,18 @@ def render_rich_text(raw):
     i = 0
     n = len(s)
     while i < n:
+        if s[i] == "`":
+            run = len(s[i:]) - len(s[i:].lstrip("`"))
+            if run <= 2:
+                closing = re.search(r"(?<!`)" + "`" * run + r"(?!`)", s[i + run:])
+                if closing:
+                    j = i + run + closing.start()
+                    flush()
+                    out.append('<code class="inline-code">'
+                               + html.escape(s[i + run:j].replace("\n", " "), quote=True)
+                               + '</code>')
+                    i = j + run
+                    continue
         if s[i] == "\\" and i + 1 < n and s[i + 1] == "$":
             outside.append("$")
             i += 2
@@ -719,7 +733,7 @@ def render_block(block, lesson_exercises, sources, course_id=""):
     elif "equation" in block and block.get("equation") is not None:
         chunks.append(math_display_html(""))
     if block.get("code"):
-        chunks.append(f"<pre>{esc(block['code'])}</pre>")
+        chunks.append(f'<pre class="code-block"><code>{esc(block["code"])}</code></pre>')
     if block.get("caption"):
         chunks.append(f'<p class="block-caption">{render_rich_text(block["caption"])}</p>')
     body = "".join(chunks)
@@ -1273,6 +1287,7 @@ def render_body(view, plan, workspace):
     details_html = render_topic_details(view, plan, topic_reps)
 
     parts = [
+        '<div id="math-render-status" role="alert" hidden>Math could not render. Reload this course page.</div>',
         render_sidebar(plan, lessons, current["topic_id"]),
         render_hero(plan, course),
         '<section class="tab active" id="tab-overview">'
@@ -1365,6 +1380,7 @@ def main():
         page = head + body + tail
         out = args.out or (workspace / "portal" / "index.html")
         out.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(VENDOR, out.parent / "assets", dirs_exist_ok=True)
         out.write_text(page)
     except (OSError, ValueError) as exc:
         parser.exit(1, f"Render failed: {exc}\n")

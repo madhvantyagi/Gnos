@@ -73,6 +73,11 @@ lesson and then attach media to satisfy the two-form requirement.
 Choose the block type while drafting the lesson. New blocks do not need a
 `representation_id`. Older lessons may keep one when they follow an existing
 course representation plan.
+For a diagram made by an MCP server, select
+[Excalidraw](../excalidraw/SKILL.md) or [Pinepaper](../pinepaper/SKILL.md)
+using the subject guide and representation choices. Declare that skill's
+`SKILL.md` path in the lesson's `skill_routes` and in the block's production
+brief. The assigned worker reads the skill and calls its MCP tools.
 
 A ready lesson needs at least two distinct teaching forms. Prose and a worked
 equation, a diagram, a code trace, a source, motion, or a simulation can form

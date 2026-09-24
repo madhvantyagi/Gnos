@@ -16,8 +16,9 @@ For a new quantitative relation, calculate a few values and map each to its
 point on the graph. Label axes, units, and held-constant conditions. Show a
 movement along a fixed curve separately from a shift caused by a changed
 condition. Keep the original curve visible and explain why the new intersection
-answers the economic question. An interactive graph can test another condition;
-its output remains conditional on the model.
+answers the economic question. Use [Pinepaper](../../pinepaper/SKILL.md)
+when the changed condition must update the curve, intersection, and numeric
+choice together. Its output remains conditional on the model.
 
 ## Explain adjustment over time
 
@@ -27,7 +28,9 @@ identities separate from assumptions about behavior. For debt, inventories,
 or population, connect the stock-flow diagram to the time series using the
 same units and time step.
 
-Use narrated motion to explain a lag or feedback loop. Use a simulation to
+Use [Excalidraw](../../excalidraw/SKILL.md) for the fixed stock-flow map.
+Use Pinepaper when a stock, flow, and time plot must change together. Use
+narrated motion to explain a lag or feedback loop. Use a simulation to
 compare a rule, initial state, or response parameter. Explain an unstable or
 unexpected result from the update rule. Do not call a smooth model path a
 forecast without evidence about its assumptions and fit.

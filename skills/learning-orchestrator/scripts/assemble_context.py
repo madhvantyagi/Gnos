@@ -31,8 +31,8 @@ def media_paths(media):
             'skills/lesson-design/references/representation-choices.md',
             'skills/course-design/references/artifact-manifest.md',
         ],
-        'pinepaper': ['skills/lesson-design/references/pinepaper.md'],
-        'excalidraw': ['skills/lesson-design/references/excalidraw.md'],
+        'pinepaper': ['skills/pinepaper/SKILL.md'],
+        'excalidraw': ['skills/excalidraw/SKILL.md'],
     }
     return mapping.get(media, [])
 

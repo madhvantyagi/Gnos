@@ -128,15 +128,15 @@ class MathBlockTests(unittest.TestCase):
         escaped_dollar = viewer.render_rich_text(r"cost \$5 and $a$ ok")
         self.assertIn("$5", escaped_dollar)
         self.assertIn('math-inline', escaped_dollar)
-        # Code blocks keep <pre> and never gain math classes.
+        # Code blocks keep semantic code markup and never gain math classes.
         code = viewer.render_block(
             {"id": "c1", "type": "code", "concepts": ["math.derivative"],
              "purpose": "Show code.", "code": "x < y"}, {}, {})
-        self.assertIn("<pre>", code)
+        self.assertIn('<pre class="code-block"><code>x &lt; y</code></pre>', code)
         self.assertNotIn("math-inline", code)
         self.assertNotIn("math-display", code)
 
-    def test_katex_cdn_in_rendered_portal(self):
+    def test_local_math_and_code_assets_in_rendered_portal(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             workspace = create_workspace(root, "alex", valid_v2_course())
@@ -145,17 +145,47 @@ class MathBlockTests(unittest.TestCase):
                 capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             text = (workspace / "portal" / "index.html").read_text()
-            # KaTeX 0.16.x ships via jsDelivr CDN.
-            self.assertIn("katex.min.css", text)
-            self.assertIn("katex.min.js", text)
-            self.assertIn("auto-render.min.js", text)
-            self.assertIn("cdn.jsdelivr.net/npm/katex@0.16", text)
-            self.assertIn("renderMathInElement", text)
+            for asset in ("katex/katex.min.css", "katex/katex.min.js",
+                          "katex/auto-render.min.js", "highlight/highlight.min.js",
+                          "highlight/github-dark.min.css", "katex/fonts/KaTeX_Main-Regular.woff2"):
+                if asset.endswith("woff2"):
+                    self.assertIn("fonts/KaTeX_Main-Regular.woff2",
+                                  (workspace / "portal/assets/katex/katex.min.css").read_text())
+                else:
+                    self.assertIn("assets/" + asset, text)
+                self.assertTrue((workspace / "portal/assets" / asset).is_file())
+            self.assertNotIn("cdn.jsdelivr.net/npm/katex", text)
+            self.assertIn("gnosRenderMath", text)
             self.assertIn("throwOnError", text)
-            # Fallback math styling still ships inline for CDN-blocked reads.
+            self.assertIn('id="math-render-status"', text)
             self.assertIn(".math-display", text)
             # Hand-rolled span CSS is gone.
             self.assertNotIn("math-frac", text)
+
+    def test_math_near_exercises_in_all_rendered_fields(self):
+        exercise = {"id": "ex1", "concepts": ["math.derivative"],
+                    "prompt": r"For $x=2$, compute $x^2$.",
+                    "response_type": "short-text", "evaluation": {"mode": "manual"}}
+        blocks = [
+            {"id": "intro", "type": "explanation", "text": r"Use $f(x)=x^2$.",
+             "items": [r"At $x=2$, inspect $f(x)$."], "caption": r"Slope: $2x$."},
+            {"id": "eq", "type": "equation", "equation": r"f'(x)=2x"},
+            {"id": "try", "type": "exercise", "exercise_id": "ex1",
+             "text": r"Now try $x=3$."},
+        ]
+        rendered = "".join(viewer.render_block(block, {"ex1": exercise}, {}) for block in blocks)
+        self.assertEqual(rendered.count('class="math math-inline"'), 7)
+        self.assertIn('class="math math-display"', rendered)
+        self.assertIn(r"$x^2$", rendered)
+
+    def test_inline_code_is_not_guessed_as_math(self):
+        source = (r"Read `p_T_given_S = sens` before $P(T\mid S)$; "
+                  r"then `denominator = numerator + p_T_given_notS * (1 - prior)`.")
+        rendered = viewer.render_rich_text(source)
+        self.assertEqual(rendered.count('class="inline-code"'), 2)
+        self.assertEqual(rendered.count('class="math math-inline"'), 1)
+        self.assertIn('<code class="inline-code">p_T_given_S = sens</code>', rendered)
+        self.assertNotIn('p_T_{given}', rendered)
 
     def test_plain_ascii_exercise_sentence_renders_math(self):
         sentence = ("A neuron is y-hat=sigmoid(z) with z=w.x+b. "

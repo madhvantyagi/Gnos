@@ -7,8 +7,9 @@ blocks the explanation.
 
 ## Ways to show the idea
 
-Use [Excalidraw](../../lesson-design/references/excalidraw.md) for streams and control volumes,
-plots for profiles and phase behavior, and property tables for exact values.
+Use [Excalidraw](../../excalidraw/SKILL.md) for fixed streams and control volumes,
+[Pinepaper](../../pinepaper/SKILL.md) when a process state and its graph must
+change together, and property tables for exact values.
 Use [Manim](../../manim-voice-animation/SKILL.md) for narrated transient change
 and a simulation to test flow, temperature, residence time, or controller
 settings. Match stream names and units across the picture and balance.
@@ -32,9 +33,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   state does not mean no flow or no reaction.
 - **Research:** Use an engineering balances chapter and a stated process case. Check
   units, basis, composition, and which quantities are conserved.
-- **Show and check:** A control-volume diagram labels streams. A balance table tracks
-  terms. A worked equation connects each term to the boundary. Vary an inlet to test
-  accumulation.
+- **Show and check:** Draw streams and a control volume in Excalidraw. A balance
+  table tracks each term. Use Pinepaper if varying an inlet must update the
+  accumulation and outlet trace together. Check the worked equation against
+  the boundary and a steady case.
 
 ### Thermodynamics
 
@@ -42,8 +44,9 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   steady state, and a chosen process path are different conditions.
 - **Research:** Use thermodynamic property references and the relevant model
   documentation. Check phase, composition, reference state, and validity range.
-- **Show and check:** A phase diagram shows allowed states. A property table supplies
-  values and ranges. A worked path explains energy changes.
+- **Show and check:** A phase diagram shows allowed states. A property table
+  supplies values and ranges. Use Pinepaper for a changing process path only
+  when its point, phase label, and energy calculation share the same state.
 
 ### Transport phenomena
 
@@ -51,9 +54,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   law alone does not specify the boundary or initial conditions.
 - **Research:** Use a transport text for constitutive laws and boundary conditions.
   Inspect measured property data before assigning numerical values.
-- **Show and check:** A spatial profile shows the gradient. Arrows connect sign to
-  direction. Motion or simulation shows a transient. Compare changed boundary
-  conditions.
+- **Show and check:** Pair a spatial profile with flux arrows. Use Pinepaper
+  for a transient temperature or concentration field only after stating the
+  boundary conditions and update rule. Keep a numeric scale and matching
+  profile. Compare a steady or conservation case.
 
 ### Reaction engineering
 
@@ -61,9 +65,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   there. Conversion, selectivity, and reaction rate answer different questions.
 - **Research:** Use a reaction-engineering chapter plus measured kinetic data for the
   stated reaction. Check rate units, temperature range, and mixing assumptions.
-- **Show and check:** A reactor sketch shows mixing assumptions. Concentration traces
-  show progress. A simulation compares residence time or temperature. Balances explain
-  the result.
+- **Show and check:** A reactor sketch shows mixing assumptions. A concentration
+  trace shows progress. Use Pinepaper if changing residence time or
+  temperature must update both the reactor state and trace. Check the result
+  with a balance.
 
 ### Separations
 

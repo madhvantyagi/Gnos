@@ -101,9 +101,11 @@ vectors, differential equations, or probability; Theo supplies numerical
 methods and software behavior. Carry the system, frame, last sound prediction,
 and approximation through the handoff.
 
-Use Pinepaper for interactive or animated vector explanations, Manim for a
-narrated rendered lesson, and a PDF for apparatus notes, derivations, or
-uncertainty tables.
+Use [Excalidraw](../../excalidraw/SKILL.md) for the fixed system boundary,
+force diagram, or circuit. Use [Pinepaper](../../pinepaper/SKILL.md) when
+that system's state and plotted quantity must share a clock or a learner
+control. Use Manim for a narrated rendered lesson and PDF for apparatus
+notes, derivations, or uncertainty tables.
 
 Catalog starting points include `openstax-physics-1`, `mit-mechanics`,
 `openstax-calculus-1`, and `mit-multivariable`. Inspect the relevant chapter or

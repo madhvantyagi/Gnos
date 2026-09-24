@@ -13,9 +13,10 @@ that established it have different jobs.
 Use labeled images for anatomy and observed structure, diagrams for pathways,
 and plots for concentrations or populations. State whether an image is
 observed, reconstructed, or illustrative. Use the host's image-generation
-capability for illustrations, [Excalidraw](../../lesson-design/references/excalidraw.md) for
-compartments and flows, and [Manim](../../manim-voice-animation/SKILL.md) for
-narrated transport or signaling. A simulation tests a named perturbation.
+capability for illustrations, [Excalidraw](../../excalidraw/SKILL.md) for
+fixed compartments and flows, [Pinepaper](../../pinepaper/SKILL.md) when a
+mechanism and measured quantity must change together, and
+[Manim](../../manim-voice-animation/SKILL.md) for narrated transport. A simulation tests a named perturbation.
 Label direction, scale, units, and time; distinguish model outputs from data.
 
 Leena owns mechanisms and biological interpretation. Bridge to chemistry for
@@ -36,9 +37,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
 - **Research:** Use a cell-biology chapter for membrane mechanisms and a primary
   experiment for a specific transport claim. Check compartments and concentration
   conditions.
-- **Show and check:** A membrane diagram locates barriers. Motion shows movement in both
-  directions. A concentration plot shows net change. Vary permeability to test the
-  mechanism.
+- **Show and check:** An Excalidraw membrane diagram locates barriers. Use
+  Pinepaper when movement in both directions and a concentration plot must
+  share one clock. Vary permeability and check the net change against the
+  stated transport rule.
 
 ### Molecular biology / biochemistry
 
@@ -48,8 +50,9 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
 - **Research:** Use a biochemistry reference for reaction mechanism and an original
   assay for measured rates. Track substrate, enzyme, energy, and experimental conditions
   separately.
-- **Show and check:** A labeled structure shows binding. A pathway tracks matter. A
-  reaction trace explains order. Data or a rate curve compares inhibition and substrate
+- **Show and check:** A labeled structure shows binding. An Excalidraw pathway
+  tracks matter. Use Pinepaper if binding stages must align with a reaction
+  trace. Compare sourced data or a rate curve for inhibition and substrate
   shortage.
 
 ### Genetics and genomics
@@ -68,8 +71,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   feedback need not keep a quantity perfectly constant.
 - **Research:** Use a physiology chapter for the feedback mechanism and original
   perturbation data for its response. Check species, tissue, and time scale.
-- **Show and check:** A feedback diagram names sensor and effector. Linked time plots
-  show delay and recovery. A simulation perturbs one component and tests compensation.
+- **Show and check:** An Excalidraw feedback diagram names sensor and
+  effector. Use Pinepaper when a perturbation must update both the mechanism
+  and linked time plots. Mark delay and recovery; test compensation under
+  one changed condition.
 
 ### Evolution
 

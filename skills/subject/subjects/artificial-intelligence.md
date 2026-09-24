@@ -8,9 +8,9 @@ an evaluation result; date benchmark claims and state their conditions.
 
 ## Ways to show the idea
 
-Use [Excalidraw](../../lesson-design/references/excalidraw.md) for data paths and boundaries,
+Use [Excalidraw](../../excalidraw/SKILL.md) for data paths and boundaries,
 [Manim](../../manim-voice-animation/SKILL.md) for narrated updates or state
-changes, and [Pinepaper](../../lesson-design/references/pinepaper.md) for linked diagrams.
+changes, and [Pinepaper](../../pinepaper/SKILL.md) for linked diagrams.
 Use plots for distributions, error, and optimization; use tables and code for
 exact computations. Simulations should reveal the effect of a meaningful
 choice, such as a threshold, policy, sample, or step size.
@@ -32,8 +32,9 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   search method. A promising heuristic does not guarantee the cheapest path.
 - **Research:** Use an introductory search chapter with pseudocode and guarantee
   conditions. Check heuristic assumptions and what the cost measures.
-- **Show and check:** A graph shows choices. A frontier table explains selection.
-  Animate expansion when order is hard to follow. Compare costs after changing an edge.
+- **Show and check:** An Excalidraw graph shows choices. A frontier table gives
+  exact costs. Use Pinepaper if stepping through expansion must update the
+  highlighted node and frontier together. Recalculate after changing an edge.
 
 ### Knowledge and reasoning
 
@@ -52,8 +53,9 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   predictions on new data.
 - **Research:** Use an accessible ML chapter for the first model and loss. Inspect
   dataset documentation and evaluation procedures before using performance claims.
-- **Show and check:** A small data table grounds the task. A fitted curve shows errors.
-  A threshold control exposes different kinds of error. Code traces one update.
+- **Show and check:** A small data table grounds the task. A plotted fit shows
+  errors. Use Pinepaper when a threshold control must update classifications,
+  error counts, and the plotted boundary together. Code traces one update.
 
 ### Neural networks and optimization
 
@@ -74,10 +76,11 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
 - **Research:** Use an accessible transformer explanation, then the architecture paper
   and official model documentation. Check tokenizer, masks, objective, and evaluation
   conditions.
-- **Show and check:** Use a token and shape diagram, an attention matrix, and one worked
-  weighted sum. Animate the dependency or decoding order with Manim. Vary sampling in a
-  small model. Explain why the displayed weights alone do not establish a causal
-  explanation.
+- **Show and check:** Use an Excalidraw token and shape diagram, an attention
+  matrix, and one worked weighted sum. Use Pinepaper when a selected token
+  must highlight its matrix row and resulting vector together. Use Manim for
+  narrated decoding order. Explain why weights alone do not establish a
+  causal explanation.
 
 ### Reinforcement learning foundations
 
@@ -87,9 +90,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
 - **Research:** Use an introductory RL text or course section that develops episodes and
   decision rules. Bring in probability when comparing uncertain outcomes, with an
   inspected explanation of expectation.
-- **Show and check:** Use an episode trace, state diagram, and reward table for the same
-  case. Simulate choices before deriving expected return. Later, connect a Bellman term
-  to its branch in the diagram and show what is being averaged.
+- **Show and check:** Use an episode trace, state diagram, and reward table for
+  the same case. Use Pinepaper when a chosen action must update the state,
+  reward, and trace together. Connect each Bellman term to its branch and
+  show what is averaged.
 
 ### Policy optimization and language-model post-training
 

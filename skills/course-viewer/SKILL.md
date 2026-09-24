@@ -5,8 +5,8 @@ description: "Show an enrolled course and its lessons. Use lesson-design to auth
 
 # Course viewer
 
-Render the enrolled course and its published lessons. The HTML page can be
-read on its own; the local course server saves exercises to JSON and reveals
+Render the enrolled course and its published lessons. The HTML page and its
+neighboring `assets/` directory can be read locally; the course server saves exercises to JSON and reveals
 answers after submission. Math uses KaTeX. Cream editorial page: top bar with GNOS + tabs, hero
 with giant title + field metadata, curriculum list + topic details.
 
@@ -53,7 +53,8 @@ the host read the skill or that the explanation is good; review the lesson.
 ```
   
 The script reads `course.json`, published lessons, and the artifact
-manifest, then writes `portal/index.html` inside the course folder.
+manifest, then writes `portal/index.html` and copies the bundled KaTeX,
+syntax-highlighting, and math-font assets to `portal/assets/`.
 
 Open it locally:
 
@@ -73,7 +74,7 @@ request and the reveal is recorded separately from the learner's response.
 The design lives in [references/example.html](references/example.html).
 Copy that look exactly:
 
-- cream paper (#F6F1E7), near-black ink, teal links (#155E63),
+- cream paper (#F6F4EE), near-black ink, teal links (#155E63),
   ochre labels (#8A6D3B), plum state/title (#5E2B4D), thin dividers
 - topbar: GNOS logo left, tabs center (Overview, Lessons, Exercises,
   Sources, Artifacts with teal underline for active), All courses → right
@@ -113,15 +114,21 @@ their planned formats. The lesson coordinator registers every artifact with
 - Render only public fields in the initial page. Keep success criteria,
   tolerances, and private review notes private. The local server may return
   an authored solution only after a saved attempt and explicit Show answer.
-- The page references media files in the workspace; it never copies
+- The page references learner media files in the workspace; it never copies
   or downloads them. Missing files get a visible note, never a crash.
 - Re-render whenever the plan, a lesson, or the manifest changes.
-- Math renders with KaTeX (CDN, the one network exception). Lesson text
+- Math renders with bundled KaTeX, including local fonts. Lesson text
   must already delimit math as LaTeX (`$...$`, `$$...$$`); the renderer
   preserves delimited LaTeX and equation blocks exactly. Legacy undelimited
   ASCII text has a limited compatibility converter; never rely on it when
   authoring. Follow [the lesson contract](../lesson-design/references/lesson-contract.md).
-  Body prose is serif; monospace is only for code.
+  Body prose is serif. Code blocks use semantic `<pre><code>` markup and the
+  bundled highlighter; the code remains readable when highlighting cannot run.
+- When reviewing a changed lesson, inspect rendered math in an explanation,
+  an equation block, and an exercise prompt. Switch between Lessons and
+  Exercises, then inspect a worked answer after an authorized save and reveal.
+  Check the DOM for KaTeX output rather than only checking TeX strings in the
+  HTML. A visible math-load warning means the page is not ready to deliver.
 - If enroll or render fails, say plainly what failed and fix it that
   turn. Never silently skip the page.
 - If the learner did not answer the show question, ask again on the

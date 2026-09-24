@@ -9,8 +9,9 @@ account depends on the account type.
 
 Use exact tables for journals, ledgers, and statements. Carry one amount through
 the records so the learner can reconcile it. Use
-[Excalidraw](../../lesson-design/references/excalidraw.md) for document or control flows, graphs
-for cost behavior, and a simulation for timing or allocation choices. Use
+[Excalidraw](../../excalidraw/SKILL.md) for fixed document or control flows,
+[Pinepaper](../../pinepaper/SKILL.md) when a period or decision change must
+update a linked view, and graphs for cost behavior. Use
 [Manim](../../manim-voice-animation/SKILL.md) when movement across periods
 needs narration. Keep framework and period labels beside the numbers.
 
@@ -31,8 +32,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
 - **Research:** Use an introductory accounting chapter for the sequence, then the
   applicable reporting standard for recognition. Check entity, framework, period, and
   transaction evidence.
-- **Show and check:** Trace the event through a journal, ledger, and statements. Linked
-  tables show both sides of the entry. A timeline explains recognition across periods.
+- **Show and check:** Trace one amount through a journal, ledger, and
+  statements. Exact tables show both sides of the entry. Use Pinepaper only
+  when moving the recognition date must update the period timeline and
+  statement effect together. Reconcile the totals.
 
 ### Managerial and cost accounting
 
@@ -40,8 +43,9 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   Allocated or sunk costs may not be relevant to the decision.
 - **Research:** Use a managerial-accounting chapter and a stated operating case. Check
   which costs change with the decision and which are allocations.
-- **Show and check:** A cost table separates fixed and variable terms. A graph shows
-  break-even. Controls test volume or capacity. Explain a changed decision.
+- **Show and check:** A cost table separates fixed and variable terms. Use
+  Pinepaper when a changed volume or capacity must update the break-even
+  graph and decision margin together. Recalculate one case from the table.
 
 ### Audit and controls
 

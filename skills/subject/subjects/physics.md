@@ -10,9 +10,9 @@ measurement and state when the approximation fails.
 ## Ways to show the idea
 
 Use diagrams for setup, graphs for quantities, and equations for their relation.
-Use [Excalidraw](../../lesson-design/references/excalidraw.md) for boundaries or apparatus,
+Use [Excalidraw](../../excalidraw/SKILL.md) for boundaries or apparatus,
 [Manim](../../manim-voice-animation/SKILL.md) for narrated motion, and
-[Pinepaper](../../lesson-design/references/pinepaper.md) for linked visual states. A simulation
+[Pinepaper](../../pinepaper/SKILL.md) for linked visual states. A simulation
 lets the learner test a changed condition. Keep the same units and initial
 state across views. Generated motion is a model illustration.
 
@@ -34,9 +34,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   constant velocity.
 - **Research:** Use an introductory mechanics chapter with a worked force or energy
   argument. Check the frame and approximations before adopting a formula.
-- **Show and check:** A free-body diagram separates forces. Position and velocity graphs
-  share a clock. Motion links the graphs. Controls test mass, force, or initial
-  velocity.
+- **Show and check:** Draw the fixed free-body diagram with Excalidraw. Use
+  Pinepaper when position, velocity, and moving body must share one clock.
+  Label the force rule and units. Test mass, force, or initial velocity against
+  a limiting case.
 
 ### Oscillations and waves
 
@@ -44,9 +45,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   disturbance without carrying each particle along its full path.
 - **Research:** Inspect a waves chapter for the relation between the oscillator and
   propagation. Check the boundary conditions and whether the model is dispersive.
-- **Show and check:** A snapshot shows spatial structure. Motion separates particle
-  motion from propagation. Linked time plots explain phase. Controls compare frequency
-  and wave speed.
+- **Show and check:** Pair a spatial snapshot with a time trace at one marked
+  point. Use Pinepaper when motion must keep phase aligned across both views.
+  Separate local oscillation from propagation. Change frequency or boundary
+  conditions and explain the result.
 
 ### Thermodynamics
 
@@ -54,9 +56,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   Heat and work describe transfers. Temperature is not stored heat.
 - **Research:** Use a thermodynamics chapter and any needed property table. Check sign
   conventions, process assumptions, and the range of the data.
-- **Show and check:** A boundary diagram identifies transfers. An energy ledger checks
-  the balance. A process path shows state changes. Compare two paths with the same
-  endpoints.
+- **Show and check:** An Excalidraw boundary diagram names heat and work
+  transfers. An energy ledger checks the balance. Use Pinepaper for a state
+  path or temperature profile that changes with the same stated process.
+  Compare two paths with the same endpoints.
 
 ### Electricity and magnetism
 
@@ -114,8 +117,9 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   computed trajectory can still be unstable or physically wrong.
 - **Research:** Use a numerical-methods source plus a known analytic or limiting case.
   Check discretization, solver tolerances, and conservation error.
-- **Show and check:** A step table connects the rule to code. A plot compares analytic
-  and numerical results. Vary the time step and inspect conservation error.
+- **Show and check:** A step table connects the rule to code. A plot compares
+  analytic and numerical results. Use Pinepaper only when the computed state
+  and plot must move together. Vary the time step and inspect conservation error.
 
 ## Source use
 

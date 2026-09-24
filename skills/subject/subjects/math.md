@@ -10,8 +10,9 @@ beside the claim and state the permitted inputs.
 ## Ways to show the idea
 
 Use graphs for variation, diagrams for structure, and worked notation for the
-argument. Use [Manim](../../manim-voice-animation/SKILL.md) for narrated change
-and [Pinepaper](../../lesson-design/references/pinepaper.md) for linked visual states or controls.
+argument. Use [Excalidraw](../../excalidraw/SKILL.md) for a quick labeled figure,
+[Pinepaper](../../pinepaper/SKILL.md) when a curve and geometric state must
+change together, and [Manim](../../manim-voice-animation/SKILL.md) for narrated change.
 Use a plotting library when exact data or numerical curves matter. A picture
 can suggest a theorem; it does not replace a proof.
 
@@ -44,8 +45,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   appearance does not establish a length, angle, or theorem.
 - **Research:** Inspect a geometry or trigonometry chapter that states the givens and
   proves the relation. A labeled figure should match those hypotheses.
-- **Show and check:** Compare diagrams with changed givens. Derive the relation beside
-  the labels. A movable point can test a conjecture before a proof.
+- **Show and check:** Compare labeled figures with changed givens. Use Pinepaper
+  when moving a point must update an angle, length, or graph from the same
+  coordinates. Derive the relation beside the labels. The motion tests a
+  conjecture before a proof.
 
 ### Calculus
 
@@ -55,9 +58,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
 - **Research:** Use a calculus chapter that develops the limit before the rule. Check
   domains, units, and a worked example. Use analysis for a requested rigorous
   justification.
-- **Show and check:** Connect a value table to secants or area strips. Use Manim for a
-  narrated approach to a limit or accumulation. Use an interactive graph to vary the
-  interval. Translate each visual quantity into the equation.
+- **Show and check:** Connect a value table to secants or area strips. Use Pinepaper
+  when the changing interval must update both the construction and its
+  numerical value. Use Manim for a narrated approach to a limit. Translate
+  each visual quantity into the equation.
 
 ### Differential equations and dynamics
 
@@ -67,9 +71,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
 - **Research:** Inspect a differential-equations text for existence assumptions and
   solution methods. Use a numerical-methods source when discretization affects the
   example.
-- **Show and check:** Pair a slope field or phase portrait with a time plot. Use Manim
-  to follow a trajectory and a simulation to vary initial conditions. Compare the
-  computed result with an analytic or limiting case.
+- **Show and check:** Pair a slope field or phase portrait with a time plot. Use
+  Pinepaper if one initial condition must drive both views; keep the equation
+  and solver stated. Use Manim to narrate a trajectory or a simulation to vary
+  initial conditions. Compare with an analytic or limiting case.
 
 ### Linear algebra
 
@@ -78,8 +83,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   Matrix entries do not explain the transformation by themselves.
 - **Research:** Use a linear-algebra chapter that connects maps, bases, and matrices.
   Check dimensions and whether the argument depends on a chosen basis.
-- **Show and check:** A diagram shows input and output vectors. A worked product
-  connects entries to movement. Animate the basis or map. Code tests a larger case.
+- **Show and check:** An Excalidraw figure labels input and output vectors. A
+  worked product connects entries to movement. Use Pinepaper if changing the
+  basis must move the vectors and update coordinates together. Code tests a
+  larger case.
 
 ### Probability
 
@@ -134,9 +141,9 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
 - **Research:** Use an optimization or numerical-analysis chapter for assumptions and
   error bounds. Check a reference implementation only after the mathematical rule is
   clear.
-- **Show and check:** Contours connect direction to change. A worked update explains the
-  rule. Iteration traces expose convergence. Controls compare step size, conditioning,
-  or constraints.
+- **Show and check:** Contours connect direction to change. A worked update and
+  iteration table explain the rule. Use Pinepaper only when a changed step size
+  must update both the path and loss trace. Compare conditioning or constraints.
 
 ## Source use
 

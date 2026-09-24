@@ -12,8 +12,8 @@ Date current figures and policy claims.
 For a new curve, work through a few values and explain its axes and units.
 Use plotted graphs and equations whenever the mechanism is quantitative;
 economics does not need a separate math lesson to use them. Use
-[Excalidraw](../../lesson-design/references/excalidraw.md) for institutional or flow structure,
-[Pinepaper](../../lesson-design/references/pinepaper.md) for linked curves, and
+[Excalidraw](../../excalidraw/SKILL.md) for institutional or flow structure,
+[Pinepaper](../../pinepaper/SKILL.md) for linked curves, and
 [Manim](../../manim-voice-animation/SKILL.md) for narrated adjustment over time.
 An interactive graph tests comparative statics; a simulation tests a sequence
 under stated rules. A smooth path is not a forecast or a causal finding.
@@ -35,9 +35,9 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   price change along a curve differs from a change in the curve's conditions.
 - **Research:** Use an introductory microeconomics chapter for choice and comparative
   statics. Inspect its assumptions before borrowing a graph.
-- **Show and check:** A numerical table grounds the trade-off. A graph shows the
-  relation. A control changes one constraint. A worked comparison explains incidence or
-  choice.
+- **Show and check:** A numerical table grounds the trade-off. Use Pinepaper
+  when changing one constraint must move the feasible set, chosen point, and
+  displayed values together. A worked comparison explains incidence or choice.
 
 ### Macroeconomics
 
@@ -46,9 +46,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
 - **Research:** Use national-accounting definitions and an inspected macroeconomics
   chapter. For data, read the official series metadata, units, adjustments, and
   revisions.
-- **Show and check:** A stock-flow diagram locates quantities. A dated table establishes
-  units. Linked time plots show a model's adjustment. Compare assumptions before
-  treating a path as a forecast.
+- **Show and check:** An Excalidraw stock-flow diagram locates quantities. A
+  dated table establishes units. Use Pinepaper when stocks, flows, and time
+  plots must share one modeled adjustment. State assumptions before treating
+  any path as a forecast.
 
 ### Econometrics
 
@@ -56,9 +57,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   strong association or good prediction does not identify a causal effect.
 - **Research:** Use an econometrics chapter for the estimator and an original study for
   the empirical claim. Inspect comparison groups, identification, data, and uncertainty.
-- **Show and check:** A scatterplot shows association. A study-design diagram shows
-  selection. Simulated confounding tests interpretation. Code and output connect the
-  estimate to the data.
+- **Show and check:** A sourced scatterplot shows association. An Excalidraw
+  study-design diagram shows selection. A labeled simulated confound can
+  change both the diagram and plotted association in Pinepaper. Code and
+  output connect the actual estimate to data.
 
 ### Game theory
 
@@ -66,8 +68,9 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   joint outcome need not be stable under individual choices.
 - **Research:** Inspect a game-theory section with explicit timing and information.
   Check whether the solution assumes simultaneous moves, commitment, or repeated play.
-- **Show and check:** A payoff table explains incentives. A game tree shows timing. Mark
-  best responses. Change information or payoffs to test the conclusion.
+- **Show and check:** A payoff table gives exact incentives. An Excalidraw
+  game tree shows timing. Use Pinepaper if a changed payoff must update best
+  responses and the highlighted path together. Recompute the conclusion.
 
 ### Labor, public, development
 

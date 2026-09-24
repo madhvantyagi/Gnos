@@ -9,13 +9,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Oxanium:wght@200..800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<link rel="stylesheet" href="assets/highlight/github-dark.min.css">
+<script defer src="assets/katex/katex.min.js"></script>
+<script defer src="assets/katex/auto-render.min.js"></script>
+<script defer src="assets/highlight/highlight.min.js"></script>
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+window.gnosRenderMath = function (root) {
   if (window.renderMathInElement) {
-    renderMathInElement(document.body, {
+    window.renderMathInElement(root, {
       delimiters: [
         {left: "$$", right: "$$", display: true},
         {left: "\\[", right: "\\]", display: true},
@@ -24,7 +26,16 @@ document.addEventListener("DOMContentLoaded", function () {
       ],
       throwOnError: false
     });
+  } else {
+    var status = document.getElementById("math-render-status");
+    if (status) status.hidden = false;
   }
+};
+document.addEventListener("DOMContentLoaded", function () {
+  window.gnosRenderMath(document.body);
+  if (window.hljs) document.querySelectorAll("pre.code-block code").forEach(function (code) {
+    window.hljs.highlightElement(code);
+  });
 });
 </script>
 <style>
@@ -253,7 +264,10 @@ tr.current-row td{background:var(--row-selected);}
 .block .block-caption{font-size:13px;color:var(--ink-muted);margin:12px 0 0;}
 .block ul{margin:8px 0;padding-left:22px;}
 .block li{margin:5px 0;font-size:16px;}
-.block pre{box-sizing:border-box;width:min(100%,960px);margin:12px 0 16px;padding:16px 18px;background:var(--code-bg);border:1px solid var(--divider-strong);border-left:3px solid var(--teal);border-radius:6px;color:var(--ink);font-size:13px;line-height:1.65;tab-size:2;overflow-x:auto;white-space:pre;word-break:normal;overflow-wrap:normal;}
+.block pre.code-block{box-sizing:border-box;width:min(100%,960px);margin:12px 0 16px;padding:22px 24px;background:#171d26;border:1px solid #303a49;border-radius:8px;color:#e6edf3;font-size:13px;line-height:1.7;tab-size:2;overflow-x:auto;white-space:pre;word-break:normal;overflow-wrap:normal;box-shadow:0 8px 24px rgba(17,19,24,.11);}
+.block pre.code-block code{display:block;background:transparent;padding:0;font:inherit;white-space:inherit;}
+.inline-code{font-family:var(--mono-font);font-size:.84em;padding:.08em .28em;border-radius:3px;background:#e4e9ee;color:#203044;white-space:break-spaces;}
+#math-render-status{margin:12px 0;padding:10px 14px;border:1px solid var(--warn);border-radius:6px;color:var(--warn);font-size:13px;}
 .math{font-family:Georgia,'Times New Roman','STIX Two Text',serif;color:var(--ink);line-height:1.55;word-break:break-word;}
 .math-display{display:block;text-align:center;font-size:1.2em;padding:16px 14px;margin:12px 0;background:var(--card);border:1px solid var(--divider);border-radius:6px;overflow-x:auto;max-width:960px;}
 .math-empty{display:none;}

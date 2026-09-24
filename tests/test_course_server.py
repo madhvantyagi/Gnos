@@ -1,6 +1,7 @@
 """Exercise saving and gated answers through the real local HTTP boundary."""
 import http.client
 import json
+import shutil
 from pathlib import Path
 import sys
 import tempfile
@@ -106,6 +107,18 @@ class CourseServerTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertIn(self.server.session_token, body)
         self.assertNotIn('predicts local change', body)
+
+    def test_only_bundled_viewer_assets_are_served(self):
+        from render_viewer import VENDOR
+        assets = self.workspace / 'portal/assets'
+        shutil.copytree(VENDOR, assets)
+        (assets / 'private.txt').write_text('not a viewer asset')
+        for asset in ('katex/katex.min.js', 'katex/auto-render.min.js',
+                      'highlight/highlight.min.js'):
+            status, body = self.request('/portal/assets/' + asset)
+            self.assertEqual(status, 200, asset)
+            self.assertTrue(body)
+        self.assertEqual(self.request('/portal/assets/private.txt')[0], 404)
 
     def test_server_stops_serving_an_old_page_when_current_lesson_becomes_draft(self):
         lesson_path = self.workspace / 'lessons/slope-introduction/lesson.json'

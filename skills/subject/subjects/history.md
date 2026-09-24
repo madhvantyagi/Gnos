@@ -15,8 +15,8 @@ triggers, choices, and consequences without making the later outcome inevitable.
 ## Ways to show the idea
 
 Use dated maps, timelines, source excerpts, images, and evidence tables.
-Use [Excalidraw](../../lesson-design/references/excalidraw.md) for institutional relationships
-and [Pinepaper](../../lesson-design/references/pinepaper.md) for sourced spatial or temporal
+Use [Excalidraw](../../excalidraw/SKILL.md) for institutional relationships
+and [Pinepaper](../../pinepaper/SKILL.md) for sourced spatial or temporal
 comparisons. Use [Manim](../../manim-voice-animation/SKILL.md) when migration
 or changing boundaries need a narrated sequence. Label it as reconstruction.
 Audio and video can be primary evidence when provenance is known. A
@@ -44,9 +44,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
 - **Research:** Use a scholarly account to establish the sequence, then inspect laws,
   minutes, votes, or correspondence. Check which records show action and which only
   state an intention.
-- **Show and check:** A chronology establishes order. Two records test motives or
-  constraints. An institutional diagram shows who could decide. Return to the choice
-  before its outcome.
+- **Show and check:** A chronology establishes order. Two records test motives
+  or constraints. Use Excalidraw for the fixed authority map. Use Pinepaper
+  only when dated changes in authority are supported by records. Return to
+  the choice before its outcome.
 
 ### Social / cultural
 
@@ -81,8 +82,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
   or surface similarities do not establish the same cause.
 - **Research:** Use regional scholarship on both sides of the connection and dated maps
   or travel records. Check unequal archive coverage and incompatible period boundaries.
-- **Show and check:** A dated map shows contact. Parallel timelines expose different
-  sequences. Source comparison checks asymmetry and what the map omits.
+- **Show and check:** A dated map shows contact. Parallel timelines expose
+  different sequences. Use Pinepaper to step through documented changes
+  only when each displayed date and boundary has a source. Compare unequal
+  archive coverage and what the map omits.
 
 ### Environmental / medical
 
@@ -91,8 +94,10 @@ Treat the named confusion as a possibility, not a diagnosis of this learner.
 - **Research:** Pair environmental or medical history with measurement records and
   contemporary accounts. Distinguish observations, later reconstructions, and
   institutional responses.
-- **Show and check:** Pair a measured or reconstructed series with documents. Maps show
-  exposure or movement. Label uncertainty before explaining an institutional response.
+- **Show and check:** Pair a measured or reconstructed series with documents.
+  Use Pinepaper for a time-aligned map and graph only when the same dated
+  evidence supports both. Label uncertainty and reconstruction before
+  explaining an institutional response.
 
 ### Gender / race / empire
 
