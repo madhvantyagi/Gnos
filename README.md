@@ -22,6 +22,17 @@ GNOS is a teaching harness made of skills, scripts, and visual tools. Tell it wh
 
 As you work, GNOS records what you tried, where your reasoning broke, and what you could do independently. It uses that evidence to adjust upcoming lessons and exercises. The course grows with you.
 
+## Star history
+
+<p align="center">
+  <a href="https://www.star-history.com/?repos=madhvantyagi%2FGnos&amp;type=date">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=madhvantyagi%2FGnos&amp;type=date&amp;theme=dark" />
+      <img src="https://api.star-history.com/chart?repos=madhvantyagi%2FGnos&amp;type=date" alt="GNOS GitHub stars over time" width="100%" />
+    </picture>
+  </a>
+</p>
+
 ## Study your course in a browser
 
 Just ask GNOS to show your course in the browser. It routes the request to the `course-viewer` skill, which renders the curriculum and current lesson as a study page. Open a topic to read its lesson, work through exercises, and follow its sources and learning materials.
