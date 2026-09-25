@@ -26,10 +26,7 @@ As you work, GNOS records what you tried, where your reasoning broke, and what y
 
 <p align="center">
   <a href="https://github.com/madhvantyagi/Gnos/stargazers">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="assets/star-history-dark.svg" />
-      <img src="assets/star-history-light.svg" alt="GNOS GitHub stars over time, based on recorded weekly additions" width="100%" />
-    </picture>
+    <img src="assets/star-history-light.svg" alt="GNOS GitHub stars over time, based on recorded daily additions" width="100%" />
   </a>
 </p>
 

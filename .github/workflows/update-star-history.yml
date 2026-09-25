@@ -8,6 +8,7 @@ on:
     paths:
       - README.md
       - .github/workflows/update-star-history.yml
+      - .github/scripts/render_star_history.py
 
 permissions:
   contents: read
@@ -25,20 +26,15 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Generate star history
-        uses: leereilly/star-chart@v0.3
-        with:
-          token: ${{ github.token }}
-          repository: ${{ github.repository }}
-          output: assets/star-history.svg
-          style: step-line
-          dual_theme: true
-          date_format: iso
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/render_star_history.py
 
       - name: Commit updated charts
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assets/star-history-light.svg assets/star-history-dark.svg
+          git add assets/star-history-light.svg
           if ! git diff --cached --quiet; then
             git commit -m 'chore: update star history'
             git push
