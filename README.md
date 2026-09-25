@@ -25,10 +25,10 @@ As you work, GNOS records what you tried, where your reasoning broke, and what y
 ## Star history
 
 <p align="center">
-  <a href="https://www.star-history.com/?repos=madhvantyagi%2FGnos&amp;type=date">
+  <a href="https://github.com/madhvantyagi/Gnos/stargazers">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=madhvantyagi%2FGnos&amp;type=date&amp;theme=dark" />
-      <img src="https://api.star-history.com/chart?repos=madhvantyagi%2FGnos&amp;type=date" alt="GNOS GitHub stars over time" width="100%" />
+      <source media="(prefers-color-scheme: dark)" srcset="assets/star-history-dark.svg" />
+      <img src="assets/star-history-light.svg" alt="GNOS GitHub stars over time, based on recorded weekly additions" width="100%" />
     </picture>
   </a>
 </p>
