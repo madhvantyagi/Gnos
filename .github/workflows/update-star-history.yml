@@ -32,6 +32,7 @@ jobs:
           output: assets/star-history.svg
           style: step-line
           dual_theme: true
+          date_format: iso
 
       - name: Commit updated charts
         run: |
