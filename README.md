@@ -71,36 +71,50 @@ Frontier models know a great deal, but a good answer is only one part of teachin
 
 ## Get started
 
-### Use GNOS as a plugin
+Start with Git, Python 3, and your preferred coding agent installed. Clone GNOS once and use this folder as your learning workspace:
 
-1. **Codex:** Install GNOS from this repository:
+```sh
+git clone https://github.com/madhvantyagi/Gnos.git
+cd Gnos
+```
 
-   ```sh
-   codex plugin marketplace add madhvantyagi/Gnos --ref main
-   codex plugin add gnos@gnos
-   ```
+### Codex
 
-   Start a new task: “Use the GNOS learning-orchestrator skill to teach me [topic].”
+Install the [plugin](https://developers.openai.com/codex/plugins/) through the Codex CLI:
 
-2. **Claude Code:** Clone the repository and load GNOS for the session:
+```sh
+codex plugin marketplace add madhvantyagi/Gnos --ref main
+codex plugin add gnos@gnos
+```
 
-   ```sh
-   git clone https://github.com/madhvantyagi/Gnos.git
-   cd Gnos
-   claude --plugin-dir .
-   ```
+Start a new Codex session in `Gnos`, or open the folder in the Codex app and start a new task. Ask:
 
-   Run `/gnos:learning-orchestrator Teach me [topic]` in Claude Code.
+> Use GNOS. Read `skills/learning-orchestrator/SKILL.md` in this workspace and teach me [topic].
 
-### Use GNOS with another agent
+### Claude Code
 
-1. **Any agent that reads local files:** Clone the repo, open it as your workspace, and send:
+From `Gnos`, launch Claude Code with the plugin:
 
-   ```
-   Read `AGENTS.md`, then `skills/learning-orchestrator/SKILL.md`. Help me learn [topic].
-   ```
+```sh
+claude --plugin-dir .
+```
 
-2. **Shape the course:** For a longer course, also give your goal, starting point, desired depth, and time. For a single question, just ask it.
+Enter `/gnos:learning-orchestrator Teach me [topic]`. Repeat the launch command each session; [`--plugin-dir` is session-only](https://code.claude.com/docs/en/plugins/create#load-a-plugin-for-one-session).
+
+### OpenCode, Antigravity, and other agents
+
+Open the `Gnos` folder as your workspace. For **OpenCode**, run `opencode` from that folder; for **Antigravity**, open it in the editor. Send:
+
+```text
+Read AGENTS.md, then skills/learning-orchestrator/SKILL.md.
+Use GNOS to teach me [topic]. Keep courses and progress in this workspace.
+```
+
+This uses GNOS directly from its files; your agent needs local file and terminal access. [OpenCode also loads `AGENTS.md` automatically](https://opencode.ai/docs/rules/). Keep the repository together so its teachers, references, and scripts remain available.
+
+**Visual tools:** Codex and Claude Code load the server definitions in [`.mcp.json`](.mcp.json). For [OpenCode](https://opencode.ai/docs/mcp-servers/) or [Antigravity](https://antigravity.google/docs/mcp), configure those servers using the host's MCP format. Pinepaper needs Node.js/npm; image generation uses your agent's available tools, while PDF and video lessons need their own dependencies.
+
+For a course, share your goal, starting point, depth, and available time. To study the result, ask: **“Show my course in the browser.”**
 
 ## Help it grow
 
