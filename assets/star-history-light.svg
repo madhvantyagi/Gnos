@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="title desc" font-family="Arial, Helvetica, sans-serif">
 <title id="title">Star history for madhvantyagi/Gnos</title>
-<desc id="desc">Daily recorded stars for madhvantyagi/Gnos from 2026-09-23 to 2026-09-26. Starts just before the first recorded star. Latest recorded total: 233.</desc>
+<desc id="desc">Daily recorded stars for madhvantyagi/Gnos from 2026-09-23 to 2026-09-26. Starts just before the first recorded star. Latest recorded total: 241.</desc>
 <rect width="960" height="390" fill="#ffffff"/>
 <text x="70" y="38" fill="#24292f" font-size="20" font-weight="700">madhvantyagi/Gnos</text>
 <text x="70" y="62" fill="#57606a" font-size="13">Daily recorded stars · since Sep 24, 2026</text>
-<text x="918" y="38" text-anchor="end" fill="#24292f" font-size="19" font-weight="700">★ 233 recorded stars</text>
+<text x="918" y="38" text-anchor="end" fill="#24292f" font-size="19" font-weight="700">★ 241 recorded stars</text>
 <line x1="70" y1="324.0" x2="918" y2="324.0" stroke="#d8dee4" stroke-width="1"/>
 <text x="58" y="328.0" text-anchor="end" fill="#57606a" font-size="12">0</text>
 <line x1="70" y1="248.0" x2="918" y2="248.0" stroke="#d8dee4" stroke-width="1"/>
@@ -13,8 +13,8 @@
 <text x="58" y="176.0" text-anchor="end" fill="#57606a" font-size="12">200</text>
 <line x1="70" y1="96.0" x2="918" y2="96.0" stroke="#d8dee4" stroke-width="1"/>
 <text x="58" y="100.0" text-anchor="end" fill="#57606a" font-size="12">300</text>
-<path d="M70.0,324.0 L352.7,232.0 L635.3,153.0 L918.0,146.9 L918.0,324 L70.0,324 Z" fill="#2da44e" fill-opacity="0.13"/>
-<path d="M70.0,324.0 L352.7,232.0 L635.3,153.0 L918.0,146.9" fill="none" stroke="#1a7f37" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M70.0,324.0 L352.7,232.0 L635.3,153.0 L918.0,140.8 L918.0,324 L70.0,324 Z" fill="#2da44e" fill-opacity="0.13"/>
+<path d="M70.0,324.0 L352.7,232.0 L635.3,153.0 L918.0,140.8" fill="none" stroke="#1a7f37" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
 <text x="70.0" y="349" text-anchor="start" fill="#57606a" font-size="12">Sep 23</text>
 <text x="352.7" y="349" text-anchor="middle" fill="#57606a" font-size="12">Sep 24</text>
 <text x="635.3" y="349" text-anchor="middle" fill="#57606a" font-size="12">Sep 25</text>
@@ -22,5 +22,5 @@
 <circle cx="70.0" cy="324.0" r="4" fill="#1a7f37"><title>Sep 23: 0 stars</title></circle>
 <circle cx="352.7" cy="232.0" r="4" fill="#1a7f37"><title>Sep 24: 121 stars</title></circle>
 <circle cx="635.3" cy="153.0" r="4" fill="#1a7f37"><title>Sep 25: 225 stars</title></circle>
-<circle cx="918.0" cy="146.9" r="4" fill="#1a7f37"><title>Sep 26: 233 stars</title></circle>
+<circle cx="918.0" cy="140.8" r="4" fill="#1a7f37"><title>Sep 26: 241 stars</title></circle>
 </svg>
