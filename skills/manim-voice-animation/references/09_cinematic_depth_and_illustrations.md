@@ -103,9 +103,8 @@ Remove the effect when it competes with notation, labels, or the active state.
 
 The helpers in `components.illustrations` are off by default: a scene with
 no grid, glow, particle, or camera move is the baseline, and at most one
-effect should be active per cue. The exemplar
-`examples/animations/gradient/scene.py` renders a clean diagram with every
-helper unset.
+effect should be active per cue. A clean diagram with every helper unset
+is the valid baseline.
 
 - **Grid / halo**: `maybe_grid(enabled=False)` adds nothing unless enabled;
   `optional_glow(mob, enabled=False)` returns the mobject untouched unless

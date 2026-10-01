@@ -140,4 +140,4 @@ Read only the reference for the chosen scene:
 - [Optional visual components](references/09_cinematic_depth_and_illustrations.md)
 
 The five subject templates are starting points, not verified lessons for every
-input. The runnable GNOS example is `examples/animations/gradient/scene.py`.
+input. Start from the subject templates in `templates/`.
