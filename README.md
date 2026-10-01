@@ -13,6 +13,8 @@
   &nbsp;·&nbsp;
   <a href=".claude-plugin/plugin.json">Claude Code plugin</a>
   &nbsp;·&nbsp;
+  <a href=".cursor-plugin/plugin.json">Cursor plugin</a>
+  &nbsp;·&nbsp;
   <a href="LICENSE">MIT license</a>
 </p>
 
@@ -71,7 +73,9 @@ Frontier models know a great deal, but a good answer is only one part of teachin
 
 ## Get started
 
-Start with Git, Python 3, and your preferred coding agent installed. Clone GNOS once and use this folder as your learning workspace:
+Start with Git, Python 3, and your preferred coding agent installed. Codex, Claude Code, and other agents use a local checkout. Cursor adds the skills from Customize, in the section below.
+
+Clone GNOS once and use this folder as your learning workspace:
 
 ```sh
 git clone https://github.com/madhvantyagi/Gnos.git
@@ -101,6 +105,31 @@ claude --plugin-dir .
 
 Enter `/gnos:learning-orchestrator Teach me [topic]`. Repeat the launch command each session; [`--plugin-dir` is session-only](https://code.claude.com/docs/en/plugins/create#load-a-plugin-for-one-session).
 
+### Cursor
+
+1. Open **Customize**.
+2. Add this repository:
+
+   ```text
+   https://github.com/madhvantyagi/Gnos
+   ```
+
+3. Open a new agent chat and send:
+
+   > Use GNOS. Read `skills/learning-orchestrator/SKILL.md` and teach me [topic].
+
+That installs the teaching skills. These buttons install the diagram servers:
+
+[![Add Excalidraw to Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=excalidraw&config=eyJ0eXBlIjoiaHR0cCIsInVybCI6Imh0dHBzOi8vbWNwLmV4Y2FsaWRyYXcuY29tL21jcCJ9)
+
+Excalidraw
+
+[![Add Pinepaper to Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=pinepaper&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsIi1wIiwiQHBpbmVwYXBlci5zdHVkaW8vbWNwLXNlcnZlckAxLjYuNyIsIi1wIiwicHVwcGV0ZWVyQDI1LjkuMCIsInBpbmVwYXBlci1tY3AiXSwiZW52Ijp7IlBJTkVQQVBFUl9FWEVDVVRJT05fTU9ERSI6InB1cHBldGVlciIsIlBJTkVQQVBFUl9IRUFETEVTUyI6InRydWUiLCJQSU5FUEFQRVJfVE9PTEtJVCI6ImFnZW50IiwiUElORVBBUEVSX1ZFUkJPU0lUWSI6ImNvbXBhY3QiLCJQSU5FUEFQRVJfU0NSRUVOU0hPVF9NT0RFIjoib25fcmVxdWVzdCJ9fQ%3D%3D)
+
+Pinepaper
+
+Approve Excalidraw and Pinepaper if Cursor asks. To keep a course in a local folder, clone the repository, open that folder, and send the same message. The folder loads the same skills.
+
 ### OpenCode, Antigravity, and other agents
 
 Open the `Gnos` folder as your workspace. For **OpenCode**, run `opencode` from that folder; for **Antigravity**, open it in the editor. Send:
@@ -112,7 +141,7 @@ Use GNOS to teach me [topic]. Keep courses and progress in this workspace.
 
 This uses GNOS directly from its files; your agent needs local file and terminal access. [OpenCode also loads `AGENTS.md` automatically](https://opencode.ai/docs/rules/). Keep the repository together so its teachers, references, and scripts remain available.
 
-**Visual tools and Khan Academy:** [JSXGraph](skills/jsxgraph/SKILL.md) builds mathematical graphs with a bundled browser runtime; it needs no MCP or account. Codex and Claude Code load the server definitions in [`.mcp.json`](.mcp.json). For [OpenCode](https://opencode.ai/docs/mcp-servers/) or [Antigravity](https://antigravity.google/docs/mcp), configure those servers using the host's MCP format. Pinepaper and Khan Academy search need Node.js/npm; image generation uses your agent's available tools, while PDF and video lessons need their own dependencies.
+**Visual tools:** Codex and Claude Code load the server definitions in [`.mcp.json`](.mcp.json). In Cursor, use the Add to Cursor buttons above, or open the folder so [`.cursor/mcp.json`](.cursor/mcp.json) loads the same servers. For [OpenCode](https://opencode.ai/docs/mcp-servers/) or [Antigravity](https://antigravity.google/docs/mcp), configure those servers using the host's MCP format. Pinepaper needs Node.js/npm; image generation uses your agent's available tools, while PDF and video lessons need their own dependencies.
 
 For a course, share your goal, starting point, depth, and available time. To study the result, ask: **“Show my course in the browser.”**
 

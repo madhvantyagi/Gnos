@@ -13,6 +13,38 @@ from course_contract import SUBJECTS, TEACHERS, validate_course
 from lesson_contract import validate_lesson
 
 
+def validate_cursor(errors):
+    plugin_path = ROOT / '.cursor-plugin' / 'plugin.json'
+    market_path = ROOT / '.cursor-plugin' / 'marketplace.json'
+    try:
+        plugin = json.loads(plugin_path.read_text())
+        market = json.loads(market_path.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        errors.append(f'Cursor plugin manifest: {exc}')
+        return
+    if plugin.get('name') != 'gnos':
+        errors.append('.cursor-plugin/plugin.json: name must be gnos')
+    for field in ('skills', 'mcpServers', 'logo'):
+        rel = plugin.get(field)
+        if not isinstance(rel, str) or not (ROOT / rel).exists():
+            errors.append(f'.cursor-plugin/plugin.json: missing {field} path {rel}')
+    entries = market.get('plugins') or []
+    if market.get('name') != 'gnos' or [entry.get('name') for entry in entries] != ['gnos']:
+        errors.append('.cursor-plugin/marketplace.json: expected the gnos plugin')
+    elif entries[0].get('source') != '.':
+        errors.append('.cursor-plugin/marketplace.json: source must be the repository root')
+    try:
+        shared = json.loads((ROOT / '.mcp.json').read_text())
+        cursor_mcp = json.loads((ROOT / '.cursor' / 'mcp.json').read_text())
+        if cursor_mcp != shared:
+            errors.append('.cursor/mcp.json must match .mcp.json')
+    except (OSError, json.JSONDecodeError) as exc:
+        errors.append(f'.cursor/mcp.json: {exc}')
+    skills = ROOT / '.cursor' / 'skills'
+    if not skills.is_symlink() or skills.resolve() != (ROOT / 'skills').resolve():
+        errors.append('.cursor/skills must symlink to ../skills')
+
+
 def validate():
     errors = []
     skills = sorted((ROOT / 'skills').glob('*/SKILL.md'))
@@ -85,6 +117,7 @@ def validate():
             errors.append(f'{path.relative_to(ROOT)}: {exc}')
     if (ROOT/'scripts').exists():
         errors.append('Scripts must live inside their owning skill; root scripts/ exists')
+    validate_cursor(errors)
     if errors:
         print('\n'.join(errors), file=sys.stderr)
         return 1
