@@ -21,7 +21,7 @@ from course_workspace import (  # noqa: E402
     write_plan,
     workspace_path,
 )
-from lesson_contract import lesson_fingerprint  # noqa: E402
+from lesson_contract import lesson_design_fingerprint, lesson_fingerprint  # noqa: E402
 import course_workspace as workspace  # noqa: E402
 import learner_state  # noqa: E402
 
@@ -154,10 +154,12 @@ def valid_lesson(publication="draft", course=None):
     if publication == "ready":
         target = validate_course(course if course is not None else valid_v2_course())
         lesson["design_receipt"] = {
+            "schema_version": 2,
             "designed_at": "2026-09-12T16:00:00Z",
             "course_fingerprint": course_content_fingerprint(target),
             "skill_route": "skills/lesson-design/SKILL.md",
             "review": "pass",
+            "lesson_content_fingerprint": lesson_design_fingerprint(lesson),
         }
     return lesson
 
@@ -323,6 +325,7 @@ class CourseWorkspaceTests(unittest.TestCase):
 
         replacement = valid_lesson("ready")
         replacement["title"] = "Replacement"
+        replacement["design_receipt"]["lesson_content_fingerprint"] = lesson_design_fingerprint(replacement)
         with mock.patch.object(workspace, "_write_plan_unlocked", side_effect=ConflictError("injected")):
             with self.assertRaises(ConflictError):
                 publish_lesson(path, replacement)
