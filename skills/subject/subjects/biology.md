@@ -24,6 +24,10 @@ Label direction, scale, units, and time; distinguish model outputs from data.
 Leena owns mechanisms and biological interpretation. Bridge to chemistry for
 bonds or reactions, math for quantitative reasoning, and CS for reproducible
 analysis. An illustrative pathway does not establish a clinical recommendation.
+There is no standalone chemistry guide in this harness. For a chemical
+bottleneck, inspect the relevant chemistry source and explain that bounded
+step here; do not invent a `chemistry` subject route or substitute chemical
+engineering merely because its name includes chemistry.
 
 ## Teaching each area
 
