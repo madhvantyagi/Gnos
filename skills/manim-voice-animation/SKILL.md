@@ -47,7 +47,7 @@ Read [references/02_voiceover_synchronization.md](references/02_voiceover_synchr
 manifest path, and scene ID; call `play(cue_id, *animations, run_time=...)` once
 per cue; call `finish(output_prefix)` after all cues. It attaches each local clip
 at the current scene time, fills unused cue duration with a wait, applies
-`pause_after`, and exports actual cue starts to SRT and timing JSON. Do not reuse
+`pause_after`, and exports actual cue starts to SRT, WebVTT, and timing JSON. Do not reuse
 a cue or leave one unplayed. An animation must fit inside its cue.
 
 Use the project's `.venv/bin/python` for the commands below when that
@@ -104,6 +104,11 @@ cp output/voiced.mp4 learners/<learner>/courses/<course-id>/artifacts/videos/<sl
 python3 skills/course-design/scripts/manage_artifact.py --learners-root learners \
   register <learner-id> <course-id> --file artifact.json
 ```
+
+Register the exported `.vtt` as a ready `text/vtt` companion artifact and the
+transcript as a separate ready text artifact. Set the video's
+`metadata.captions` and `metadata.transcript` to their registered artifact IDs.
+Check captions in the native player and open the transcript after rendering.
 
 The artifact file uses `type: voice-animation`, `mime_type: video/mp4`,
 the topic's `lesson_id`, and `status: ready`. Registration checks that a ready
