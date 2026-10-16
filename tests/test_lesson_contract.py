@@ -378,6 +378,19 @@ class LessonContractTests(unittest.TestCase):
         lesson = valid_lesson(); lesson["blocks"][-1]["exercise_id"] = "missing"
         with self.assertRaises(ValueError): validate_lesson(lesson, valid_v2_course())
 
+    def test_lesson_rejects_exercise_missing_from_topic_exercise_ids(self):
+        course = validate_course(valid_v2_course())
+        unlisted = valid_lesson(course)
+        unlisted["exercises"][0]["id"] = "unlisted-exercise"
+        unlisted["blocks"][-1]["exercise_id"] = "unlisted-exercise"
+        with self.assertRaisesRegex(ValueError, "must be listed in topic exercise_ids"):
+            validate_lesson(unlisted, course)
+        empty_topic = copy.deepcopy(valid_v2_course())
+        empty_topic["chapters"][0]["topics"][0]["exercise_ids"] = []
+        validated_empty = validate_course(empty_topic)
+        with self.assertRaisesRegex(ValueError, "must be listed in topic exercise_ids"):
+            validate_lesson(valid_lesson(validated_empty), validated_empty)
+
     def test_lesson_fingerprint_is_stable(self):
         from lesson_contract import lesson_fingerprint
         self.assertEqual(lesson_fingerprint(valid_lesson()), lesson_fingerprint(copy.deepcopy(valid_lesson())))
