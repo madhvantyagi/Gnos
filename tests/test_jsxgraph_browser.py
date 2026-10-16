@@ -17,6 +17,7 @@ from build_graph import build_graph
 from course_contract import validate_course
 from course_workspace import create_workspace, publish_lesson
 from tests.test_lesson_contract import valid_lesson, valid_v2_course
+from tests.test_portal_interactions import reviewed_lesson
 
 
 EXAMPLES = {
@@ -65,7 +66,7 @@ def make_course(root, example, palette=None):
     exercise.update(concepts=[concept], prompt=task, response_type="long-text",
                     evaluation={"mode": "manual"}, success_criteria=[task],
                     reference_block_ids=["intro", "graph"])
-    publish_lesson(workspace, lesson)
+    publish_lesson(workspace, reviewed_lesson(lesson))
     html = workspace / "artifacts/simulations/graph.html"
     html.write_text(build_graph(ROOT / f"skills/jsxgraph/examples/{example}.js", palette or default_palette))
     register_artifact(workspace, {
