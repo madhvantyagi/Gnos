@@ -247,7 +247,7 @@ def _public_response(response):
         if isinstance(response.get("text"), str):
             result["text"] = response["text"]
         value = response.get("value")
-        if isinstance(value, (str, int, float, bool)) or value is None:
+        if "value" in response and (isinstance(value, (str, int, float, bool)) or value is None):
             result["value"] = deepcopy(value)
         return result
     if isinstance(response, (str, int, float, bool)) or response is None:
@@ -348,7 +348,7 @@ def public_exercises(lessons: list[dict], submissions: list[dict]) -> list[dict]
     for lesson in lessons:
         for exercise in lesson.get("exercises", []):
             item = _copy_if_present(
-                exercise, ("id", "concepts", "prompt", "response_type", "evaluation", "reference_block_ids")
+                exercise, ("id", "concepts", "prompt", "response_type", "evaluation", "reference_block_ids", "exercise_fingerprint", "lesson_fingerprint")
             )
             item["lesson_id"] = lesson["id"]
             item["chapter_id"] = lesson["chapter_id"]
