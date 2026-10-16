@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[3]
-SUBJECTS = ('math', 'physics', 'history', 'biology', 'economics', 'computer-science')
+SUBJECTS = tuple(sorted(path.stem for path in (ROOT / 'skills/subject/subjects').glob('*.md')))
 
 
 def resources():
