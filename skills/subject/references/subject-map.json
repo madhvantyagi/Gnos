@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "subjects": {
+    "accounting": {
+      "title": "Accounting",
+      "guide": "skills/subject/subjects/accounting.md",
+      "subfields": [
+        {"id": "accounting.financial-accounting", "section": "Financial accounting", "aliases": ["accrual", "financial statements"], "capability": "Recognize one transaction and reconcile its entries and statements."},
+        {"id": "accounting.managerial-cost", "section": "Managerial and cost accounting", "aliases": ["cost accounting", "relevant costs", "break-even"], "capability": "Compare the costs that change under a stated operating decision.", "bridges": [{"subject": "business", "when": "The operating alternatives and decision boundary need definition."}]},
+        {"id": "accounting.audit-controls", "section": "Audit and controls", "aliases": ["auditing", "internal controls"], "capability": "Connect an assertion and control test to actual transaction evidence."},
+        {"id": "accounting.tax-reporting", "section": "Tax and reporting", "aliases": ["tax", "book-to-tax"], "capability": "Apply an inspected rule for the entity, jurisdiction, and reporting period."}
+      ]
+    },
+    "artificial-intelligence": {
+      "title": "Artificial intelligence",
+      "guide": "skills/subject/subjects/artificial-intelligence.md",
+      "subfields": [
+        {"id": "artificial-intelligence.search-planning", "section": "Search and planning", "aliases": ["A*", "heuristics", "path planning"], "capability": "Trace a search and check its cost and heuristic guarantees."},
+        {"id": "artificial-intelligence.knowledge-reasoning", "section": "Knowledge and reasoning", "aliases": ["knowledge representation", "logic"], "capability": "Determine which conclusions follow under explicit semantics."},
+        {"id": "artificial-intelligence.machine-learning", "section": "Machine learning", "aliases": ["ML", "supervised learning", "prediction"], "capability": "Evaluate a learned prediction against a baseline and held-out data.", "bridges": [{"subject": "math", "when": "A sampling or probability step blocks evaluation."}, {"subject": "computer-science", "when": "Implementation or data-pipeline behavior is the bottleneck."}]},
+        {"id": "artificial-intelligence.neural-networks", "section": "Neural networks and optimization", "aliases": ["deep learning", "backpropagation", "gradient descent"], "capability": "Trace the forward pass, derivative, and parameter update separately.", "bridges": [{"subject": "math", "when": "A derivative or vector-shape step blocks the update."}]},
+        {"id": "artificial-intelligence.language-models", "section": "Language models and transformers", "aliases": ["LLM", "transformer", "attention", "tokenization"], "capability": "Follow a token prediction while preserving architecture and mask assumptions.", "bridges": [{"subject": "math", "when": "A matrix product or probability step blocks the explanation."}]},
+        {"id": "artificial-intelligence.reinforcement-learning", "section": "Reinforcement learning foundations", "aliases": ["RL", "MDP", "Bellman"], "capability": "Compare policy choices using states, rewards, transitions, and returns."},
+        {"id": "artificial-intelligence.policy-optimization", "section": "Policy optimization and language-model post-training", "aliases": ["PPO", "GRPO", "post-training", "policy gradient"], "capability": "Explain the quantities and assumptions in an inspected policy objective.", "bridges": [{"subject": "math", "when": "An expectation, derivative, or ratio needs a bounded derivation."}]},
+        {"id": "artificial-intelligence.agents-robotics", "section": "Agents and robotics", "aliases": ["AI agents", "robotics", "tool use"], "capability": "Connect an observation, action, and verified result under an evaluation protocol.", "bridges": [{"subject": "computer-science", "when": "Tool interfaces, execution state, or recovery need implementation reasoning."}, {"subject": "physics", "when": "A physical force, frame, or sensor model blocks the robot claim."}]}
+      ]
+    },
+    "biology": {
+      "title": "Biology",
+      "guide": "skills/subject/subjects/biology.md",
+      "subfields": [
+        {"id": "biology.cell-transport", "section": "Cell structure and transport", "aliases": ["membranes", "diffusion", "osmosis"], "capability": "Explain transport across compartments while conserving the tracked solute.", "bridges": [{"subject": "physics", "when": "Forces, diffusion, or energy explain the named transport step."}]},
+        {"id": "biology.molecular-biochemistry", "section": "Molecular biology / biochemistry", "aliases": ["biochemistry", "enzymes", "metabolism"], "capability": "Explain a reaction mechanism while separating rate, matter, and energy."},
+        {"id": "biology.genetics-genomics", "section": "Genetics and genomics", "aliases": ["genetics", "genomics", "DNA"], "capability": "Connect inheritance or sequence evidence to the biological claim."},
+        {"id": "biology.physiology", "section": "Physiology", "aliases": ["homeostasis", "organ systems"], "capability": "Explain a regulated process across the needed biological scales."},
+        {"id": "biology.evolution", "section": "Evolution", "aliases": ["natural selection", "population genetics"], "capability": "Explain population change using inheritance, variation, and evidence."},
+        {"id": "biology.ecology", "section": "Ecology", "aliases": ["ecosystems", "populations"], "capability": "Interpret population interactions under stated environmental conditions."},
+        {"id": "biology.development", "section": "Development and cell differentiation", "aliases": ["cell differentiation", "developmental biology"], "capability": "Explain changes in cell state without inferring purpose from outcome."},
+        {"id": "biology.microbiology", "section": "Microbiology and host interaction", "aliases": ["microbes", "host interaction", "immunology"], "capability": "Connect organism and host mechanisms to observed interaction evidence."},
+        {"id": "biology.quantitative-biology", "section": "Experimental / quantitative biology", "aliases": ["experimental biology", "biostatistics"], "capability": "Judge a biological claim using the measurement and experimental comparison.", "bridges": [{"subject": "math", "when": "A statistical tool blocks interpretation of the biological comparison."}, {"subject": "computer-science", "when": "Reproducible computation blocks analysis of the observations."}]}
+      ]
+    },
+    "business": {
+      "title": "Business",
+      "guide": "skills/subject/subjects/business.md",
+      "subfields": [
+        {"id": "business.strategy", "section": "Strategy", "aliases": ["competitive strategy", "value chain"], "capability": "Compare feasible strategic choices using constraints and operating evidence.", "bridges": [{"subject": "economics", "when": "A named market mechanism determines the comparison."}]},
+        {"id": "business.operations", "section": "Operations", "aliases": ["operations management", "throughput", "queues"], "capability": "Identify which process constraint changes throughput or waiting time."},
+        {"id": "business.marketing", "section": "Marketing", "aliases": ["conversion", "customer acquisition", "attribution"], "capability": "Connect a customer outcome to the cohort and comparison that support it.", "bridges": [{"subject": "psychology", "when": "A behavioral mechanism needs measured support."}, {"subject": "math", "when": "Sampling uncertainty blocks the experiment comparison."}]},
+        {"id": "business.organizations", "section": "Organizations", "aliases": ["organizational behavior", "management"], "capability": "Trace authority, information, and incentives through an observed workflow."},
+        {"id": "business.finance-entrepreneurship", "section": "Finance and entrepreneurship", "aliases": ["runway", "unit economics", "startup finance"], "capability": "Compare profit, cash timing, and financing needs under stated assumptions.", "bridges": [{"subject": "accounting", "when": "Recognition and collection must be reconciled."}]}
+      ]
+    },
+    "chemical-engineering": {
+      "title": "Chemical engineering",
+      "guide": "skills/subject/subjects/chemical-engineering.md",
+      "subfields": [
+        {"id": "chemical-engineering.balances", "section": "Material and energy balances", "aliases": ["material balance", "energy balance", "mass balance"], "capability": "Conserve matter and energy across an explicit process boundary."},
+        {"id": "chemical-engineering.thermodynamics", "section": "Thermodynamics", "aliases": ["phase equilibrium", "chemical potential", "entropy"], "capability": "Judge process feasibility from states, phases, and thermodynamic assumptions."},
+        {"id": "chemical-engineering.transport", "section": "Transport phenomena", "aliases": ["transport phenomena", "heat transfer", "mass transfer", "fluid flow"], "capability": "Connect a transport gradient and boundary condition to a process rate.", "bridges": [{"subject": "physics", "when": "A force or transport law needs physical interpretation."}, {"subject": "math", "when": "A differential equation blocks the process calculation."}]},
+        {"id": "chemical-engineering.reaction-engineering", "section": "Reaction engineering", "aliases": ["reactor design", "kinetics"], "capability": "Connect reaction rate and reactor assumptions to conversion."},
+        {"id": "chemical-engineering.separations", "section": "Separations", "aliases": ["distillation", "extraction"], "capability": "Explain a separation using phases, composition, and balances."},
+        {"id": "chemical-engineering.process-control", "section": "Process design and control", "aliases": ["process design", "control engineering"], "capability": "Trace a process response and control action under an explicit model.", "bridges": [{"subject": "computer-science", "when": "Simulation code or implementation behavior needs checking."}]}
+      ]
+    },
+    "computer-science": {
+      "title": "Computer science",
+      "guide": "skills/subject/subjects/computer-science.md",
+      "subfields": [
+        {"id": "computer-science.programming", "section": "Programming", "aliases": ["coding", "variables", "recursion"], "capability": "Trace program execution and check its input and mutation contract."},
+        {"id": "computer-science.data-structures", "section": "Data structures", "aliases": ["arrays", "hash tables", "trees"], "capability": "Explain representation and operation costs using concrete state."},
+        {"id": "computer-science.algorithms", "section": "Algorithms", "aliases": ["dynamic programming", "DP", "graph algorithms"], "capability": "Justify an algorithm through its invariant, correctness, and complexity.", "bridges": [{"subject": "math", "when": "An induction, recurrence, or counting argument blocks correctness."}]},
+        {"id": "computer-science.systems", "section": "Systems and operating systems", "aliases": ["operating systems", "OS", "memory", "threads"], "capability": "Explain a system mechanism under its runtime and ownership assumptions."},
+        {"id": "computer-science.networks-distributed", "section": "Networks and distributed systems", "aliases": ["networking", "distributed systems", "consensus"], "capability": "Trace messages and failures under an explicit communication model."},
+        {"id": "computer-science.relational-data", "section": "Relational data and queries", "aliases": ["SQL", "databases", "joins"], "capability": "Derive query results from keys, rows, and relational operations."},
+        {"id": "computer-science.transactions-storage", "section": "Transactions and storage", "aliases": ["database transactions", "isolation", "durability"], "capability": "Explain stored state and transaction guarantees under competing operations."},
+        {"id": "computer-science.theory-languages", "section": "Theory and languages", "aliases": ["automata", "formal languages", "type systems"], "capability": "Check a formal computation or language claim under its definitions."},
+        {"id": "computer-science.ai-implementation", "section": "AI and machine learning", "aliases": ["AI", "machine learning", "ML"], "capability": "Implement a learning pipeline while leaving model evidence to the AI guide.", "bridges": [{"subject": "artificial-intelligence", "when": "The claim concerns generalization, model choice, or evaluation."}]},
+        {"id": "computer-science.apis-design", "section": "APIs and software design", "aliases": ["API", "software architecture", "software design"], "capability": "Connect an interface contract to state, errors, and callers."},
+        {"id": "computer-science.security", "section": "Security", "aliases": ["cybersecurity", "threat modeling"], "capability": "Trace an actual attacker path across an asset boundary before judging exploitability."}
+      ]
+    },
+    "economics": {
+      "title": "Economics",
+      "guide": "skills/subject/subjects/economics.md",
+      "subfields": [
+        {"id": "economics.microeconomics", "section": "Microeconomics", "aliases": ["supply and demand", "elasticity"], "capability": "Explain a choice and market mechanism under stated constraints."},
+        {"id": "economics.macroeconomics", "section": "Macroeconomics", "aliases": ["inflation", "aggregate demand", "GDP"], "capability": "Trace aggregate adjustment while keeping identities and behavioral assumptions distinct."},
+        {"id": "economics.econometrics", "section": "Econometrics", "aliases": ["causal inference", "regression", "instrumental variables"], "capability": "Assess an economic estimate through identification, measurement, and uncertainty.", "bridges": [{"subject": "math", "when": "The inference tool needs a bounded statistical explanation."}]},
+        {"id": "economics.game-theory", "section": "Game theory", "aliases": ["Nash equilibrium", "strategic interaction"], "capability": "Predict a choice conditional on other actors and the stated game."},
+        {"id": "economics.labor-public-development", "section": "Labor, public, development", "aliases": ["labor economics", "public economics", "development economics"], "capability": "Assess a policy or labor mechanism using its population and comparison."},
+        {"id": "economics.behavioral-economics", "section": "Behavioral economics", "aliases": ["biases", "prospect theory"], "capability": "Compare a behavioral explanation against measured choice evidence."},
+        {"id": "economics.economic-history", "section": "Economic history", "aliases": ["historical economics"], "capability": "Keep an economic model conditional on dated historical evidence.", "bridges": [{"subject": "history", "when": "Chronology or source provenance decides what the claim can establish."}]},
+        {"id": "economics.finance-money", "section": "Finance and money", "aliases": ["finance", "interest rates", "banking"], "capability": "Explain money or asset valuation under explicit timing and risk assumptions."},
+        {"id": "economics.environmental-resources", "section": "Environmental and resource economics", "aliases": ["environmental economics", "resource economics", "externalities"], "capability": "Connect economic choices to physical quantities and distributional effects."}
+      ]
+    },
+    "history": {
+      "title": "History",
+      "guide": "skills/subject/subjects/history.md",
+      "subfields": [
+        {"id": "history.political-institutional", "section": "Political / institutional", "aliases": ["political history", "institutions"], "capability": "Explain a dated institutional change through contextualized records."},
+        {"id": "history.social-cultural", "section": "Social / cultural", "aliases": ["social history", "cultural history"], "capability": "Interpret social experience while preserving whose record survives."},
+        {"id": "history.economic-labor", "section": "Economic / labor", "aliases": ["economic history", "labor history"], "capability": "Explain economic change without treating an aggregate series as its own history.", "bridges": [{"subject": "economics", "when": "An explicitly conditional economic model supports the historical interpretation."}]},
+        {"id": "history.intellectual-religious", "section": "Intellectual / religious", "aliases": ["intellectual history", "religious history"], "capability": "Interpret an argument or belief within its contemporary setting."},
+        {"id": "history.global-comparative", "section": "Global / comparative", "aliases": ["global history", "comparative history"], "capability": "Compare connected cases while preserving chronology and unequal records."},
+        {"id": "history.environmental-medical", "section": "Environmental / medical", "aliases": ["environmental history", "medical history"], "capability": "Explain environmental or medical change through dated evidence."},
+        {"id": "history.gender-race-empire", "section": "Gender / race / empire", "aliases": ["gender history", "race", "imperial history"], "capability": "Analyze categories and power through contextualized sources."},
+        {"id": "history.historiography-methods", "section": "Historiography / methods", "aliases": ["historiography", "primary sources", "source criticism"], "capability": "Compare historical interpretations against provenance and source limits."}
+      ]
+    },
+    "math": {
+      "title": "Mathematics",
+      "guide": "skills/subject/subjects/math.md",
+      "subfields": [
+        {"id": "math.arithmetic-algebra", "section": "Arithmetic and algebra", "aliases": ["algebra", "arithmetic", "equations"], "capability": "Justify symbolic operations and check the conditions they preserve."},
+        {"id": "math.geometry-trigonometry", "section": "Geometry and trigonometry", "aliases": ["geometry", "trigonometry", "vectors"], "capability": "Relate geometric constraints to a calculation or proof."},
+        {"id": "math.calculus", "section": "Calculus", "aliases": ["derivatives", "integrals", "limits"], "capability": "Explain local change or accumulation from a stated function."},
+        {"id": "math.differential-equations", "section": "Differential equations and dynamics", "aliases": ["ODE", "dynamics", "differential equations"], "capability": "Connect a differential rule, initial conditions, and resulting behavior."},
+        {"id": "math.linear-algebra", "section": "Linear algebra", "aliases": ["matrices", "eigenvectors", "linear maps"], "capability": "Explain a linear map using basis, coordinates, and dimensions."},
+        {"id": "math.probability", "section": "Probability", "aliases": ["conditional probability", "Bayes", "random variables"], "capability": "Compute uncertainty from an explicit outcome space and conditioning event."},
+        {"id": "math.statistics-inference", "section": "Statistics and inference", "aliases": ["statistics", "statistical inference", "stats"], "capability": "Judge an estimate through sampling, assumptions, and uncertainty."},
+        {"id": "math.discrete-abstract", "section": "Discrete and abstract mathematics", "aliases": ["discrete mathematics", "proofs", "combinatorics", "abstract algebra"], "capability": "Prove a finite or abstract claim using its definitions and counterexamples."},
+        {"id": "math.analysis-topology", "section": "Analysis and topology", "aliases": ["real analysis", "topology", "convergence"], "capability": "Establish a claim using definitions, quantifiers, and limiting conditions."},
+        {"id": "math.optimization-numerical", "section": "Optimization and numerical math", "aliases": ["optimization", "numerical methods", "gradient descent"], "capability": "Explain an update and its convergence assumptions separately from one result."}
+      ]
+    },
+    "physics": {
+      "title": "Physics",
+      "guide": "skills/subject/subjects/physics.md",
+      "subfields": [
+        {"id": "physics.mechanics", "section": "Mechanics", "aliases": ["forces", "motion", "Newton"], "capability": "Predict motion for an identified system and reference frame."},
+        {"id": "physics.oscillations-waves", "section": "Oscillations and waves", "aliases": ["oscillations", "waves", "frequency"], "capability": "Connect local motion to a wave or oscillator model."},
+        {"id": "physics.thermodynamics", "section": "Thermodynamics", "aliases": ["heat", "entropy", "temperature"], "capability": "Explain energy transfer and state changes under explicit sign conventions."},
+        {"id": "physics.electromagnetism", "section": "Electricity and magnetism", "aliases": ["electricity", "magnetism", "fields", "circuits"], "capability": "Connect sources, fields, and forces under specified conditions."},
+        {"id": "physics.optics", "section": "Optics", "aliases": ["light", "lenses", "interference"], "capability": "Predict a measured optical result under the relevant wave or ray model."},
+        {"id": "physics.relativity", "section": "Relativity", "aliases": ["special relativity", "spacetime"], "capability": "Compare observer coordinates while preserving event identity and invariants."},
+        {"id": "physics.quantum", "section": "Quantum physics", "aliases": ["quantum physics", "amplitudes", "measurement"], "capability": "Predict a measurement distribution from a prepared state and basis."},
+        {"id": "physics.experimental", "section": "Experimental physics", "aliases": ["experimental physics", "calibration", "uncertainty"], "capability": "Connect instrument observations and calibration to a physical estimate."},
+        {"id": "physics.computational", "section": "Computational physics", "aliases": ["computational physics", "numerical simulation"], "capability": "Check a discretized physical update against analytic and conservation limits.", "bridges": [{"subject": "computer-science", "when": "The implementation must be separated from the physical update."}, {"subject": "math", "when": "A discretization or stability argument blocks the comparison."}]}
+      ]
+    },
+    "political-science": {
+      "title": "Political science",
+      "guide": "skills/subject/subjects/political-science.md",
+      "subfields": [
+        {"id": "political-science.political-theory", "section": "Political theory", "aliases": ["political philosophy", "legitimacy"], "capability": "Assess a normative argument through its premises and strongest objection."},
+        {"id": "political-science.comparative-politics", "section": "Comparative politics", "aliases": ["comparative government", "institutions"], "capability": "Compare formal authority with observed political practice."},
+        {"id": "political-science.international-relations", "section": "International relations", "aliases": ["IR", "diplomacy", "geopolitics"], "capability": "Weigh explanations of a dated international decision against discriminating evidence."},
+        {"id": "political-science.policy-administration", "section": "Public policy and administration", "aliases": ["public policy", "public administration"], "capability": "Separate policy adoption, delivery, take-up, and measured outcomes."},
+        {"id": "political-science.political-behavior", "section": "Political behavior", "aliases": ["voting", "elections", "polling"], "capability": "Interpret a political measure using its population, coverage, and question."},
+        {"id": "political-science.research-methods", "section": "Research methods", "aliases": ["political methodology", "causal inference", "research methods"], "capability": "Assess a political claim through selection, measurement, and identification.", "bridges": [{"subject": "math", "when": "A statistical assumption or uncertainty calculation blocks the political inference."}]}
+      ]
+    },
+    "psychology": {
+      "title": "Psychology",
+      "guide": "skills/subject/subjects/psychology.md",
+      "subfields": [
+        {"id": "psychology.cognition-learning", "section": "Cognition and learning", "aliases": ["memory", "attention", "cognition", "learning"], "capability": "Connect a task response to a proposed cognitive mechanism and its limits."},
+        {"id": "psychology.development", "section": "Development", "aliases": ["developmental psychology", "age effects"], "capability": "Distinguish within-person development from cohort and period differences."},
+        {"id": "psychology.social-personality", "section": "Social and personality", "aliases": ["social psychology", "personality", "traits"], "capability": "Weigh trait and situation explanations using repeated, comparable observations."},
+        {"id": "psychology.biological-psychology", "section": "Biological psychology", "aliases": ["neuroscience", "neural signals"], "capability": "Connect a biological measurement to the behavioral claim it can support.", "bridges": [{"subject": "biology", "when": "The proposed biological mechanism needs a bounded explanation."}]},
+        {"id": "psychology.clinical", "section": "Clinical psychology", "aliases": ["clinical psychology", "diagnostic criteria"], "capability": "Interpret educational clinical evidence without diagnosing a person from a case."},
+        {"id": "psychology.research-methods", "section": "Research methods", "aliases": ["psychometrics", "measurement", "research methods"], "capability": "Assess a construct measure through reliability, validity, comparison, and replication.", "bridges": [{"subject": "math", "when": "An inference or measurement calculation blocks the psychological claim."}]}
+      ]
+    }
+  }
+}
