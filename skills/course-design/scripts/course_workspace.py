@@ -261,6 +261,9 @@ def _write_plan_unlocked(path: Path, checked: dict, expected_fingerprint: str | 
             raise ConflictError("Course changed; refresh before writing")
     if current is not None and current["id"] != checked["id"]:
         raise ValueError("Course ID cannot change within a workspace")
+    if current is not None and current['current']['topic_id'] != checked['current']['topic_id']:
+        from lesson_review import require_continuation
+        require_continuation(path)
     fingerprint = course_fingerprint(checked)
     atomic_json(course_file, checked)
     return fingerprint
@@ -281,7 +284,7 @@ def publish_lesson(path: Path, lesson: dict) -> str:
         plan = read_plan(path)
         plan_fingerprint = course_fingerprint(plan)
         original_plan = copy.deepcopy(plan)
-        checked = validate_lesson(lesson, plan)
+        checked = validate_lesson(lesson, plan, require_content_binding=True)
         lesson_fingerprint_value = lesson_fingerprint(checked)
         lesson_dir = path / "lessons" / checked["id"]
         lesson_file = lesson_dir / "lesson.json"
