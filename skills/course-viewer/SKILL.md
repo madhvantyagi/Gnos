@@ -69,6 +69,19 @@ an attempt under `submissions/<exercise-id>/<attempt-id>.json`; only a
 successful save enables Show answer. The solution is fetched on that explicit
 request and the reveal is recorded separately from the learner's response.
 
+Saved answers show automatic feedback or an awaiting-review state. Explicit
+tutor reviews show the interpretation and next step; attempt history preserves
+the original work. Returning to the page refreshes feedback without replacing
+unsaved edits. The lesson review status explains whether more practice, a
+prerequisite repair, or continuation is appropriate.
+
+When the learner asks to continue, follow
+[exercise review](../learner-tracking/references/exercise-review.md) before
+changing the current topic. The host reviews actual responses and the lesson,
+records evidence and any repair, then saves a continuation decision. The page
+does not invoke a tutor automatically. Re-render and reload after lesson edits:
+saves identify the displayed exercise and lesson versions and reject stale pages.
+
 ## The layout
 
 The design lives in [references/example.html](references/example.html).
