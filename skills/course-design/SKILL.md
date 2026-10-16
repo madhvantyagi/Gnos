@@ -46,6 +46,13 @@ Read [course-contract.md](references/course-contract.md) and write
 course goal. Identify the current topic and leave uncertain later topics
 provisional.
 
+For every new topic, declare its assessment prompt, readable `success_criteria`,
+and stable `assessment.criteria` IDs as specified in the course contract.
+Name observable capabilities such as deriving a recurrence or justifying a
+method; a depth label or correct number cannot stand in for that work. Preserve
+legacy assessments when resuming. Adopt criterion IDs through an explicit
+reviewed plan revision; never convert old concept labels into claimed passes.
+
 Read the selected subject guide through `skills/subject/SKILL.md` and its
 assigned teacher's `SOUL.md` when one exists. Use its matching subfield to
 check the starting case, difficult distinction, and evidence the topic needs.
@@ -115,3 +122,14 @@ with lesson design unless it changes a binding representation plan.
 Use learner evidence to revise future topics as the course progresses. Preserve
 stable IDs and record why the sequence, sources, or scope changed, following
 [course-contract.md](references/course-contract.md).
+
+## Advance from reviewed evidence
+
+Before changing an enrolled course's current topic, follow
+[exercise review](../learner-tracking/references/exercise-review.md). Review
+saved work and the current lesson, let lesson-design repair explanation gaps,
+and record a current `advance` or explicit learner `skip` receipt through
+`manage_interaction.py review-lesson`. Plan writing and enrollment reject an
+unreviewed topic transition. A `practice` or `repair-prerequisite` decision
+keeps the frontier in place while you develop the required work. Then revise
+and enroll the plan and hand the selected topic to lesson-design.
