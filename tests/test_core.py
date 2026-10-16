@@ -58,7 +58,7 @@ class LearnerTests(unittest.TestCase):
         self.assertIn("skills/subject/subjects/accounting.md", result.stdout)
         self.assertNotIn("teachers/accounting/SOUL.md", result.stdout)
         direct = subprocess.run([
-            sys.executable, str(loader), "--subject", "accounting", "--manifest",
+            sys.executable, str(loader), "--subject", "accounting", "--mode", "local", "--manifest",
         ], capture_output=True, text=True)
         self.assertEqual(direct.returncode, 0, direct.stderr)
         self.assertNotIn("teachers/accounting/SOUL.md", direct.stdout)
@@ -454,7 +454,7 @@ class LearnerTests(unittest.TestCase):
     def test_local_doubt_manifest_does_not_load_course_design(self):
         loader = ROOT / 'skills/learning-orchestrator/scripts/assemble_context.py'
         result = subprocess.run([
-            sys.executable, str(loader), '--subject', 'math', '--manifest',
+            sys.executable, str(loader), '--subject', 'math', '--mode', 'local', '--manifest',
         ], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertNotIn('skills/course-design/SKILL.md', result.stdout)
