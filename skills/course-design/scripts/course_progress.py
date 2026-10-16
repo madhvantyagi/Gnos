@@ -3,6 +3,7 @@
 import copy
 
 from course_contract import course_topics
+from evidence_order import ordered_events, uncertain_outcomes
 
 
 _STATUS_ORDER = {
@@ -19,7 +20,7 @@ def summarize_concepts(events):
     concepts = {}
     successful_dates = {}
 
-    for event in sorted(events, key=lambda item: item["date"]):
+    for event in ordered_events(events):
         for concept in event["covered"]:
             concepts.setdefault(concept, {"status": "exposed", "attempts": 0})
         for attempt in event["attempts"]:
@@ -29,7 +30,7 @@ def summarize_concepts(events):
             independent_success = (
                 attempt["result"] == "correct" and attempt["help"] == "none"
             )
-            had_earlier_success = bool(successful_dates.get(concept))
+            had_earlier_success = any(day < event["date"] for day in successful_dates.get(concept, []))
             status = "practicing"
             if independent_success:
                 status = (
@@ -48,7 +49,11 @@ def summarize_concepts(events):
             elif attempt["result"] in ("partial", "incorrect"):
                 entry["_latest_failure"] = True
 
-    for entry in concepts.values():
+    uncertain = uncertain_outcomes(events)
+    for concept, entry in concepts.items():
+        if (entry.get('last_date'), concept) in uncertain:
+            entry.update(status='practicing', ordering_uncertain=True,
+                         latest=copy.deepcopy(uncertain[(entry['last_date'], concept)]))
         needs_repair = (
             entry.get("_has_independent_success", False)
             and entry.get("_latest_failure", False)
@@ -65,7 +70,7 @@ def conservative_topic_status(statuses):
     if not statuses:
         return "not-started"
     return min(
-        (status.get("status", "not-started") for status in statuses),
+        (status.get("status", status.get("evidence", "not-started")) for status in statuses),
         key=lambda status: _STATUS_ORDER.get(status, 0),
     )
 
