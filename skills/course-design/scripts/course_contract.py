@@ -271,6 +271,31 @@ def _validate_v2(data):
                     raise ValueError(f"Duplicate concept ID: {concept}")
                 concept_ids.add(concept)
 
+            if 'assessment' in topic:
+                assessment = topic['assessment']
+                if not isinstance(assessment, dict):
+                    raise ValueError(f'{topic_id}: assessment must be an object')
+                nonempty(assessment.get('prompt'), 'assessment.prompt')
+                strings(assessment.get('success_criteria'), 'assessment.success_criteria', required=True)
+                if 'criteria' in assessment:
+                    criteria = assessment['criteria']
+                    if not isinstance(criteria, list) or not criteria:
+                        raise ValueError('assessment.criteria must be a nonempty list')
+                    ids = set()
+                    for criterion in criteria:
+                        if (not isinstance(criterion, dict) or not {'id', 'description'}.issubset(criterion)
+                                or set(criterion) - {'id', 'description', 'concepts'}):
+                            raise ValueError('Each assessment criterion requires id and description; optional concepts')
+                        criterion_id = slug(criterion['id'])
+                        if criterion_id in ids:
+                            raise ValueError('assessment criterion IDs must be unique')
+                        ids.add(criterion_id)
+                        nonempty(criterion['description'], 'criterion.description')
+                        if 'concepts' in criterion:
+                            scope = strings(criterion['concepts'], 'criterion.concepts', required=True)
+                            if len(scope) != len(set(scope)) or not set(scope).issubset(concepts):
+                                raise ValueError('criterion.concepts must be unique current-topic concepts')
+
             prerequisites = strings(topic.get("prerequisites"), "prerequisites")
             if any(prerequisite not in seen_topics for prerequisite in prerequisites):
                 raise ValueError(f"{topic_id}: prerequisites must refer to earlier topics")
