@@ -23,7 +23,7 @@ the choreography rather than silently cutting speech. `pause_after` adds
 authored reflection time after the recorded cue end. Because each clip is
 attached at the current scene time, earlier pauses cannot drift later words
 away from their visual events. `finish` rejects unplayed cues and exports
-actual cue starts to SRT and timing JSON from the same measured timings.
+actual cue starts to SRT, browser WebVTT, and timing JSON from the same measured timings.
 
 Frames quantize visual durations. Expect sub-frame rounding, not a promise of
 perfect sample-level alignment. Inspect the rendered artifact. Sentence-internal
