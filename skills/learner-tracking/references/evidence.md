@@ -46,7 +46,15 @@ This is fictional example data. `result` is `correct`, `partial`, or `incorrect`
 `help` is `none`, `hint`, or `worked-example`; `kind` is `application`, `retrieval`,
 or `transfer`. Empty attempts are valid for an untested lesson. Dates are ISO
 dates and may not be in the future. Use unique event IDs; identical retries do
-nothing, conflicting retries fail. Events are ordered by date, then insertion.
+nothing, conflicting retries fail. New portal events also carry the original UTC
+`occurred_at` submission time and a `source` object naming the attempt, exercise,
+lesson, and original exercise/lesson fingerprints. These identify the work that
+was reviewed; review time is not the occurrence time. Events are ordered by date
+and known occurrence times. Untimed historical records retain their insertion
+slots; mixed same-day timed and untimed conflicting outcomes are flagged
+`ordering_uncertain` and remain practicing. Do not fabricate missing timestamps.
+For legacy portal events, readers may recover timing from an exact matching saved
+response and review. This is a derived view, not a rewrite of saved state.
 
 The deterministic summary uses a conservative rule:
 
@@ -68,17 +76,35 @@ deterministically checked, or marked `awaiting-review`. Open-ended work becomes
 evidence only after GNOS explicitly reviews the stored prompt and the learner's
 actual response during an active teaching interaction.
 
+New submissions preserve an original private exercise and teaching snapshot.
+The evidence bridge uses its original prompt and concepts, even when the lesson
+has since changed. Legacy attempts use a labeled current-exercise fallback;
+verify the question still matches before grading them. Never claim a recovered
+original version when it was not stored.
+
 The reviewed-attempt bridge requires `result`, `help`, `kind`,
 `interpretation`, and `next_step`. It creates the ordinary event and links the
 attempt to deterministic event ID `portal-<attempt-id>`. The event is written
 before the link so an interruption cannot create a linked attempt with missing
 evidence. A retry recognizes an identical existing event and repairs the link;
 a conflicting event or review fails instead of rewriting history.
+Review packets compare the event's response, result, assistance, interpretation,
+and original versions with the saved work; reusing a retracted ID for different
+content cannot restore the old authorization.
 
 Deterministic choice or numeric feedback can inform the explicit review, but it
 does not bypass it. A hint or revealed solution must remain represented in the
-event's help level, and submitted code remains text—it is never executed by the
-portal or the evidence bridge.
+event's help level. The script enforces recorded pre-submission assistance;
+a later solution reveal does not change the original answer's independence.
+`concept_results` covers every exercise concept when a partial multi-concept
+answer needs distinct results. Submitted code remains text; the portal and
+evidence bridge never execute it.
+
+Follow [exercise-review.md](exercise-review.md) before the next lesson. A linked
+attempt supports a teaching decision; it does not automatically repair a lesson
+or advance the plan. Record the diagnosis, actual changed blocks, fresh
+independent verification, and a current continuation receipt separately.
+A new submission, changed lesson, or changed evidence makes that receipt stale.
 
 The learner-state file is the source of truth for observations; summaries are
 computed, not independently edited. Atomic replacement avoids partial JSON. A
