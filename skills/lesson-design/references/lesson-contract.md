@@ -45,11 +45,32 @@ teacher-neutral, authoring a lesson is not permission to invent a persona.
 Only `ready` lessons belong in the ordinary portal sequence. A draft can be
 saved while teaching develops; it must not appear as finished learner material.
 
-A ready lesson records `design_receipt` with `designed_at` (between its creation
-and update timestamps), `course_fingerprint` (the current course content SHA-256),
-`skill_route: "skills/lesson-design/SKILL.md"`, and `review: "pass"`. Compute the
-fingerprint with `course_contract.course_content_fingerprint`; do not invent one.
-The receipt records review and course agreement; it cannot prove teaching quality.
+A new ready publication records `design_receipt` with `schema_version: 2`,
+`designed_at` (between creation and update timestamps), `course_fingerprint`
+(the current course content SHA-256), `lesson_content_fingerprint`,
+`skill_route: "skills/lesson-design/SKILL.md"`, and `review: "pass"`.
+Compute the course hash with `course_contract.course_content_fingerprint`.
+After reviewing and repairing the lesson, remove its old receipt, leave it as
+`draft`, and calculate the content hash:
+
+```bash
+python3 skills/course-design/scripts/validate_lesson.py lesson.json \
+  --course learners/<learner>/courses/<course-id>/course.json --design-fingerprint
+```
+
+This prints `lesson_contract.lesson_design_fingerprint(lesson)`: a versioned
+hash of authored content, including private briefs, exercises, criteria, and
+solutions. It excludes the receipt, publication state, and top-level creation
+and update timestamps. The existing `lesson_fingerprint` remains the whole-file
+snapshot used by saved attempts; do not substitute it for the content hash.
+Changing teaching content requires a fresh review and hash. Remove the receipt
+when returning an edited lesson to draft.
+
+Legacy unbound receipts remain readable. New ready publication requires a
+bound receipt; no script invents a review or upgrades legacy records on read.
+The public projection includes only declared receipt fields, never arbitrary
+private reviewer notes. The hash identifies reviewed content; it cannot prove
+teaching quality or bind mutable external artifact bytes.
 
 ## Blocks
 
@@ -282,7 +303,9 @@ unrelated artifacts.
 ## Exercises and evaluation
 
 An exercise contains `id`, `concepts`, `prompt`, `response_type`, `evaluation`,
-private `success_criteria`, and optional `reference_block_ids`.
+private `success_criteria`, and optional `reference_block_ids`. Every lesson
+exercise id must be listed in its topic's `exercise_ids`; the portal resolves
+saves through that list and validation rejects an unlisted exercise.
 
 Supported response types are `multiple-choice`, `short-text`, `long-text`,
 `numeric`, and `code-text`. Supported evaluation modes are:
