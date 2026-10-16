@@ -1,5 +1,9 @@
 {
   "mcpServers": {
+    "aicoder2009-khanacademymcp": {
+      "command": "npx",
+      "args": ["-y", "khanmcp"]
+    },
     "excalidraw": {
       "type": "http",
       "url": "https://mcp.excalidraw.com/mcp"
