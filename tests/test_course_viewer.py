@@ -14,6 +14,7 @@ from course_workspace import create_workspace, publish_lesson  # noqa: E402
 import artifact_manifest  # noqa: E402
 from tests.test_course_contract_v2 import valid_v2_course  # noqa: E402
 from tests.test_lesson_contract import valid_lesson  # noqa: E402
+from tests.test_portal_interactions import reviewed_lesson  # noqa: E402
 from tests.test_artifact_manifest import write_test_video  # noqa: E402
 
 RENDER = ROOT / "skills/course-viewer/scripts/render_viewer.py"
@@ -56,7 +57,7 @@ def lesson_with_reps(plan=None):
         "skill_route": "skills/lesson-design/SKILL.md",
         "review": "pass",
     }
-    return lesson
+    return reviewed_lesson(lesson)
 
 
 class ViewerTests(unittest.TestCase):
@@ -105,7 +106,7 @@ class ViewerTests(unittest.TestCase):
                            "acceptance_checks": ["The clip shows the calculation."],
                            "depends_on_block_ids": ["intro"]},
         })
-        publish_lesson(workspace, lesson)
+        publish_lesson(workspace, reviewed_lesson(lesson))
         result = subprocess.run([sys.executable, str(RENDER), str(workspace)],
                                 capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -257,7 +258,7 @@ class ViewerTests(unittest.TestCase):
         del plan["chapters"][0]["topics"][0]["outcome"]
         workspace = create_workspace(self.root, "sam", plan)
         from course_contract import validate_course
-        publish_lesson(workspace, valid_lesson(validate_course(plan)))
+        publish_lesson(workspace, reviewed_lesson(valid_lesson(validate_course(plan))))
         result = subprocess.run([sys.executable, str(RENDER), str(workspace)],
                                 capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
