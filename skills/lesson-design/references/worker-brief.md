@@ -49,7 +49,9 @@ depends on, states the exact claim or step, and explains what it means and
 why it follows. Work through the shared example before giving a compact
 rule. If several paragraphs are needed, put them in the block's `text` with
 blank lines between them. Do not stop after a definition and one sentence.
-End with what the learner can now explain or what the next block must resolve.
+When a transition is needed, connect this result to the next unresolved
+question. Let the coordinator join neighboring blocks without a forced
+conclusion after each one.
 Give the confusing step room: show the intermediate calculation, causal link,
 or source inference and explain why a tempting alternative fails. Do not
 restart the whole lesson in each block. A small transition block can be short;
@@ -103,7 +105,8 @@ its own output path. It checks its environment with
 `scripts/setup_env.py`, checks its scene with `scripts/linter.py`, and
 renders through `scripts/render_pipeline.py` before returning anything.
 
-Every video teaches its block in depth and runs for at least one minute.
+Give the learner enough time to follow the assigned change and inspect its
+result. Duration follows the reasoning, narration, and readable holds.
 A ten-second clip that flashes a definition is not acceptable. The worker
 starts from a short storyboard that says what the learner has to see
 changing, writes the exact narration for each cue, builds the scenes so
