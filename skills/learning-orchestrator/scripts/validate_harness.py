@@ -9,8 +9,10 @@ from urllib.parse import unquote, urlparse
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / 'skills/course-design/scripts'))
+sys.path.insert(0, str(ROOT / 'skills/subject/scripts'))
 from course_contract import SUBJECTS, TEACHERS, validate_course
 from lesson_contract import validate_lesson
+from subject_catalog import validate_catalog
 
 
 def validate_cursor(errors):
@@ -87,6 +89,10 @@ def validate():
         path = ROOT / f'teachers/{teacher}/SOUL.md'
         if not path.is_file():
             errors.append(f'Missing {path.relative_to(ROOT)}')
+    try:
+        validate_catalog()
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        errors.append(f'Subject discovery map: {exc}')
     documents = [ROOT/'README.md', ROOT/'AGENTS.md'] + list((ROOT/'skills').rglob('*.md'))
     for path in documents:
         for target in re.findall(r'(?<!!)\[[^\]]+\]\(([^)]+)\)', path.read_text()):
@@ -100,7 +106,9 @@ def validate():
         for path in (ROOT / folder).rglob('*.py'):
             try: ast.parse(path.read_text(), filename=str(path))
             except SyntaxError as exc: errors.append(f'{path.relative_to(ROOT)}: {exc}')
-    for path in (ROOT/'examples/courses').glob('*/course.json'):
+    example_courses = list((ROOT/'examples/courses').glob('*/course.json'))
+    example_lessons = list((ROOT/'examples/courses').glob('*/lessons/*.json'))
+    for path in example_courses:
         try:
             raw_course = json.loads(path.read_text())
             plan = validate_course(raw_course)
@@ -108,7 +116,7 @@ def validate():
                 errors.append(f'{path.relative_to(ROOT)}: example must use schema version 2')
         except (OSError, ValueError, json.JSONDecodeError) as exc:
             errors.append(f'{path.relative_to(ROOT)}: {exc}')
-    for path in (ROOT/'examples/courses').glob('*/lessons/*.json'):
+    for path in example_lessons:
         try:
             course_path = path.parents[1] / 'course.json'
             plan = validate_course(json.loads(course_path.read_text()))
@@ -122,7 +130,8 @@ def validate():
         print('\n'.join(errors), file=sys.stderr)
         return 1
     print(f'Validated {len(skills)} skills, {len(SUBJECTS)} subjects, {len(TEACHERS)} teachers, '
-          'links, Python syntax, version-2 courses, and composed lessons.')
+          f'links, Python syntax, {len(example_courses)} example version-2 courses, '
+          f'and {len(example_lessons)} example composed lessons.')
     return 0
 
 
