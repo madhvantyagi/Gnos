@@ -1,6 +1,7 @@
 """CLI for the active GNOS task to inspect and update portal interactions."""
 
 import argparse
+from copy import deepcopy
 from datetime import datetime
 import json
 from pathlib import Path
@@ -10,6 +11,8 @@ import course_workspace
 import portal_interactions
 from course_contract import course_fingerprint
 from course_workspace import read_plan, workspace_path
+from evidence_order import occurrence_time, ordered_events
+from lesson_contract import exercise_fingerprint
 from portal_interactions import answer_question, list_pending, read_attempt, review_attempt
 
 
@@ -56,14 +59,14 @@ def _response_text(response):
 
 
 def _reviewed_event(workspace, attempt, review, event_id):
-    checked_review = portal_interactions._validate_review(review)
+    checked_review = portal_interactions.validate_attempt_review(workspace, attempt, review)
     stored_review = attempt.get("review")
     if attempt.get("status") != "reviewed" or not isinstance(stored_review, dict):
         raise ValueError("Attempt requires a stored explicit review before recording evidence")
     if portal_interactions._validate_review(stored_review) != checked_review:
         raise ValueError("Provided review conflicts with the stored attempt review")
 
-    found = portal_interactions._find_exercise(workspace, attempt["exercise_id"])
+    context = portal_interactions.attempt_context(workspace, attempt)
     submitted_at = attempt.get("submitted_at")
     if not isinstance(submitted_at, str):
         raise ValueError("Attempt submitted_at is malformed")
@@ -72,25 +75,62 @@ def _reviewed_event(workspace, attempt, review, event_id):
         submitted_date = datetime.fromisoformat(submitted_at.replace("Z", "+00:00")).astimezone().date()
     except ValueError as exc:
         raise ValueError("Attempt submitted_at is malformed") from exc
-    exercise = found["exercise"]
+    exercise = context["exercise"]
     concepts = list(exercise.get("concepts", []))
     response = _response_text(attempt.get("response"))
     return {
         "id": event_id,
         "date": submitted_date.isoformat(),
-        "course_id": found["plan"]["id"],
+        "occurred_at": submitted_at,
+        "source": {
+            "type": "portal-attempt", "attempt_id": attempt['id'],
+            "exercise_id": attempt['exercise_id'], "lesson_id": context['lesson_id'],
+            "exercise_fingerprint": exercise_fingerprint(exercise),
+            "lesson_fingerprint": context.get('lesson_fingerprint'),
+            "snapshot_source": context['snapshot_source'],
+        },
+        "course_id": context["course_id"],
         "covered": concepts,
         "attempts": [{
             "concept": concept,
             "task": exercise["prompt"],
             "response": response,
-            "result": checked_review["result"],
+            "result": checked_review.get("concept_results", {}).get(concept, checked_review["result"]),
             "help": checked_review["help"],
             "kind": checked_review["kind"],
         } for concept in concepts],
         "interpretation": checked_review["interpretation"],
         "next_step": checked_review["next_step"],
     }
+
+
+def evidence_matches_review(workspace, attempt, event):
+    """Verify content and provenance, while accepting an exact legacy projection."""
+    expected = _reviewed_event(workspace, attempt, attempt.get('review'), f"portal-{attempt['id']}")
+    if not isinstance(event, dict):
+        return False
+    return all(event.get(key) == value for key, value in expected.items()
+               if key not in {'occurred_at', 'source'} or key in event)
+
+
+def resolved_evidence_events(workspace, events, attempts=None):
+    """Recover legacy portal chronology from matching saved work, without a write."""
+    attempts = portal_interactions.read_attempts(workspace) if attempts is None else attempts
+    linked = {a.get('evidence_event_id'): a for a in attempts if a.get('evidence_event_id')}
+    result = []
+    for event in events:
+        derived = deepcopy(event)
+        attempt = linked.get(event['id'])
+        if attempt is not None and 'occurred_at' not in event:
+            try:
+                if evidence_matches_review(workspace, attempt, event):
+                    expected = _reviewed_event(workspace, attempt, attempt['review'], event['id'])
+                    occurrence_time(expected)
+                    derived['occurred_at'] = expected['occurred_at']
+            except (ValueError, KeyError, TypeError):
+                pass  # Unknown history stays unknown; no inferred submission times.
+        result.append(derived)
+    return ordered_events(result)
 
 
 def _link_evidence_event(workspace, attempt_id, event_id, review):
@@ -131,8 +171,16 @@ def record_reviewed_attempt(learners_root: Path, learner_id: str, course_id: str
 
     event_id = f"portal-{attempt_id}"
     event = _reviewed_event(workspace, attempt, review, event_id)
-    learner_state.record_event(learners_root, learner_id, event)
+    existing = next((e for e in state['events'] if e['id'] == event_id), None)
+    # Re-record exact legacy payloads through the state lock as well: skipping
+    # that check would race a simultaneous retraction or conflicting replacement.
+    saved_event = existing if existing is not None and evidence_matches_review(workspace, attempt, existing) else event
+    learner_state.record_event(learners_root, learner_id, saved_event)
     _link_evidence_event(workspace, attempt_id, event_id, review)
+    # Legacy chronology can become resolvable only once this link exists. The
+    # workspace lock has been released; rebuild under the learner lock from a
+    # fresh read so a successful retry cannot leave derived memory lagging.
+    learner_state.refresh_views(learners_root, learner_id)
     return event_id
 
 
@@ -146,7 +194,13 @@ def build_parser():
     parser = argparse.ArgumentParser(description="Inspect and update GNOS portal interactions.")
     commands = parser.add_subparsers(dest="command", required=True)
 
-    pending = commands.add_parser("pending", help="list unanswered questions and open-ended reviews")
+    packet = commands.add_parser("review-context", help="load the current lesson, assessment data, and saved work")
+    _add_workspace_args(packet)
+    lesson = commands.add_parser("review-lesson", help="record a reviewed continuation decision and lesson repairs")
+    _add_workspace_args(lesson)
+    lesson.add_argument("--file", required=True, help="JSON lesson review object")
+
+    pending = commands.add_parser("pending", help="list questions and all attempts lacking linked evidence")
     _add_workspace_args(pending)
 
     answer = commands.add_parser("answer-question", help="write an explicit answer to one queued question")
@@ -164,7 +218,13 @@ def build_parser():
 def main(argv=None):
     args = build_parser().parse_args(argv)
     workspace = _workspace_from(args)
-    if args.command == "pending":
+    if args.command == "review-context":
+        from lesson_review import build_review_context
+        result = build_review_context(workspace)
+    elif args.command == "review-lesson":
+        from lesson_review import record_lesson_review
+        result = record_lesson_review(workspace, _load_object(args.file))
+    elif args.command == "pending":
         result = list_pending(workspace)
     elif args.command == "answer-question":
         result = answer_question(workspace, args.question_id, _load_object(args.file))
