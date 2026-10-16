@@ -37,6 +37,12 @@ class BlockContextTests(unittest.TestCase):
         extra = copy.deepcopy(self.lesson["exercises"][0])
         extra.update(id="other-question", prompt="UNRELATED PRIVATE ANSWER")
         self.lesson["exercises"].append(extra)
+        self.course["chapters"][0]["topics"][0]["exercise_ids"].append("other-question")
+        import sys
+        sys.path.insert(0, str(ROOT / "skills/course-design/scripts"))
+        from course_contract import course_content_fingerprint, validate_course
+        validated = validate_course(self.course)
+        self.lesson["design_receipt"]["course_fingerprint"] = course_content_fingerprint(validated)
         packet = self.compiler.build_context(self.lesson, self.course, "exercise-block")
         self.assertEqual(packet["exercise"]["id"], "predict-change")
         self.assertIn("success_criteria", packet["exercise"])
