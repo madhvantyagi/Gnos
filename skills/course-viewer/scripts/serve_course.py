@@ -15,10 +15,11 @@ ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / 'skills/course-design/scripts'))
 from artifact_manifest import read_manifest, ready_artifacts
 from course_workspace import read_plan
-from portal_interactions import exercise_state, reveal_solution, submit_attempt
+from portal_interactions import exercise_state, reveal_solution, submit_attempt, save_draft, create_question
+from portal_views import read_questions, _public_question
 from render_viewer import build_portal_view, render_rich_text, require_current_lesson
 
-_API = re.compile(r'/api/exercises/([a-z0-9]+(?:-[a-z0-9]+)*)(?:/(attempts|reveal))?')
+_API = re.compile(r'/api/exercises/([a-z0-9]+(?:-[a-z0-9]+)*)(?:/(attempts|reveal|draft))?')
 
 
 class CourseHandler(BaseHTTPRequestHandler):
@@ -59,6 +60,13 @@ class CourseHandler(BaseHTTPRequestHandler):
         if not self.allowed(api=path.startswith('/api/')):
             return
         try:
+            if path == '/api/review':
+                from lesson_review import build_review_context
+                self.send_json(200, build_review_context(self.server.workspace)['continuation'])
+                return
+            if path == '/api/questions':
+                self.send_json(200, {'questions': read_questions(self.server.workspace)})
+                return
             if match and match[2] is None:
                 self.send_json(200, exercise_state(self.server.workspace, match[1]))
                 return
@@ -100,8 +108,9 @@ class CourseHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.allowed(api=True):
             return
-        match = _API.fullmatch(urlsplit(self.path).path)
-        if not match or match[2] not in ('attempts', 'reveal'):
+        path = urlsplit(self.path).path
+        match = _API.fullmatch(path)
+        if path != '/api/questions' and (not match or match[2] not in ('attempts', 'reveal', 'draft')):
             self.send_json(404, {'error': 'Not found.'})
             return
         try:
@@ -113,9 +122,25 @@ class CourseHandler(BaseHTTPRequestHandler):
             payload = json.loads(self.rfile.read(length))
             if not isinstance(payload, dict):
                 raise ValueError('Expected a JSON object.')
-            if match[2] == 'attempts':
+            if path == '/api/questions':
+                self.send_json(200, _public_question(create_question(self.server.workspace, payload)))
+                return
+            if match[2] in ('attempts', 'draft'):
+                lesson_version = payload.get('lesson_fingerprint')
+                if not isinstance(lesson_version, str) or not re.fullmatch('[0-9a-f]{64}', lesson_version):
+                    raise ValueError('Lesson version missing; re-render and reload the course before saving.')
+                version = payload.get('exercise_fingerprint')
+                if not isinstance(version, str) or not re.fullmatch('[0-9a-f]{64}', version):
+                    raise ValueError('Exercise version missing; re-render and reload the course before saving.')
+                if match[2] == 'draft':
+                    if type(payload.get('revision')) is not int:
+                        raise ValueError('Draft revision is required.')
+                    result = save_draft(self.server.workspace, match[1], payload.get('response'),
+                        payload['revision'], version, lesson_version, payload.get('base_attempt_id'))
+                    self.send_json(200, result)
+                    return
                 result = submit_attempt(self.server.workspace, match[1], payload.get('response'),
-                                        payload.get('attempt_id'))
+                                        payload.get('attempt_id'), version, lesson_version, payload.get('draft_revision'))
                 self.send_json(200, {key: result[key] for key in (
                     'id', 'exercise_id', 'response', 'submitted_at', 'status', 'feedback')})
             else:
