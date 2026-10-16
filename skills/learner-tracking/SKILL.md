@@ -20,7 +20,7 @@ python3 skills/learner-tracking/scripts/learner_state.py record alex --event ses
 ```
 
 `init` creates a blank learner profile (`learners/<name>/state.json`). It
-starts completely empty — do not guess or assume the user's name, background,
+starts completely empty — do not guess or assume the user's  background,
 or skill level. By default, profiles are saved in the repository's ignored
 `learners/` directory. Pass `--root <directory>` to use a different folder
 (e.g., in automated tests). For the full schema and update rules, see
@@ -61,11 +61,11 @@ Every recorded attempt or topic transition refreshes profile, course, topic,
 teaching-observation, and next-step memories. Update at meaningful evidence
 changes during the conversation, not only at the end of a course. On resumption,
 use earlier taught topics as explicit bridges into the next topic. Keep one
-folder per person; do not assume unrelated chats have shared memory.
+folder per person, do not assume unrelated chats have shared memory.
 
 Resolve every enrolled plan before changing learner state. If a referenced plan
-is missing, stale, or invalid, fail before recording a new attempt or profile
-change. Derived Markdown views may be rebuilt from valid state; they never
+is missing or invalid, fail before recording a new attempt or profile
+change. Derived Markdown views may be rebuilt from valid state, they never
 override it.
 
 ## Separate the kinds of knowledge
@@ -82,6 +82,17 @@ Independent success supports demonstrated understanding of that concept in that
 task. A later independent retrieval/transfer supports retention. None is a
 permanent trait or a guarantee of general mastery.
 
+## Review saved exercises before the next lesson
+
+On completion or resumption, follow
+[exercise-review.md](references/exercise-review.md). Load the current lesson,
+actual stored responses, original criteria, and assistance. Review checked
+answers as well as written work; an unsent browser draft is not evidence.
+Record each attempt through `manage_interaction.py review-attempt`, then record
+the lesson repair and continuation decision through `review-lesson`. A wrong
+answer is an observation: diagnose its cause and inspect the teaching before
+choosing the repair. Preserve old attempts and unresolved gaps.
+
 ## Choose the next move
 
 If a wrong answer could have several causes, use one contrast to distinguish
@@ -91,7 +102,7 @@ subsequent work improves, not because the learner says it looks nice.
 Use recent evidence and task difficulty together. After a long gap, check recall
 briefly before choosing the pace. If the learner is correct but slow, distinguish
 fluency practice from a conceptual repair. Do not prescribe a fixed review
-interval as scientifically optimal; agree a date suited to the goal.
+interval as scientifically optimal, agree a date suited to the goal.
 
 ## Keep the record small and honest
 
@@ -103,4 +114,9 @@ the note in the response and say it was not saved.
 
 Use `profile <id> --file <json>` to replace explicitly provided preferences/goals.
 Use `retract <id> --event-id <id>` to remove a mistaken event, then re-record a
-correction if needed. Use `delete <id>` only when the learner requests erasure.
+correction if needed. `delete <id>` is a state reset: it removes state and known
+derived memory views, while course workspaces, submissions, drafts, hints,
+questions, reviews, artifacts, and rendered pages remain. Do not describe that
+command as complete learner-data erasure. A full erasure needs a separately
+validated inventory and coordinated protection against concurrent course writes;
+the current CLI does not provide it. Preserve unrelated user files.
