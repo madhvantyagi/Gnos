@@ -1,6 +1,7 @@
 """Place narration on the actual Manim timeline; export matching subtitles."""
 import json
 import math
+from html import escape
 from pathlib import Path
 
 
@@ -73,9 +74,15 @@ class CuePlayer:
             raise ValueError(f'Unplayed narration cues: {sorted(missing)}')
         prefix = Path(output_prefix)
         prefix.parent.mkdir(parents=True, exist_ok=True)
-        # Subtitles reuse the same measured cue timings, so SRT and timing
-        # JSON cannot drift apart.
+        # Both caption formats reuse actual cue timings, including pauses.
         prefix.with_suffix('.timing.json').write_text(json.dumps(self.timeline, indent=2) + '\n')
-        parts = [f"{i}\n{timestamp(c['start'])} --> {timestamp(c['end'])}\n{c['text']}\n"
+        # A blank payload line ends a subtitle cue. Keep every paragraph's words
+        # in the caption while preserving the original text in the timing JSON.
+        caption_text = lambda cue: ' '.join(cue['text'].split())
+        parts = [f"{i}\n{timestamp(c['start'])} --> {timestamp(c['end'])}\n{caption_text(c)}\n"
                  for i, c in enumerate(self.timeline, 1)]
         prefix.with_suffix('.srt').write_text('\n'.join(parts) + '\n')
+        browser_parts = [f"{i}\n{timestamp(c['start']).replace(',', '.')} --> "
+                         f"{timestamp(c['end']).replace(',', '.')}\n{escape(caption_text(c))}\n"
+                         for i, c in enumerate(self.timeline, 1)]
+        prefix.with_suffix('.vtt').write_text('WEBVTT\n\n' + '\n'.join(browser_parts) + '\n')
