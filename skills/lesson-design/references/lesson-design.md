@@ -195,3 +195,23 @@ what was taught. Reject a sequence of short definitions even if it contains
 two media types and passes the file validator. A complete explanation gives
 the learner an opportunity to understand; their subsequent work provides
 evidence that they did.
+
+For each promised outcome, locate the explanation that establishes it and the
+learner action that could demonstrate it. Inspect private prompts, criteria,
+solutions, and assistance as well as the public reading sequence. Recompute
+worked examples and code traces. Check whether the requested response can
+actually show what the criteria assess, and whether the lesson already supplied
+the assessment answer. A correct prediction does not by itself establish a
+derivation; request the reasoning when the outcome requires it.
+
+Give each review finding an affected block, the exact missing definition,
+sentence, inference, example, or assumption, a required repair, and how to check
+the repair. "Needs more depth" is not actionable. Use the selected subject's
+standard of evidence: a mathematical justification, a constrained physical
+model, a historical source comparison, or a tested program serve different
+purposes. Record pass only after unresolved teaching gaps are repaired.
+
+Explain unfamiliar words and symbols at the point of use. When a short line of
+code or a dense sentence carries several new ideas, unpack its parts in order,
+then reconnect them to the whole operation. Use the learner's question and
+evidence to choose that detail; familiar connective words need no glossary.
