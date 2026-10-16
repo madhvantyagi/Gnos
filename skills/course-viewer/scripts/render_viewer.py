@@ -528,9 +528,11 @@ _EXERCISE_CSS = (
     ".exercise-form{margin-top:10px;display:grid;gap:8px;}"
     ".exercise-label{display:grid;gap:6px;font-size:13px;color:var(--ink-muted);}"
     '.exercise-form input[type="text"],.exercise-form input[type="number"],'
-    ".exercise-form textarea{width:100%;font:inherit;font-size:14px;color:var(--ink);"
+    ".exercise-form textarea,.feedback-text{width:100%;font:inherit;font-size:14px;color:var(--ink);"
     "background:#fff;border:1px solid var(--divider-strong);border-radius:6px;padding:8px 10px;}"
     ".exercise-form textarea{min-height:88px;resize:vertical;}"
+    ".feedback-request{margin-top:12px;}.feedback-text{min-height:72px;resize:vertical;}"
+    ".feedback-request .exercise-actions{margin-top:8px;}.feedback-status{margin-top:6px;}"
     ".exercise-options{display:grid;gap:6px;margin:8px 0;}"
     ".exercise-options label{display:flex;gap:8px;align-items:baseline;font-size:14px;"
     "background:#fff;border:1px solid var(--divider);border-radius:6px;padding:8px 10px;cursor:pointer;}"
@@ -578,7 +580,7 @@ def _exercise_field_html(exercise):
                 '<textarea name="answer" rows="4" aria-label="Your answer"></textarea></label>')
     if raw_type == "numeric":
         return ('<label class="exercise-label">Your answer'
-                '<input type="number" name="answer" step="any" autocomplete="off" '
+                '<input type="text" inputmode="decimal" name="answer" autocomplete="off" '
                 'aria-label="Your answer"></label>')
     return ('<label class="exercise-label">Your answer'
             '<input type="text" name="answer" autocomplete="off" aria-label="Your answer"></label>')
@@ -606,16 +608,25 @@ def render_exercise_card(exercise, course_id, title):
     field = _exercise_field_html(exercise)
     return (
         f'<div class="card exercise" data-course-id="{esc(course_id)}" '
-        f'data-exercise-id="{esc(ex_id)}" data-response-type="{esc(response_type)}">'
+        f'data-exercise-id="{esc(ex_id)}" data-response-type="{esc(response_type)}" '
+        f'data-exercise-fingerprint="{esc(exercise.get("exercise_fingerprint", ""))}" '
+        f'data-lesson-fingerprint="{esc(exercise.get("lesson_fingerprint", ""))}">'
         f'<div class="card-title">{esc(title)}</div>'
         f'<div class="prompt">{render_rich_text(prompt)}</div>'
         f'<form class="exercise-form" method="post" action="#">'
         f"{field}"
-        '<div class="exercise-actions"><button type="submit">Save answer</button> '
-        '<button type="button" class="reveal-answer" disabled>Show answer</button></div>'
+        '<div class="exercise-actions"><button type="submit">Submit answer</button> '
+        '<button type="button" class="reveal-answer" disabled>Show answer</button> '
+        '<button type="button" class="request-feedback" disabled>Request feedback</button></div>'
         "</form>"
+        '<div class="feedback-request" hidden><label class="exercise-label">Question for GNOS'
+        '<textarea class="feedback-text" rows="3">Please review my saved response and explain the next step.</textarea></label>'
+        '<div class="exercise-actions"><button type="button" class="send-feedback">Save request</button> '
+        '<button type="button" class="copy-feedback">Copy request</button></div>'
+        '<div class="feedback-status" role="status" aria-live="polite"></div></div>'
         '<div class="exercise-status" role="status" aria-live="polite"></div>'
         '<div class="exercise-solution" hidden></div>'
+        '<details class="exercise-history" hidden><summary>Earlier attempts</summary><div></div></details>'
         f'<div class="meta">{esc(response_type)}{_attempt_summary(attempts)}</div>'
         "</div>")
 
@@ -639,13 +650,15 @@ def badge(state):
     return f'<span class="badge {css}">{esc(state)}</span>'
 
 
-def media_element(artifact, group):
+def media_element(artifact, group, caption=None):
     src = esc(artifact_src(artifact))
     title = esc(artifact.get("title", artifact.get("id", "")))
     mime = artifact.get("mime_type", "")
     if group == "watch":
         if mime.startswith("video/"):
-            return f'<video controls preload="metadata" src="{src}"></video>'
+            track = (f'<track kind="captions" src="{esc(artifact_src(caption))}" srclang="en" label="Captions">'
+                     if caption else '')
+            return f'<video controls preload="metadata" src="{src}">{track}</video>'
         if mime.startswith("audio/"):
             return f'<audio controls preload="metadata" src="{src}"></audio>'
     if group == "generated":
@@ -672,7 +685,20 @@ def media_element(artifact, group):
     return None
 
 
-def render_media(artifact, group, workspace):
+def _companion(artifact, field, artifacts, workspace):
+    companion_id = artifact.get('metadata', {}).get(field)
+    candidate = (artifacts or {}).get(companion_id) if isinstance(companion_id, str) else None
+    if not candidate or candidate.get('status') != 'ready' or artifact_note(candidate, workspace):
+        return None
+    if field == 'captions' and (candidate.get('mime_type') != 'text/vtt' or 'path' not in candidate.get('location', {})):
+        return None
+    if field == 'transcript' and not (candidate.get('mime_type', '').startswith('text/') or
+                                     candidate.get('mime_type') == 'application/pdf'):
+        return None
+    return candidate
+
+
+def render_media(artifact, group, workspace, artifacts=None):
     src = esc(artifact_src(artifact))
     title = esc(artifact.get("title", artifact.get("id", "")))
     purpose = esc(artifact.get("purpose", ""))
@@ -684,14 +710,16 @@ def render_media(artifact, group, workspace):
         bits.append(f"{seconds // 60}:{seconds % 60:02d}")
     if metadata.get("pages") is not None:
         bits.append(f"{metadata['pages']} pages")
+    caption = _companion(artifact, 'captions', artifacts, workspace)
+    transcript = _companion(artifact, 'transcript', artifacts, workspace)
     if metadata.get("captions"):
-        bits.append("captions")
-    if metadata.get("transcript"):
-        bits.append("transcript")
+        bits.append("captions" if caption else "captions unavailable")
+    if metadata.get("transcript") and not transcript:
+        bits.append("transcript unavailable")
     meta = esc(" · ".join(str(bit) for bit in bits))
     missing = artifact_note(artifact, workspace)
 
-    element = media_element(artifact, group)
+    element = media_element(artifact, group, caption)
     if element is None:
         return (f'<div class="card media-resource"><div class="card-title">Resource</div>'
                 f'<div class="prompt">{title}</div>'
@@ -706,7 +734,9 @@ def render_media(artifact, group, workspace):
             f'<div class="media-body">'
             f'<div class="media-title">{title} {note}</div>'
             f'<div class="media-purpose">{purpose}</div>'
-            f'<div class="media-meta">{meta_line}</div></div></div>')
+            f'<div class="media-meta">{meta_line}'
+            + (f' · <a href="{esc(artifact_src(transcript))}">Open transcript</a>' if transcript else '')
+            + '</div></div></div>')
 
 
 def render_block(block, lesson_exercises, sources, course_id=""):
@@ -873,7 +903,7 @@ def render_lesson(lesson, index, total, previous_id, next_id, artifacts, sources
             has_preview = any(block.get(field) for field in preview_fields)
             if has_preview:
                 blocks.append(render_block(block, lesson_exercises, sources, course_id))
-            blocks.append(render_media(artifacts[artifact_id], group, workspace))
+            blocks.append(render_media(artifacts[artifact_id], group, workspace, artifacts))
             if not has_preview:
                 continue
         else:
@@ -1267,7 +1297,9 @@ def render_questions(view):
         cards.append(
             f'<div class="card"><div class="card-title">question · {esc(question.get("id", ""))}</div>'
             f'<div class="prompt">{render_rich_text(question.get("text", ""))}</div>'
-            f'<div class="meta">status · {esc(question.get("status", ""))}</div></div>')
+            f'<div class="meta">status · {esc(question.get("status", ""))}</div>'
+            + (f'<div class="question-answer">{render_rich_text(question["answer"])}</div>'
+               if question.get('answer') else '') + '</div>')
     return cards
 
 
@@ -1311,8 +1343,7 @@ def render_body(view, plan, workspace):
 
     questions_html = ""
     question_cards = render_questions(view)
-    if question_cards:
-        questions_html = '<h2 class="sec">Questions</h2>' + "".join(question_cards)
+    questions_html = '<div class="course-questions"><h2 class="sec">Questions</h2>' + "".join(question_cards) + '</div>'
 
     curriculum_html = render_contents(view, course, topic_reps)
     details_html = render_topic_details(view, plan, topic_reps)
@@ -1321,6 +1352,7 @@ def render_body(view, plan, workspace):
         '<div id="math-render-status" role="alert" hidden>Math could not render. Reload this course page.</div>',
         render_sidebar(plan, lessons, current["topic_id"]),
         render_hero(plan, course),
+        '<p class="course-review-status" role="status" aria-live="polite">Save your answers, then ask GNOS to review this lesson before continuing.</p>',
         '<section class="tab active" id="tab-overview">'
         '<div class="overview-layout">'
         f'{curriculum_html}'
@@ -1334,7 +1366,7 @@ def render_body(view, plan, workspace):
         f'<section class="tab" id="tab-sources"><h2 class="sec">Sources</h2>{render_sources(course)}</section>',
         f'<section class="tab" id="tab-artifacts">{render_artifacts(view, workspace)}</section>',
         '<div class="footer">GNOS · learn, practice, and revisit</div>',
-        f"<style>{_EXERCISE_CSS}</style>",
+        f"<style>{_EXERCISE_CSS} .exercise-history p {{white-space:pre-wrap;overflow-wrap:anywhere}} .course-review-status {{margin:1rem 0;overflow-wrap:anywhere}}</style>",
         f"<style>{_MATH_CSS}</style>",
         f"<script>{_EXERCISE_JS}</script>",
     ]
