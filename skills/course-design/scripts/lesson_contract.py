@@ -63,7 +63,8 @@ def _timestamp(value, label):
         raise ValueError(f"{label} must be a real ISO UTC timestamp") from exc
 
 
-def _validate_design_receipt(receipt, course, created_at, updated_at):
+def _validate_design_receipt(receipt, course, created_at, updated_at, lesson,
+                             require_content_binding=False):
     if not isinstance(receipt, dict):
         raise ValueError("ready lesson requires design_receipt from skills/lesson-design/SKILL.md")
     _timestamp(receipt.get("designed_at"), "design_receipt.designed_at")
@@ -84,6 +85,14 @@ def _validate_design_receipt(receipt, course, created_at, updated_at):
     _validate_skill_route(route)
     if receipt.get("review") != "pass":
         raise ValueError("design_receipt.review must be pass after the lesson-design review checklist")
+    version = receipt.get("schema_version", 1)
+    if isinstance(version, bool) or version not in (1, 2):
+        raise ValueError("design_receipt.schema_version must be 1 or 2")
+    if require_content_binding and version != 2:
+        raise ValueError("new ready publication requires a content-bound design_receipt schema_version 2")
+    if version == 2 or "lesson_content_fingerprint" in receipt:
+        if receipt.get("lesson_content_fingerprint") != lesson_design_fingerprint(lesson):
+            raise ValueError("design_receipt.lesson_content_fingerprint must match the reviewed lesson content")
 
 
 def _artifact_ids(data):
@@ -152,7 +161,7 @@ def _validate_production(production, lesson_routes, label, *, require_dependenci
     return dependencies
 
 
-def validate_lesson(data, course):
+def validate_lesson(data, course, *, require_content_binding=False):
     """Validate a lesson against an already validated version-two course."""
     if not isinstance(data, dict) or data.get("schema_version") not in (1, LESSON_SCHEMA_VERSION):
         raise ValueError("Lesson requires schema_version 1 or 2")
@@ -192,10 +201,11 @@ def validate_lesson(data, course):
         raise ValueError("updated_at must be greater than or equal to created_at")
     if data.get("publication") == "ready":
         _validate_design_receipt(
-            data.get("design_receipt"), course, data["created_at"], data["updated_at"])
+            data.get("design_receipt"), course, data["created_at"], data["updated_at"], data,
+            require_content_binding=require_content_binding)
     elif "design_receipt" in data and data["design_receipt"] is not None:
         _validate_design_receipt(
-            data.get("design_receipt"), course, data["created_at"], data["updated_at"])
+            data.get("design_receipt"), course, data["created_at"], data["updated_at"], data)
 
     exercises = data.get("exercises")
     if not isinstance(exercises, list):
@@ -221,6 +231,10 @@ def validate_lesson(data, course):
         _strings(exercise.get("success_criteria"), f"{exercise_id}.success_criteria", required=True)
         refs = exercise.get("reference_block_ids", [])
         _strings(refs, f"{exercise_id}.reference_block_ids")
+    topic_exercise_ids = set(topic.get("exercise_ids", []))
+    for exercise_id in exercise_ids:
+        if exercise_id not in topic_exercise_ids:
+            raise ValueError(f"{exercise_id}: exercise must be listed in topic exercise_ids")
 
     blocks = data.get("blocks")
     if not isinstance(blocks, list) or not blocks:
@@ -323,12 +337,26 @@ def public_block(block):
     return {key: copy.deepcopy(block[key]) for key in PUBLIC_BLOCK_FIELDS if key in block}
 
 
+def exercise_fingerprint(exercise):
+    payload = json.dumps(exercise, sort_keys=True, ensure_ascii=False, separators=(',', ':'), allow_nan=False)
+    return hashlib.sha256(payload.encode()).hexdigest()
+
+
+def task_fingerprint(exercise):
+    # Editorial criteria/solution changes do not make the same question fresh.
+    fields = {key: exercise[key] for key in ('prompt', 'response_type')}
+    if exercise['evaluation']['mode'] == 'choice':
+        fields['options'] = exercise['evaluation']['options']
+    return exercise_fingerprint(fields)
+
+
 def public_exercise(exercise):
     evaluation = {"mode": exercise["evaluation"]["mode"]}
     if evaluation["mode"] == "choice":
         evaluation["options"] = copy.deepcopy(exercise["evaluation"]["options"])
     result = {"id": exercise["id"], "concepts": list(exercise["concepts"]), "prompt": exercise["prompt"],
-              "response_type": exercise["response_type"], "evaluation": evaluation}
+              "response_type": exercise["response_type"], "evaluation": evaluation,
+              "exercise_fingerprint": exercise_fingerprint(exercise)}
     if exercise.get("reference_block_ids"):
         result["reference_block_ids"] = list(exercise["reference_block_ids"])
     return result
@@ -341,9 +369,29 @@ def public_lesson(data):
             "blocks": [public_block(block) for block in data["blocks"]],
             "exercises": [public_exercise(exercise) for exercise in data["exercises"]],
             "publication": data["publication"], "updated_at": data["updated_at"]}
+    for exercise in result['exercises']:
+        exercise['lesson_fingerprint'] = lesson_fingerprint(data)
     if isinstance(data.get("design_receipt"), dict):
-        result["design_receipt"] = copy.deepcopy(data["design_receipt"])
+        public_fields = {"schema_version", "designed_at", "course_fingerprint", "skill_route",
+                         "review", "lesson_content_fingerprint"}
+        result["design_receipt"] = {key: copy.deepcopy(value)
+                                    for key, value in data["design_receipt"].items()
+                                    if key in public_fields}
     return result
+
+
+def lesson_design_fingerprint(data):
+    """Version-one authored-content hash; deliberately excludes its own receipt.
+
+    Includes private briefs, criteria, answers and artifact references. It does
+    not attest to mutable external media bytes or to the quality of a review.
+    Keep lesson_fingerprint unchanged: attempt snapshots use the whole file.
+    """
+    content = {key: value for key, value in data.items()
+               if key not in {"design_receipt", "publication", "created_at", "updated_at"}}
+    payload = json.dumps({"fingerprint_version": 1, "content": content}, sort_keys=True,
+                         separators=(",", ":"), ensure_ascii=False, allow_nan=False)
+    return hashlib.sha256(payload.encode()).hexdigest()
 
 
 def lesson_fingerprint(data):
