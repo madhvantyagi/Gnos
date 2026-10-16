@@ -10,6 +10,11 @@ with the script in this skill. The course plan is
 `learners/<id>/courses/<course-id>/course.json`, owned by the course
 skill.
 
+For exercise-driven resumption, use [exercise-review.md](exercise-review.md)
+first. Saving an answer does not automatically assess learning or improve a
+lesson. Review the actual work, diagnose the gap, repair teaching when needed,
+verify with a changed case, and record the continuation decision.
+
 ## The basic loop
 
 The learner studies from whatever source the course suggested.
@@ -61,8 +66,9 @@ Not every fix needs a new plan version.
 - The fix stays inside one block: the words are wrong, a label is
   wrong, or the same picture needs a second try. Tell the lesson
   skill to fix the block. No new `revision` is needed.
-- The fix changes the plan: a new concept, a new medium, a new
-  skill route, a new order, a new source, or less scope. Tell the
+- The fix changes the plan: a new concept, prerequisite, topic boundary,
+  order, source, or less scope. A medium or skill-route change also needs a
+  plan revision when it changes a binding representation plan. Tell the
   course skill to update `course.json` with `revision` + 1 and a
   `revision_notes` reason. The lesson skill then rebuilds the blocks
   that changed. A lesson worker never changes `course.json` on its
@@ -70,9 +76,14 @@ Not every fix needs a new plan version.
 
 ## Simple rules
 
-- one repeat: rephrase in chat, no change to the map
-- two repeats: add an example or one missing step
-- three repeats: split the step or change the source
+- Diagnose the first error; repair a missing teaching step as soon as it is evident.
+- Repeated confusion: change the explanation, example, or representation and check the result.
+- A persistent prerequisite gap: split or reorder the route through course-design.
+
+Repeat counts describe observations, not mandatory thresholds for helping.
+“Keep going” means recorded evidence supports the next action; a save or a
+learner saying they finished reading is insufficient. An explicit skip preserves
+the learner's pace and records the unresolved gap.
 
 Never invent a response to fill the record. Steps not taught stay
 marked so.
