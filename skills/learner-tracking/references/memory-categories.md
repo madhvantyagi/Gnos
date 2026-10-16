@@ -61,10 +61,23 @@ Save at a meaningful evidence change: an attempt, a corrected misconception, a
 topic transition, a changed preference, or a session pause. Do not wait until the
 whole course ends. Do not log every conversational sentence or write an event
 for an answer the learner has not given. If several events occur the same day,
-use distinct IDs and preserve their order.
+use distinct IDs and preserve actual occurrence times when known. Portal work
+uses saved submission time, even when reviews arrive in a different order.
+Untimed chat work remains untimed; conflicting mixed same-day observations stay
+explicitly uncertain rather than hiding a possible later failure.
+
+`delete <learner>` resets authoritative state and its known memory projections.
+It retains course workspaces and their responses, assistance, questions,
+reviews, artifacts, and generated pages. Reenrollment can therefore reconnect
+that saved work. This is not complete data erasure. A separate erasure operation
+must inventory those managed copies, protect all writers, report partial
+failure, and preserve unrelated files before it can make that claim.
 
 On a new chat: read profile, course status, relevant topic evidence, then next
-step. Reference earlier work concretely: “Last time you computed the gradient;
+step. For an enrolled course, the context loader also includes the current
+lessons and saved exercise work. Follow [exercise-review.md](exercise-review.md)
+before making the next lesson. Use a valid continuation receipt's next step;
+new answers or lesson changes require a fresh review. Reference earlier work concretely: “Last time you computed the gradient;
 the unresolved part was choosing the step size.” If retention is uncertain,
 use a short check before accelerating. If no active course is identifiable,
 ask the learner which goal to resume rather than choosing silently.
