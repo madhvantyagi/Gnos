@@ -96,6 +96,20 @@ def valid_v1_course():
 
 
 class CourseContractV2Tests(unittest.TestCase):
+    def test_malformed_assessment_is_rejected_before_creating_a_workspace(self):
+        import tempfile
+        from learner_state import mutate
+        for assessment in ({'prompt': 'Derive slope.'}, {'prompt': 'Derive slope.', 'success_criteria': 'reason'},
+                           {'prompt': 'Derive slope.', 'success_criteria': [], 'criteria': [{'id': 'derive', 'description': 'Explain.', 'concepts': ['math.other']}]}):
+            plan = valid_v2_course()
+            plan['chapters'][0]['topics'][0]['assessment'] = assessment
+            with tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                with self.assertRaises(ValueError):
+                    mutate(root, 'alex', 'enroll', plan)
+                self.assertFalse((root / 'alex/courses').exists())
+                self.assertFalse((root / 'alex/state.json').exists())
+
     def test_khan_video_source_requires_canonical_url_and_video_id(self):
         plan = valid_v2_course()
         source = {
