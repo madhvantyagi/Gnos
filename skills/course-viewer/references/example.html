@@ -483,21 +483,46 @@ document.addEventListener("DOMContentLoaded", function () {
   var tabs = Array.prototype.slice.call(document.querySelectorAll("#tabs button"));
   var sections = {};
   tabs.forEach(function (button) {
-    sections[button.getAttribute("data-tab")] = document.getElementById("tab-" + button.getAttribute("data-tab"));
+    var name = button.getAttribute("data-tab");
+    var section = document.getElementById("tab-" + name);
+    sections[name] = section;
+    button.id = "section-tab-" + name;
+    button.setAttribute("aria-controls", "tab-" + name);
+    if (section) {
+      section.setAttribute("role", "tabpanel");
+      section.setAttribute("aria-labelledby", button.id);
+    }
   });
   function activate(name) {
     tabs.forEach(function (button) {
       var on = button.getAttribute("data-tab") === name;
       button.classList.toggle("active", on);
       button.setAttribute("aria-selected", on ? "true" : "false");
+      button.setAttribute("tabindex", on ? "0" : "-1");
     });
     Object.keys(sections).forEach(function (key) {
-      if (sections[key]) sections[key].classList.toggle("active", key === name);
+      if (sections[key]) {
+        sections[key].classList.toggle("active", key === name);
+        sections[key].hidden = key !== name;
+      }
     });
   }
   tabs.forEach(function (button) {
     button.addEventListener("click", function () { activate(button.getAttribute("data-tab")); });
+    button.addEventListener("keydown", function (event) {
+      var index = tabs.indexOf(button);
+      if (event.key === "ArrowRight") index = (index + 1) % tabs.length;
+      else if (event.key === "ArrowLeft") index = (index + tabs.length - 1) % tabs.length;
+      else if (event.key === "Home") index = 0;
+      else if (event.key === "End") index = tabs.length - 1;
+      else return;
+      event.preventDefault();
+      activate(tabs[index].getAttribute("data-tab"));
+      tabs[index].focus();
+    });
   });
+  var selectedTab = tabs.filter(function (button) { return button.getAttribute("aria-selected") === "true"; })[0];
+  if (tabs.length) activate((selectedTab || tabs[0]).getAttribute("data-tab"));
 
   // Curriculum rows -> topic details panel
   var panel = document.getElementById("topic-details");
@@ -570,8 +595,9 @@ document.addEventListener("DOMContentLoaded", function () {
   if (nextLink) nextLink.addEventListener("click", function (e) { e.preventDefault(); if (current < lessons.length - 1) goLesson(current + 1); });
   document.addEventListener("keydown", function (e) {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
-    if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+    if (!e.target || !e.target.closest || !e.target.closest("#lesson-list")) return;
     if (!lessons.length) return;
+    e.preventDefault();
     goLesson(current + (e.key === "ArrowRight" ? 1 : -1));
   });
   document.addEventListener("click", function (e) {
