@@ -28,7 +28,7 @@ class JSXGraphTests(unittest.TestCase):
         for media in ("graph", "jsxgraph"):
             result = subprocess.run([
                 sys.executable, str(ROOT / "skills/learning-orchestrator/scripts/assemble_context.py"),
-                "--subject", "math", "--media", media, "--manifest",
+                "--subject", "math", "--mode", "local", "--media", media, "--manifest",
             ], capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             paths = result.stdout.splitlines()
