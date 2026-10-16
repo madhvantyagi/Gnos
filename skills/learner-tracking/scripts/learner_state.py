@@ -41,6 +41,27 @@ def validate_event(event):
         raise ValueError('Event date must be YYYY-MM-DD')
     if date.fromisoformat(when) > date.today():
         raise ValueError('Event date cannot be in the future')
+    if 'occurred_at' in event:
+        sys.path.insert(0, str(ROOT / 'skills/course-design/scripts'))
+        from evidence_order import occurrence_time
+        occurrence_time(event)
+    if 'source' in event:
+        source = event['source']
+        fields = {'type', 'attempt_id', 'exercise_id', 'lesson_id', 'exercise_fingerprint',
+                  'lesson_fingerprint', 'snapshot_source'}
+        if not isinstance(source, dict) or set(source) != fields or source['type'] != 'portal-attempt':
+            raise ValueError('Event source must identify its portal attempt and versions')
+        if 'occurred_at' not in event:
+            raise ValueError('Portal event provenance requires occurred_at')
+        for field in ('attempt_id', 'exercise_id', 'lesson_id'):
+            slug(source[field])
+        for field in ('exercise_fingerprint', 'lesson_fingerprint'):
+            if source[field] is None and field == 'lesson_fingerprint' and source['snapshot_source'] == 'legacy-current-exercise':
+                continue
+            if not isinstance(source[field], str) or not re.fullmatch(r'[0-9a-f]{64}', source[field]):
+                raise ValueError('Event source fingerprint must be sha256 hex')
+        if source['snapshot_source'] not in {'submission', 'legacy-current-exercise'}:
+            raise ValueError('Invalid portal snapshot_source')
     strings(event.get('covered'), 'covered')
     for concept in event['covered']:
         validate_concept(concept)
@@ -234,24 +255,29 @@ def save_state(path, data):
             os.unlink(name)
 
 
+def ordered_evidence_events(data, learners_root=None, learner_id=None, course_id=None):
+    """Read-only chronology shared by progress, continuation, and memory views."""
+    sys.path.insert(0, str(ROOT / 'skills/course-design/scripts'))
+    from evidence_order import ordered_events
+    events = [e for e in data['events'] if course_id is None or e['course_id'] == course_id]
+    if learners_root is not None and learner_id is not None:
+        from manage_interaction import resolved_evidence_events
+        from course_workspace import workspace_path
+        derived = {}
+        for id_ in {e['course_id'] for e in events}:
+            scoped = [e for e in events if e['course_id'] == id_]
+            workspace = workspace_path(learners_root, learner_id, id_)
+            for event in (resolved_evidence_events(workspace, scoped) if id_ in data.get('courses', {}) and workspace.is_dir() else scoped):
+                derived[event['id']] = event
+        events = [derived[e['id']] for e in events]
+    return ordered_events(events)
+
+
 def summarize(data, course_id=None, learners_root=None, learner_id=None, resolved_plans=None):
-    concepts = {}
-    events = sorted([e for e in data['events'] if course_id is None or e['course_id'] == course_id], key=lambda e: e['date'])
-    history = {}
-    for event in events:
-        for concept in event['covered']:
-            concepts.setdefault(concept, dict(status='exposed', attempts=0))
-        for attempt in event['attempts']:
-            concept = attempt['concept']
-            entry = concepts.setdefault(concept, dict(status='exposed', attempts=0))
-            entry['attempts'] += 1
-            success = attempt['result'] == 'correct' and attempt['help'] == 'none'
-            earlier_success = any(day < event['date'] for day in history.get(concept, []))
-            status = 'practicing'
-            if success:
-                status = 'retained' if earlier_success and attempt['kind'] in ('retrieval', 'transfer') else 'demonstrated'
-                history.setdefault(concept, []).append(event['date'])
-            entry.update(status=status, last_date=event['date'], latest=attempt)
+    sys.path.insert(0, str(ROOT / 'skills/course-design/scripts'))
+    from course_progress import summarize_concepts
+    events = ordered_evidence_events(data, learners_root, learner_id, course_id)
+    concepts = summarize_concepts(events)
     latest_event = events[-1] if events else None
     courses = {}
     for id_, entry in data.get('courses', {}).items():
@@ -297,6 +323,16 @@ def _prepare_views(path, root, learner, data):
     from memory_views import build_views
     rendered = build_views(path, data, summary, plans=plans)
     return plans, summary, rendered
+
+
+def refresh_views(root, learner):
+    """Rebuild derived memory from fresh state and linked course work only."""
+    path = state_path(root, learner)
+    with locked(root, learner):
+        data = read_state(root, learner)
+        plans, summary, rendered = _prepare_views(path, root, learner, data)
+        from memory_views import write_views
+        write_views(path, data, summary, plans=plans, rendered=rendered)
 
 
 def mutate(root, learner, command, payload=None):
