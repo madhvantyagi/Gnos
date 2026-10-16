@@ -98,7 +98,9 @@ Each topic records its `outcome`, `subject`, and `teacher`, together with any
 `minutes`. Its `resource_ids` must refer to top-level `sources`. Keep
 `skill_routes` nonempty and beneath `skills/`. Include `exercise_ids`,
 `lesson_ids`, and `state`; include `representations` only for a binding plan.
-Add `feedback` when
+List in `exercise_ids` every exercise the topic's lessons use; the portal
+resolves saves through that list, and lesson validation rejects an exercise
+missing from it. Add `feedback` when
 there is evidence to record.
 
 For each source, provide `title`, `type`, `checked_on`, `sections`, and
@@ -116,6 +118,39 @@ Use the states `current`, `planned`, `provisional`, `retired`, and
 `out-of-scope`. Keep exactly one current chapter and one current topic, aligned
 with the `current` object. Retain retired topics as history rather than
 including them in active teaching.
+
+## Define the evidence each new topic needs
+
+For a new topic, include an `assessment` object with a nonempty `prompt`,
+`success_criteria` containing nonempty readable strings, and `criteria`:
+
+```json
+{
+  "prompt": "Derive the recurrence and explain why its cases cover every path.",
+  "success_criteria": ["Justifies the recurrence from exhaustive, disjoint cases."],
+  "criteria": [{
+    "id": "derive-recurrence",
+    "description": "Justifies the recurrence from exhaustive, disjoint cases.",
+    "concepts": ["cs.recurrence"]
+  }]
+}
+```
+
+This is contract example data. Use the topic's actual concept IDs. Criterion
+IDs are distinct stable slugs; `description` is required. Optional `concepts`
+must be a nonempty unique subset of the topic's concepts; omitting it requires
+evidence covering the whole topic. The readable strings and named criteria
+describe the same requirements. Design exercises that actually request the
+reasoning those requirements evaluate.
+
+On `advance`, the teacher explicitly reviews each named criterion against saved
+attempt or real chat evidence and explains what that evidence establishes.
+Scripts verify scope, assistance, and current portal versions. They cannot infer
+a derivation from a numeric response or judge the explanation themselves.
+Older plans with only string criteria remain readable; those requirements are
+visible as unmapped and are not silently certified by a concept's status.
+Introduce IDs through an intentional plan revision and assess the actual work;
+do not rewrite historical evidence to make it appear compliant.
 
 ## Revise from learner evidence
 
