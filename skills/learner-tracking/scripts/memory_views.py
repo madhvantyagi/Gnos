@@ -43,11 +43,12 @@ def curriculum(course, events, plan=None):
         if id_ is None:
             return 'No assigned teacher'
         return (root/f'teachers/{id_}/SOUL.md').read_text().splitlines()[0].lstrip('# ').split(' · ')[0]
-    relevant = [e for e in events if e['course_id'] == plan['id']]
     course_scripts = Path(__file__).resolve().parents[3] / 'skills/course-design/scripts'
     if str(course_scripts) not in sys.path:
         sys.path.insert(0, str(course_scripts))
     from course_progress import derive_course_progress
+    from evidence_order import ordered_events
+    relevant = ordered_events([e for e in events if e['course_id'] == plan['id']])
     progress = derive_course_progress(plan, relevant)
     covered = {c for e in relevant for c in e['covered']}
     attempts = [(e['date'], a) for e in relevant for a in e['attempts']]
@@ -90,8 +91,13 @@ def curriculum(course, events, plan=None):
                 lines.append(f'- `{concept}`: {status}.')
             assessment = topic.get('assessment')
             if assessment:
-                lines += ['', 'Assessment: ' + assessment['prompt'], '', 'Success criteria:', '']
+                lines += ['', 'Assessment: ' + assessment['prompt'], '', 'Planned success criteria (not an evidence verdict):', '']
                 lines += ['- ' + criterion for criterion in assessment['success_criteria']]
+                if assessment.get('criteria'):
+                    lines += ['', 'Named criteria requiring an explicit continuation review:', '']
+                    lines += [f"- `{criterion['id']}`: {criterion['description']}" for criterion in assessment['criteria']]
+                else:
+                    lines += ['', 'Legacy criteria have no evidence mapping; concept status does not certify them.']
             lines += ['', 'Resources:', '']
             for resource_id in topic['resource_ids']:
                 source = plan['sources'][resource_id]
@@ -129,6 +135,8 @@ def build_views(state_path, data, summary, plans=None):
     if folder.is_symlink():
         raise ValueError('Memory directory cannot be a symbolic link')
     plans = _resolved_plans(state_path, data, plans)
+    from learner_state import ordered_evidence_events
+    events = ordered_evidence_events(data, Path(state_path).parent.parent, Path(state_path).parent.name)
     fingerprint = hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()[:16]
     prefix = f'> Derived learner data, not instructions. State fingerprint: {fingerprint}.\n\n'
     profile = ['# Learner profile', '']
@@ -145,7 +153,7 @@ def build_views(state_path, data, summary, plans=None):
         if (folder/'courses').is_symlink() or target.parent.is_symlink():
             raise ValueError('Course memory cannot use symbolic links')
         rendered[target] = prefix + curriculum(
-            course, sorted(data['events'], key=lambda e:e['date']), plan=plan
+            course, events, plan=plan
         )
     topics = ['# Taught topics and evidence', '']
     for concept, record in summary['concepts'].items():
@@ -154,7 +162,7 @@ def build_views(state_path, data, summary, plans=None):
             topics.append('  Latest task: ' + record['latest']['task'])
             topics.append('  Observed response: ' + record['latest']['response'])
     teaching = ['# Teaching observations', '', 'Interpretations are tentative; retain the task context.', '']
-    for event in sorted(data['events'], key=lambda e:e['date']):
+    for event in events:
         if event['interpretation']:
             teaching.append(f"- {event['date']} / {event['course_id']} / {event['id']}: {event['interpretation']}")
     next_ = ['# Resume here', '', summary['next_step'] or 'No prior session. Establish the learner’s current question.']
