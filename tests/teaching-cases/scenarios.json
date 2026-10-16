@@ -1,0 +1,35 @@
+[
+  {
+    "id": "thin-derivation",
+    "kind": "assembled-lesson",
+    "subject": "math",
+    "promised_outcome": "Derive the derivative of x squared from the definition.",
+    "public_content": "The derivative measures local change. Apply the formula: d(x^2)/dx = 2x.",
+    "exercise": {"prompt": "What is the derivative at x = 3?", "response_type": "numeric", "answer": 6, "criteria": ["Derives the rule from the definition."]}
+  },
+  {
+    "id": "bounded-division",
+    "kind": "local-answer",
+    "subject": "math",
+    "learner_request": "Can I divide x(x-3)=0 by x?",
+    "public_content": "Only if x is nonzero. Here x could be zero, and dividing by it would lose that solution. Split the cases: x=0 is one solution. If x is nonzero, divide to get x-3=0, so x=3 is the other."
+  },
+  {
+    "id": "dp-contract-mismatch",
+    "kind": "assembled-lesson",
+    "subject": "computer-science",
+    "promised_outcome": "Explain the minimum-cost state transition and justify its implementation.",
+    "public_content": "For costs [10,15,20], C(0)=10, C(1)=15 and C(2)=20+min(10,15)=30. The top costs min(15,30)=15. For one item, the code returns cost[0]. You may start at step 0 or step 1, and the top is index len(cost).",
+    "production_brief": "Use costs [10,15,20] and show C values 10,15,20 and final answer 15.",
+    "exercise": {"prompt": "For the same costs, enter the cost to reach the top.", "response_type": "numeric", "answer": 15, "criteria": ["Explains why both predecessor choices exhaust the possibilities.", "Justifies the singleton case."]}
+  },
+  {
+    "id": "source-overreach",
+    "kind": "assembled-lesson",
+    "subject": "history",
+    "promised_outcome": "Assess how far one contemporary source supports a claim about a population.",
+    "public_content": "A fictional factory owner's private letter dated 1848 says that his workers support the new factory rules. Therefore all workers in the region supported the rules. This letter proves why the reform succeeded.",
+    "source_context": "A wholly fictional evaluation fixture. Only this owner's letter is supplied; no worker accounts, regional sampling, reform outcomes, or independent corroboration are available.",
+    "exercise": {"prompt": "Did all workers support the rules? Choose yes or no.", "response_type": "multiple-choice", "answer": "yes", "criteria": ["Evaluates source position, scope, and corroboration."]}
+  }
+]
