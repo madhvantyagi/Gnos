@@ -15,6 +15,41 @@ from tests.test_course_workspace import valid_v2_course  # noqa: E402
 
 
 class CourseProgressTests(unittest.TestCase):
+    def test_submission_time_orders_same_day_evidence_independently_of_review_order(self):
+        success = self.event('old-success', '2026-01-01', [self.attempt('math.slope')])
+        success['occurred_at'] = '2026-01-01T10:00:00Z'
+        failure = self.event('new-failure', '2026-01-01', [self.attempt('math.slope', result='incorrect')])
+        failure['occurred_at'] = '2026-01-01T11:00:00Z'
+        for events in ([success, failure], [failure, success]):
+            view = derive_course_progress(self.plan, events)
+            self.assertEqual(view['concepts']['math.slope']['status'], 'practicing')
+            self.assertEqual(view['concepts']['math.slope']['latest']['result'], 'incorrect')
+
+    def test_mixed_untimed_failure_cannot_be_hidden_by_timed_same_day_success(self):
+        failure = self.event('legacy-failure', '2026-01-01', [self.attempt('math.slope', result='incorrect')])
+        success = self.event('timed-success', '2026-01-01', [self.attempt('math.slope')])
+        success['occurred_at'] = '2026-01-01T11:00:00Z'
+        view = derive_course_progress(self.plan, [failure, success])
+        self.assertEqual(view['concepts']['math.slope']['status'], 'practicing')
+        self.assertTrue(view['concepts']['math.slope']['ordering_uncertain'])
+
+    def test_ordered_attempts_inside_one_timed_chat_event_keep_their_recorded_sequence(self):
+        event = self.event('chat-session', '2026-01-01', [self.attempt('math.slope', result='incorrect'),
+                                                       self.attempt('math.slope')])
+        event['occurred_at'] = '2026-01-01T11:00:00Z'
+        view = derive_course_progress(self.plan, [event])
+        self.assertEqual(view['concepts']['math.slope']['status'], 'demonstrated')
+        self.assertNotIn('ordering_uncertain', view['concepts']['math.slope'])
+
+    def test_known_later_success_resolves_an_earlier_timestamp_tie(self):
+        failure = self.event('failure', '2026-01-01', [self.attempt('math.slope', result='incorrect')])
+        success = self.event('success', '2026-01-01', [self.attempt('math.slope')])
+        later = self.event('later', '2026-01-01', [self.attempt('math.slope')])
+        failure['occurred_at'] = success['occurred_at'] = '2026-01-01T10:00:00Z'
+        later['occurred_at'] = '2026-01-01T11:00:00Z'
+        view = derive_course_progress(self.plan, [failure, success, later])
+        self.assertEqual(view['concepts']['math.slope']['status'], 'demonstrated')
+
     def setUp(self):
         self.plan = copy.deepcopy(valid_v2_course())
         self.plan["chapters"][0]["topics"][0]["concepts"] = ["math.slope"]
@@ -100,6 +135,15 @@ class CourseProgressTests(unittest.TestCase):
         self.assertEqual(concept["attempts"], 2)
         self.assertEqual(concept["latest"]["result"], "incorrect")
         self.assertEqual(events, before)
+
+    def test_same_day_retrieval_is_demonstrated_and_chapter_uses_topic_evidence(self):
+        events = [self.event('one', '2026-01-01', [self.attempt('math.slope')]),
+                  self.event('two', '2026-01-01', [self.attempt('math.slope', kind='retrieval')])]
+        view = derive_course_progress(self.plan, events)
+        self.assertEqual(view['concepts']['math.slope']['status'], 'demonstrated')
+        self.plan['chapters'][0]['topics'] = self.plan['chapters'][0]['topics'][:1]
+        view = derive_course_progress(self.plan, events)
+        self.assertEqual(view['chapters']['change']['evidence'], 'demonstrated')
 
     def test_summary_exposes_course_progress_only_for_selected_course(self):
         with tempfile.TemporaryDirectory() as directory:
