@@ -28,6 +28,13 @@ retry receives a new attempt ID and never erases the earlier response. Reusing
 an attempt ID with an identical payload is idempotent; reusing it with different
 content is an error.
 
+New submissions snapshot the original exercise (prompt, criteria, evaluation,
+solution, concepts, references), relevant teaching blocks, and lesson/exercise
+fingerprints privately. Review and reveal use that snapshot even after a lesson
+changes or becomes a draft. Older attempts without snapshots remain readable
+with an explicit `legacy-current-exercise` warning; do not invent their original
+question. Snapshots and criteria never enter the public page or exercise API.
+
 The server may check multiple-choice and numeric responses deterministically.
 Short text, long text, and code text remain `awaiting-review` until GNOS reviews
 the actual response in an active chat. Code is stored as text and is never run.
@@ -37,8 +44,20 @@ independent success.
 
 An attempt becomes learner evidence only through the explicit reviewed-attempt
 bridge. The review must state result, help level, attempt kind, interpretation,
-and the concrete next step. Until then, portal status describes the submission
-workflow—not learner understanding.
+and the concrete next step. `concept_results` may give separate results for
+all exercise concepts; it is required for a partial multi-concept review.
+Recorded solution assistance before submission requires `worked-example`, and
+recorded hint assistance prevents `none`. Revealing a solution after submission
+does not alter the independence of that already saved answer.
+Until linked evidence exists, portal status describes the submission workflow.
+The pending queue includes checked attempts and interrupted evidence writes.
+
+Use [exercise review](../../learner-tracking/references/exercise-review.md)
+for the complete diagnosis, lesson repair, verification, and continuation flow.
+`review-context` loads the current lessons and saved work; `review-lesson`
+stores a fingerprinted decision under `lesson-reviews/`. Changed lessons,
+answers, or evidence invalidate it. An enrolled topic transition requires a
+current advance/explicit-skip receipt; the command never moves the plan itself.
 
 ## Ask Codex
 
@@ -66,7 +85,7 @@ python3 skills/course-design/scripts/manage_interaction.py answer-question \
   <learner-id> <course-id> --question-id <question-id> --file answer.json
 ```
 
-Review one open-ended attempt:
+Review one saved attempt (including numeric/choice work):
 
 ```bash
 python3 skills/course-design/scripts/manage_interaction.py review-attempt \
