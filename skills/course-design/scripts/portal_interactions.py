@@ -17,7 +17,7 @@ from artifact_manifest import read_manifest, ready_artifacts
 from course_contract import slug
 import course_workspace
 from course_workspace import atomic_json, read_plan
-from lesson_contract import validate_lesson
+from lesson_contract import exercise_fingerprint, task_fingerprint, lesson_fingerprint, validate_lesson
 
 
 _TEXT_LIMIT = 200_000
@@ -94,6 +94,74 @@ def _nonempty_text(value, label, limit=_TEXT_LIMIT) -> str:
     if "\x00" in value:
         raise ValueError(f"{label} contains NUL")
     return value
+
+
+def attempt_context(workspace: Path, attempt: dict) -> dict:
+    """Resolve original assessment data; explicitly identify legacy fallbacks."""
+    snapshot = attempt.get('exercise_snapshot')
+    if snapshot is None:
+        found = _find_exercise(workspace, attempt['exercise_id'])
+        return dict(course_id=found['plan']['id'], chapter_id=found['chapter']['id'],
+                    topic_id=found['topic']['id'], lesson_id=found['lesson']['id'],
+                    exercise=deepcopy(found['exercise']), snapshot_source='legacy-current-exercise')
+    if not isinstance(snapshot, dict) or snapshot.get('schema_version') != 1:
+        raise ValueError('Invalid exercise snapshot')
+    for field in ('course_id', 'chapter_id', 'topic_id', 'lesson_id'):
+        slug(snapshot.get(field))
+    exercise = snapshot.get('exercise')
+    if (not isinstance(exercise, dict) or exercise.get('id') != attempt.get('exercise_id')
+            or snapshot.get('exercise_fingerprint') != exercise_fingerprint(exercise)
+            or snapshot['course_id'] != read_plan(workspace)['id']):
+        raise ValueError('Exercise snapshot does not match its attempt or course')
+    _validate_response(exercise, attempt['response'])
+    return dict(deepcopy(snapshot), snapshot_source='submission')
+
+
+def _hint_records(workspace: Path, exercise_id: str):
+    root = workspace / 'exercises' / slug(exercise_id) / 'hints'
+    if any(p.is_symlink() for p in (root, root.parent, root.parent.parent)):
+        raise ValueError('Hint directories cannot use symbolic links')
+    if root.is_dir():
+        for path in sorted(root.glob('*.json')):
+            yield _read_record(path)
+
+
+def hint_records_for_task(workspace: Path, exercise_id: str, task: str, before: str | None = None):
+    """Fingerprint-bearing assistance follows a task across exercise renames."""
+    root = workspace / 'exercises'
+    if root.is_symlink() or not root.is_dir():
+        return
+    for directory in sorted(root.iterdir()):
+        if directory.is_symlink() or not directory.is_dir() or not _ID_RE.fullmatch(directory.name):
+            continue
+        for record in _hint_records(workspace, directory.name):
+            recorded_task = record.get('task_fingerprint')
+            if recorded_task != task and not (recorded_task is None and directory.name == exercise_id):
+                continue
+            if before is not None and not (record.get('requested_at', '') and record['requested_at'] < before):
+                continue
+            yield record
+
+
+def validate_attempt_review(workspace: Path, attempt: dict, review: dict) -> dict:
+    """Keep recorded assistance and concept scope consistent with the review."""
+    checked = _validate_review(review)
+    context = attempt_context(workspace, attempt)
+    concepts = set(context['exercise']['concepts'])
+    results = checked.get('concept_results', {})
+    if results and set(results) != concepts:
+        raise ValueError('concept_results must cover exactly the exercise concepts')
+    if len(concepts) > 1 and checked['result'] == 'partial' and not results:
+        raise ValueError('A partial multi-concept review requires concept_results')
+    solution_seen = attempt.get('solution_seen_before_submission', False)
+    task = task_fingerprint(context['exercise'])
+    hint_seen = attempt.get('hint_requested_before_submission', False) or any(
+        hint_records_for_task(workspace, attempt['exercise_id'], task, attempt.get('submitted_at', '')))
+    if solution_seen and checked['help'] != 'worked-example':
+        raise ValueError('Recorded solution assistance requires help=worked-example')
+    if hint_seen and checked['help'] == 'none':
+        raise ValueError('Recorded hint assistance cannot use help=none')
+    return checked
 
 
 def _finite_number(value, label):
@@ -233,25 +301,83 @@ def _with_attempt_alias(record: dict) -> dict:
     return result
 
 
-def save_draft(workspace: Path, exercise_id: str, response: dict) -> dict:
+def _draft_path(workspace: Path, exercise_id: str) -> Path:
+    slug(exercise_id)
+    return workspace / 'exercises' / exercise_id / 'draft.json'
+
+
+def _read_draft(workspace: Path, exercise_id: str):
+    path = _draft_path(workspace, exercise_id)
+    if any(parent.is_symlink() for parent in (path.parent, path.parent.parent)):
+        raise ValueError('Draft directories cannot use symbolic links')
+    return _read_record(path) if path.exists() or path.is_symlink() else None
+
+
+def _displayed_versions(found, exercise_version, lesson_version):
+    if (exercise_version is None) != (lesson_version is None):
+        raise ValueError('Displayed exercise and lesson versions must be supplied together')
+    if exercise_version is not None and (exercise_version != exercise_fingerprint(found['exercise']) or
+            lesson_version != lesson_fingerprint(found['lesson'])):
+        raise course_workspace.ConflictError('Lesson or exercise changed; re-render and reload before saving')
+
+
+def _draft_response(exercise, response):
+    field = 'text' if exercise['response_type'] in {'short-text', 'long-text', 'code-text'} else 'value'
+    if not isinstance(response, dict) or set(response) != {field}:
+        raise ValueError(f'draft response must contain only {field}')
+    value = response[field]
+    if isinstance(value, str):
+        if len(value) > _TEXT_LIMIT or '\x00' in value:
+            raise ValueError('Draft text is too large or contains NUL')
+    elif field != 'value' or isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+        raise ValueError('Draft answer must be editable text or a finite number')
+    if exercise['response_type'] == 'multiple-choice' and value not in ['', *exercise['evaluation'].get('options', [])]:
+        raise ValueError('Draft choice is not an exercise option')
+    return {field: value}
+
+
+def save_draft(workspace: Path, exercise_id: str, response: dict, expected_revision: int | None = None,
+               expected_exercise_fingerprint: str | None = None,
+               expected_lesson_fingerprint: str | None = None, base_attempt_id: str | None = None) -> dict:
     workspace = _workspace(workspace)
-    found = _find_exercise(workspace, exercise_id)
-    checked_response = _validate_response(found["exercise"], response)
-    draft_dir = _safe_directory(workspace / "exercises" / exercise_id)
-    record = {
-        "exercise_id": exercise_id,
-        "saved_at": utc_now(),
-        "response": checked_response,
-        "status": "draft",
-    }
+    if expected_revision is not None and (type(expected_revision) is not int or expected_revision < 0):
+        raise ValueError('expected_revision must be a nonnegative integer')
     with course_workspace._workspace_lock(workspace):
-        _write_replace(draft_dir / "draft.json", record)
+        found = _find_exercise(workspace, exercise_id)
+        _displayed_versions(found, expected_exercise_fingerprint, expected_lesson_fingerprint)
+        _validate_attempt_reference(workspace, exercise_id, base_attempt_id)
+        previous = _read_draft(workspace, exercise_id)
+        revision = previous.get('revision', 0) if previous else 0
+        checked_response = _draft_response(found['exercise'], response)
+        if expected_revision is not None and expected_revision != revision:
+            if (previous and previous.get('status') == 'draft' and revision == expected_revision + 1 and
+                    previous.get('base_attempt_id') == base_attempt_id and
+                    previous.get('exercise_fingerprint') == exercise_fingerprint(found['exercise']) and
+                    previous.get('lesson_fingerprint') == lesson_fingerprint(found['lesson']) and
+                    _json_equal(previous.get('response'), checked_response)):
+                return deepcopy(previous)
+            raise course_workspace.ConflictError('A newer draft exists. Your current text is still on this page; copy it before reloading.')
+        record = dict(exercise_id=exercise_id, saved_at=utc_now(), status='draft', revision=revision + 1,
+            response=checked_response, base_attempt_id=base_attempt_id,
+            exercise_fingerprint=exercise_fingerprint(found['exercise']),
+            lesson_fingerprint=lesson_fingerprint(found['lesson']))
+        _safe_directory(workspace / 'exercises')
+        _safe_directory(_draft_path(workspace, exercise_id).parent)
+        _write_replace(_draft_path(workspace, exercise_id), record)
     return deepcopy(record)
 
 
-def submit_attempt(workspace: Path, exercise_id: str, response: dict, attempt_id: str | None = None) -> dict:
+def submit_attempt(workspace: Path, exercise_id: str, response: dict, attempt_id: str | None = None,
+                   expected_exercise_fingerprint: str | None = None,
+                   expected_lesson_fingerprint: str | None = None, draft_revision: int | None = None) -> dict:
     workspace = _workspace(workspace)
     found = _find_exercise(workspace, exercise_id)
+    if (expected_exercise_fingerprint is None) != (expected_lesson_fingerprint is None):
+        raise ValueError('Displayed exercise and lesson versions must be supplied together')
+    if expected_exercise_fingerprint is not None and expected_exercise_fingerprint != exercise_fingerprint(found['exercise']):
+        raise course_workspace.ConflictError('Exercise changed; re-render and reload before saving')
+    if expected_lesson_fingerprint is not None and expected_lesson_fingerprint != lesson_fingerprint(found['lesson']):
+        raise course_workspace.ConflictError('Lesson changed; re-render and reload before saving')
     checked_response = _validate_response(found["exercise"], response)
     attempt_id = attempt_id or new_slugged_id("attempt")
     target = _attempt_path(workspace, exercise_id, attempt_id)
@@ -264,6 +390,16 @@ def submit_attempt(workspace: Path, exercise_id: str, response: dict, attempt_id
         "status": status,
         "feedback": feedback,
         "evidence_event_id": None,
+        "exercise_snapshot": {
+            "schema_version": 1, "course_id": found["plan"]["id"],
+            "chapter_id": found["chapter"]["id"], "topic_id": found["topic"]["id"],
+            "lesson_id": found["lesson"]["id"],
+            "lesson_fingerprint": lesson_fingerprint(found["lesson"]),
+            "exercise_fingerprint": exercise_fingerprint(found["exercise"]),
+            "exercise": deepcopy(found["exercise"]),
+            "teaching_blocks": [deepcopy(b) for b in found["lesson"]["blocks"]
+                                if set(b["concepts"]) & set(found["exercise"]["concepts"])],
+        },
     }
     with course_workspace._workspace_lock(workspace):
         # Attempt IDs are global so accidental cross-exercise reuse cannot hide work.
@@ -272,34 +408,75 @@ def submit_attempt(workspace: Path, exercise_id: str, response: dict, attempt_id
             if existing.get("exercise_id") == exercise_id and _json_equal(existing.get("response"), checked_response):
                 return _with_attempt_alias(existing)
             raise ValueError("Attempt ID is already used for different content")
+        # Recheck the lesson under the same lock used by lesson publication.
+        current = _find_exercise(workspace, exercise_id)
+        if lesson_fingerprint(current["lesson"]) != record["exercise_snapshot"]["lesson_fingerprint"]:
+            raise course_workspace.ConflictError("Exercise changed; reload before saving")
+        task = task_fingerprint(found['exercise'])
         record["solution_seen_before_submission"] = any(
-            item.get("solution_revealed_at")
-            for item in read_attempts(workspace, exercise_id))
+            item.get("solution_revealed_at") and (
+                (not item.get('exercise_snapshot') and item['exercise_id'] == exercise_id) or
+                (item.get('exercise_snapshot') and task_fingerprint(item['exercise_snapshot']['exercise']) == task))
+            for item in read_attempts(workspace))
+        record["hint_requested_before_submission"] = any(
+            hint_records_for_task(workspace, exercise_id, task, record['submitted_at']))
         _safe_directory(target.parent)
         _write_new(target, record)
+        draft = _read_draft(workspace, exercise_id)
+        if (draft is not None and type(draft_revision) is int and draft.get('revision') == draft_revision and
+                draft.get('exercise_fingerprint') == record['exercise_snapshot']['exercise_fingerprint'] and
+                draft.get('lesson_fingerprint') == record['exercise_snapshot']['lesson_fingerprint']):
+            # Keep a revision tombstone so a delayed pre-submit autosave cannot resurrect it.
+            _write_replace(_draft_path(workspace, exercise_id), dict(status='cleared',
+                exercise_id=exercise_id, revision=draft_revision + 1, saved_at=utc_now()))
     return _with_attempt_alias(record)
 
 
 def exercise_state(workspace: Path, exercise_id: str) -> dict:
     """Return the latest saved response without disclosing the worked answer."""
     workspace = _workspace(workspace)
-    exercise = _find_exercise(workspace, exercise_id)["exercise"]
+    found = _find_exercise(workspace, exercise_id)
+    exercise = found['exercise']
+    from portal_views import _public_attempt
     attempts = read_attempts(workspace, exercise_id)
-    latest = attempts[-1] if attempts else None
-    fields = ("id", "exercise_id", "response", "submitted_at", "status", "feedback",
-              "solution_revealed_at", "solution_seen_before_submission")
+    version = exercise_fingerprint(exercise)
+    lesson_version = lesson_fingerprint(found['lesson'])
+    draft = _read_draft(workspace, exercise_id)
+    matching_draft = draft if draft and draft.get('status') == 'draft' and (
+        draft.get('exercise_fingerprint') == version and draft.get('lesson_fingerprint') == lesson_version) else None
+    current = [a for a in attempts if not a.get('exercise_snapshot') or
+               (a['exercise_snapshot'].get('exercise_fingerprint') == version and
+                a['exercise_snapshot'].get('lesson_fingerprint') == lesson_version)]
+    latest = current[-1] if current else None
+    history = []
+    for attempt in attempts:
+        item = _public_attempt(attempt)
+        try:
+            item['prompt'] = attempt_context(workspace, attempt)['exercise']['prompt']
+        except ValueError:
+            item['prompt'] = 'Original question unavailable for this older attempt.'
+        history.append(item)
+    result = _public_attempt(latest) if latest else None
+    if result:
+        result['evidence_recorded'] = bool(latest.get('evidence_event_id'))
+        for key in ('solution_revealed_at', 'solution_seen_before_submission'):
+            if key in latest:
+                result[key] = latest[key]
     return {
-        "attempt": {key: latest[key] for key in fields if key in latest} if latest else None,
-        "solution_available": bool(exercise.get("solution")) or "answer" in exercise["evaluation"],
+        'attempt': result, 'history': history,
+        'draft': matching_draft, 'draft_revision': draft.get('revision', 0) if draft else 0,
+        'stale_draft': bool(draft and draft.get('status') == 'draft' and not matching_draft),
+        'exercise_fingerprint': version, 'lesson_fingerprint': lesson_version,
+        'solution_available': bool(exercise.get('solution')) or 'answer' in exercise['evaluation'],
     }
 
 
 def reveal_solution(workspace: Path, exercise_id: str, attempt_id: str) -> dict:
     """Reveal an authored solution only after an attempt was persisted for this exercise."""
     workspace = _workspace(workspace)
-    exercise = _find_exercise(workspace, exercise_id)["exercise"]
     target = _attempt_path(workspace, exercise_id, attempt_id)
     _validate_attempt_reference(workspace, exercise_id, attempt_id)
+    exercise = attempt_context(workspace, read_attempt(workspace, attempt_id))["exercise"]
     solution = exercise.get("solution")
     if not solution and "answer" in exercise["evaluation"]:
         solution = str(exercise["evaluation"]["answer"])
@@ -324,18 +501,16 @@ def _validate_attempt_reference(workspace: Path, exercise_id: str, attempt_id: s
 
 def request_hint(workspace: Path, exercise_id: str, attempt_id: str | None = None) -> dict:
     workspace = _workspace(workspace)
-    _find_exercise(workspace, exercise_id)
-    _validate_attempt_reference(workspace, exercise_id, attempt_id)
-    hint_id = new_slugged_id("hint")
-    record = {
-        "id": hint_id,
-        "exercise_id": exercise_id,
-        "attempt_id": attempt_id,
-        "requested_at": utc_now(),
-        "status": "requested",
-    }
-    hint_dir = _safe_directory(workspace / "exercises" / exercise_id / "hints")
     with course_workspace._workspace_lock(workspace):
+        exercise = _find_exercise(workspace, exercise_id)["exercise"]
+        _validate_attempt_reference(workspace, exercise_id, attempt_id)
+        hint_id = new_slugged_id("hint")
+        record = dict(id=hint_id, exercise_id=exercise_id, attempt_id=attempt_id,
+            requested_at=utc_now(), exercise_fingerprint=exercise_fingerprint(exercise),
+            task_fingerprint=task_fingerprint(exercise), status='requested')
+        _safe_directory(workspace / 'exercises')
+        _safe_directory(workspace / 'exercises' / exercise_id)
+        hint_dir = _safe_directory(workspace / "exercises" / exercise_id / "hints")
         _write_new(hint_dir / f"{hint_id}.json", record)
     result = deepcopy(record)
     result["hint_id"] = hint_id
@@ -393,6 +568,18 @@ def _validate_question_context(workspace: Path, text: str, context: dict) -> dic
     plan = read_plan(workspace)
     if course_id != plan["id"]:
         raise ValueError("question context.course_id does not match workspace")
+    if context.get('attempt_id') and not {'block_id', 'artifact_id'} & set(context):
+        # Saved work has its own authentic context, even while its lesson is repaired.
+        attempt = read_attempt(workspace, context['attempt_id'])
+        original = attempt_context(workspace, attempt)
+        for key in ('course_id', 'chapter_id', 'topic_id', 'lesson_id'):
+            if context.get(key) is not None and context[key] != original[key]:
+                raise ValueError(f'question context.{key} does not match the saved attempt')
+            context[key] = original[key]
+        if context.get('exercise_id') is not None and context['exercise_id'] != attempt['exercise_id']:
+            raise ValueError('question context.attempt_id must belong to context.exercise_id')
+        context['exercise_id'] = attempt['exercise_id']
+        return {key: context[key] for key in _CONTEXT_IDS if key in context}
     chapters = {item["id"]: item for item in plan["chapters"]}
     chapter = chapters.get(context.get("chapter_id")) if context.get("chapter_id") else None
     if context.get("chapter_id") and chapter is None:
@@ -469,19 +656,13 @@ def _validate_question_context(workspace: Path, text: str, context: dict) -> dic
 def create_question(workspace: Path, question: dict, question_id: str | None = None) -> dict:
     workspace = _workspace(workspace)
     text, context = _normalize_question_input(question)
-    checked_context = _validate_question_context(workspace, text, context)
     question_id = question_id or question.get("question_id") or question.get("id") or new_slugged_id("question")
     if not isinstance(question_id, str) or not _ID_RE.fullmatch(question_id):
         raise ValueError("question_id must be a lowercase slug")
-    record = {
-        "id": question_id,
-        "text": text,
-        "context": checked_context,
-        "created_at": utc_now(),
-        "status": "pending",
-    }
     target = workspace / "questions" / f"{question_id}.json"
     with course_workspace._workspace_lock(workspace):
+        checked_context = _validate_question_context(workspace, text, context)
+        record = dict(id=question_id, text=text, context=checked_context, created_at=utc_now(), status='pending')
         if target.exists() or target.is_symlink():
             existing = _read_record(target)
             if (existing.get("text") == record["text"] and
@@ -532,14 +713,21 @@ def answer_question(workspace: Path, question_id: str, answer: str | dict) -> di
 
 
 def _validate_review(review: dict) -> dict:
-    if not isinstance(review, dict) or set(review) != set(_REVIEW_FIELDS):
-        raise ValueError(f"review requires exactly: {', '.join(_REVIEW_FIELDS)}")
+    if (not isinstance(review, dict) or not set(_REVIEW_FIELDS).issubset(review)
+            or set(review) - {*_REVIEW_FIELDS, "concept_results"}):
+        raise ValueError(f"review requires: {', '.join(_REVIEW_FIELDS)}; optional concept_results")
     checked = {}
     for field in _REVIEW_FIELDS:
         value = _nonempty_text(review[field], f"review.{field}", limit=20_000)
         if field in _REVIEW_ENUMS and value not in _REVIEW_ENUMS[field]:
             raise ValueError(f"review.{field} is not a supported evidence value")
         checked[field] = value
+    if "concept_results" in review:
+        results = review["concept_results"]
+        if (not isinstance(results, dict) or not results or
+                any(not isinstance(k, str) or not isinstance(v, str) or v not in _REVIEW_ENUMS["result"] for k, v in results.items())):
+            raise ValueError("concept_results must map concepts to correct, partial, or incorrect")
+        checked["concept_results"] = deepcopy(results)
     return checked
 
 
@@ -550,6 +738,7 @@ def review_attempt(workspace: Path, attempt_id: str, review: dict) -> dict:
     target = _attempt_path(workspace, original["exercise_id"], attempt_id)
     with course_workspace._workspace_lock(workspace):
         record = _read_record(target)
+        checked_review = validate_attempt_review(workspace, record, checked_review)
         if record.get("review") is not None:
             if _json_equal(record["review"], checked_review):
                 return _with_attempt_alias(record)
@@ -586,5 +775,6 @@ def list_pending(workspace: Path) -> dict:
     """Return queued questions and attempts awaiting explicit GNOS review."""
     workspace = _workspace(workspace)
     questions = [item for item in _read_questions(workspace) if item.get("status") == "pending"]
-    attempts = [item for item in read_attempts(workspace) if item.get("status") == "awaiting-review"]
+    attempts = [item for item in read_attempts(workspace)
+                if item.get("status") != "reviewed" or not item.get("evidence_event_id")]
     return {"questions": deepcopy(questions), "attempts": deepcopy(attempts)}
