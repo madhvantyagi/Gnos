@@ -10,7 +10,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'skills/course-viewer/scripts'))
-from tests.test_portal_interactions import open_lesson
+from tests.test_portal_interactions import open_lesson, reviewed_lesson
 from course_workspace import create_workspace, publish_lesson
 from tests.test_lesson_contract import valid_v2_course
 from portal_interactions import read_attempts
@@ -38,7 +38,7 @@ class CourseServerTests(unittest.TestCase):
         self.workspace = create_workspace(Path(self.temp.name), 'alex', plan)
         lesson = open_lesson(plan)
         lesson['exercises'][1]['solution'] = r'The sign of $f\prime(x)$ predicts local change.'
-        publish_lesson(self.workspace, lesson)
+        publish_lesson(self.workspace, reviewed_lesson(lesson))
         portal = self.workspace / 'portal'
         portal.mkdir(exist_ok=True)
         (portal / 'index.html').write_text('<html><head></head><body>Lesson</body></html>')
@@ -58,6 +58,16 @@ class CourseServerTests(unittest.TestCase):
         base = {'Origin': self.origin, 'X-GNOS-Session': self.server.session_token,
                 'Content-Type': 'application/json'}
         base.update(headers)
+        if payload is not None and path.endswith('/attempts') and 'exercise_fingerprint' not in payload:
+            from portal_interactions import _find_exercise, exercise_fingerprint
+            exercise_id = path.split('/')[3]
+            payload = dict(payload, exercise_fingerprint=exercise_fingerprint(
+                _find_exercise(self.workspace, exercise_id)['exercise']))
+        if payload is not None and path.endswith('/attempts') and 'lesson_fingerprint' not in payload:
+            from portal_interactions import _find_exercise
+            from lesson_contract import lesson_fingerprint
+            payload = dict(payload, lesson_fingerprint=lesson_fingerprint(
+                _find_exercise(self.workspace, path.split('/')[3])['lesson']))
         connection.request('POST' if payload is not None else 'GET', path,
                            json.dumps(payload) if payload is not None else None, base)
         response = connection.getresponse()
@@ -135,3 +145,75 @@ class CourseServerTests(unittest.TestCase):
                                  {'response': {'value': 'not a number'}})
         self.assertEqual(status, 400)
         self.assertEqual(read_attempts(self.workspace), [])
+
+    def test_draft_and_question_endpoints_persist_without_creating_evidence(self):
+        from portal_interactions import exercise_state, answer_question
+        state = exercise_state(self.workspace, 'predict-change')
+        draft = {'response': {'value': '-'}, 'revision': 0,
+                 'exercise_fingerprint': state['exercise_fingerprint'],
+                 'lesson_fingerprint': state['lesson_fingerprint'], 'base_attempt_id': None}
+        self.assertEqual(self.request('/api/exercises/predict-change/draft', draft,
+                         **{'X-GNOS-Session': 'wrong'})[0], 403)
+        status, body = self.request('/api/exercises/predict-change/draft', draft)
+        self.assertEqual(status, 200, body)
+        self.assertEqual(json.loads(body)['revision'], 1)
+        self.assertEqual(self.request('/api/exercises/predict-change/draft', draft)[0], 200)
+        self.assertEqual(self.request('/api/exercises/predict-change/draft',
+                         dict(draft, response={'value': 'newer text'}))[0], 400)
+        self.assertEqual(read_attempts(self.workspace), [])
+        self.request('/api/exercises/predict-change/attempts',
+                     {'response': {'value': 0}, 'attempt_id': 'question-attempt'})
+        question = {'question_id': 'question-one', 'text': 'Where did my comparison go wrong?',
+                    'context': {'course_id': 'gradient-descent', 'exercise_id': 'predict-change',
+                                'attempt_id': 'question-attempt'}}
+        status, body = self.request('/api/questions', question)
+        self.assertEqual(status, 200, body)
+        self.assertNotIn('exercise_snapshot', body)
+        self.assertEqual(self.request('/api/questions', question)[0], 200)
+        answer_question(self.workspace, 'question-one', 'Compare the sign with the local change.')
+        status, body = self.request('/api/questions')
+        self.assertEqual(status, 200, body)
+        self.assertEqual(len(json.loads(body)['questions']), 1)
+        self.assertIn('Compare the sign', body)
+        self.assertNotIn('success_criteria', body)
+
+    def test_stale_displayed_question_is_rejected_without_saving(self):
+        from portal_interactions import _find_exercise, exercise_fingerprint
+        version = exercise_fingerprint(_find_exercise(self.workspace, 'predict-change')['exercise'])
+        lesson = json.loads((self.workspace / 'lessons/slope-introduction/lesson.json').read_text())
+        lesson['exercises'][0]['prompt'] = 'A different prediction.'
+        publish_lesson(self.workspace, reviewed_lesson(lesson))
+        status, body = self.request('/api/exercises/predict-change/attempts',
+            {'response': {'value': 1}, 'attempt_id': 'stale-attempt', 'exercise_fingerprint': version})
+        self.assertEqual(status, 400)
+        self.assertIn('changed', body)
+        self.assertEqual(read_attempts(self.workspace), [])
+
+    def test_stale_teaching_is_rejected_even_when_the_question_is_unchanged(self):
+        from lesson_contract import lesson_fingerprint
+        lesson = json.loads((self.workspace / 'lessons/slope-introduction/lesson.json').read_text())
+        old = lesson_fingerprint(lesson)
+        lesson['blocks'][0]['text'] += ' A new prerequisite bridge.'
+        publish_lesson(self.workspace, reviewed_lesson(lesson))
+        status, body = self.request('/api/exercises/predict-change/attempts',
+            {'response': {'value': 1}, 'attempt_id': 'stale-teaching', 'lesson_fingerprint': old})
+        self.assertEqual(status, 400)
+        self.assertIn('changed', body)
+        self.assertEqual(read_attempts(self.workspace), [])
+
+    def test_exercise_reload_returns_review_and_original_history_without_private_rubric(self):
+        from portal_interactions import review_attempt
+        self.request('/api/exercises/predict-change/attempts',
+                     {'response': {'value': 0}, 'attempt_id': 'attempt-reviewed'})
+        review_attempt(self.workspace, 'attempt-reviewed', dict(result='incorrect', help='none',
+            kind='application', interpretation='Confuses sign and height.', next_step='Compare two slopes.'))
+        status, body = self.request('/api/exercises/predict-change')
+        self.assertEqual(status, 200)
+        data = json.loads(body)
+        self.assertEqual(data['attempt']['review']['result'], 'incorrect')
+        self.assertEqual(data['history'][0]['prompt'], 'Predict the sign.')
+        for field in ('exercise_snapshot', 'teaching_blocks', 'success_criteria', 'tolerance'):
+            self.assertNotIn(field, body)
+        status, body = self.request('/api/review')
+        self.assertEqual(status, 200)
+        self.assertEqual(json.loads(body)['decision'], 'review-required')
