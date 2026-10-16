@@ -26,6 +26,39 @@ series still needs historical source judgment.
 6. Record the selected subject guide in the topic's `skill_routes`. Lesson
    design records media skill routes in `lesson.json`.
 
+Use the [subject map](references/subject-map.json) to discover the supplied
+subfields without opening every guide:
+
+```bash
+python3 skills/subject/scripts/subject_catalog.py --query "machine learning"
+python3 skills/subject/scripts/subject_catalog.py --subject biology
+```
+
+Each entry points to an existing guide section with a stable ID, aliases, a
+capability, and any named bridge candidates. Search returns candidates and
+never selects a lead subject. Shared terms such as attention, thermodynamics,
+or research methods can belong to several fields. Read the learner's intended
+action and the evidence that would establish it before choosing. Ask one
+focused question when that distinction changes the explanation and cannot be
+resolved from the request. A catalog capability is a routing hint, not evidence
+of the learner's prerequisites or a promise of complete specialty coverage.
+
+After choosing, use a canonical ID to make the route inspectable:
+
+```bash
+python3 skills/learning-orchestrator/scripts/assemble_context.py \
+  --subject artificial-intelligence --subfield artificial-intelligence.machine-learning \
+  --bridge math --mode local
+```
+
+`--subfield` checks the chosen guide's ownership; it does not replace the guide
+with an excerpt. `--bridge` loads an explicitly selected supporting guide and
+keeps the lead teacher. Catalog bridge candidates are never loaded
+automatically. For an enrolled course, the loader also reads its declared
+`supporting_subjects` and only explicitly assigned `supporting_teachers`.
+`--mode local` loads no learner, active course, or private assessment packet.
+Use lesson mode for course continuation and its actual saved attempts.
+
 Do not route by vocabulary alone. “Gradient” does not make every optimization
 question mathematics; the domain subject owns what the objective and variables
 mean. “Code” does not make a biological inference computer science; CS owns the
@@ -48,9 +81,10 @@ implementation while biology owns the claim.
 | political-science | [Political science](subjects/political-science.md) | Use an existing teacher only for a named bridge |
 | psychology | [Psychology](subjects/psychology.md) | Use an existing teacher only for a named bridge |
 
-Do not invent a persona for a subject without a teacher. Set `teacher` to
-`null`, or assign an existing teacher only when that teacher owns a real
-supporting method. The subject still owns its evidence and interpretation.
+Do not invent a persona for a subject without a teacher. Set its lead
+`teacher` to `null`. An existing teacher can appear in `supporting_teachers`
+only for a named bridge it actually owns. The lead subject still owns its
+evidence and interpretation.
 
 ## Use the selected guide
 
@@ -58,6 +92,13 @@ Read the selected subject file in full. Its subfield map is a starting
 structure, not a complete taxonomy. For an unlisted specialty, inspect a
 primary, official, or academic source before designing a sustained course.
 Do not imply that an introductory textbook covers every advanced branch.
+Name an unlisted niche as such. Use a supplied subject only when it actually
+owns the intended action; otherwise explain the missing guide before proposing
+an addition. Chemistry, for example, is not interchangeable with chemical
+engineering. A biological explanation can consult a chemistry source for a
+bounded missing step without pretending that GNOS supplies a chemistry guide.
+Keep prerequisites specific to the learner's next action; an index edge or
+course prerequisite is not proof of an observed learner gap.
 
 Read a linked deep reference only when the guide sends you there for detailed
 prerequisites, sources, examples, or visual patterns. Do not preload every
