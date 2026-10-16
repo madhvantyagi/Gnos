@@ -33,6 +33,14 @@ from learner_state import mutate as mutate_learner_state, read_state  # noqa: E4
 from test_course_workspace import valid_lesson, valid_v2_course  # noqa: E402
 
 
+def reviewed_lesson(lesson):
+    """Explicit test reviewer approval after intentionally authored fixture edits."""
+    from lesson_contract import lesson_design_fingerprint
+    lesson['design_receipt'].update(schema_version=2,
+        lesson_content_fingerprint=lesson_design_fingerprint(lesson))
+    return lesson
+
+
 def open_lesson(course=None):
     from course_contract import course_content_fingerprint, validate_course
     from test_course_workspace import valid_v2_course as base_plan
@@ -70,7 +78,7 @@ def open_lesson(course=None):
         "skill_route": "skills/lesson-design/SKILL.md",
         "review": "pass",
     }
-    return lesson
+    return reviewed_lesson(lesson)
 
 
 class PortalInteractionTests(unittest.TestCase):
@@ -88,6 +96,115 @@ class PortalInteractionTests(unittest.TestCase):
 
     def tearDown(self):
         self.tempdir.cleanup()
+
+    def test_pending_includes_checked_and_reviewed_unlinked_attempts(self):
+        checked = submit_attempt(self.workspace, 'predict-change', {'value': 0})
+        written = submit_attempt(self.workspace, 'explain-gradient', {'text': 'Reasoning.'})
+        review = {'result': 'incorrect', 'help': 'none', 'kind': 'application',
+                  'interpretation': 'Sign confusion.', 'next_step': 'Compare two slopes.'}
+        review_attempt(self.workspace, written['id'], review)
+        self.assertEqual({a['id'] for a in list_pending(self.workspace)['attempts']},
+                         {checked['id'], written['id']})
+        record_reviewed_attempt(self.root, 'alex', 'gradient-descent', written['id'], review)
+        self.assertEqual([a['id'] for a in list_pending(self.workspace)['attempts']], [checked['id']])
+
+    def test_review_preserves_original_prompt_after_lesson_replacement(self):
+        attempt = submit_attempt(self.workspace, 'explain-gradient', {'text': 'Original reasoning.'})
+        replacement = open_lesson(json.loads((self.workspace / 'course.json').read_text()))
+        original = replacement['exercises'][1]['prompt']
+        replacement['exercises'][1]['prompt'] = 'A different question.'
+        publish_lesson(self.workspace, reviewed_lesson(replacement))
+        review = {'result': 'partial', 'help': 'none', 'kind': 'application',
+                  'interpretation': 'Missing a connection.', 'next_step': 'Compare cases.'}
+        review_attempt(self.workspace, attempt['id'], review)
+        record_reviewed_attempt(self.root, 'alex', 'gradient-descent', attempt['id'], review)
+        self.assertEqual(read_state(self.root, 'alex')['events'][0]['attempts'][0]['task'], original)
+
+    def test_review_original_work_while_lesson_is_draft(self):
+        attempt = submit_attempt(self.workspace, 'explain-gradient', {'text': 'Original reasoning.'})
+        replacement = open_lesson(json.loads((self.workspace / 'course.json').read_text()))
+        replacement['publication'] = 'draft'
+        publish_lesson(self.workspace, reviewed_lesson(replacement))
+        review = {'result': 'incorrect', 'help': 'none', 'kind': 'application',
+                  'interpretation': 'Missing a connection.', 'next_step': 'Repair the lesson.'}
+        review_attempt(self.workspace, attempt['id'], review)
+        record_reviewed_attempt(self.root, 'alex', 'gradient-descent', attempt['id'], review)
+        self.assertEqual(len(read_state(self.root, 'alex')['events']), 1)
+
+    def test_solution_assisted_retry_cannot_be_reviewed_as_independent(self):
+        first = submit_attempt(self.workspace, 'predict-change', {'value': 0})
+        reveal_solution(self.workspace, 'predict-change', first['id'])
+        retry = submit_attempt(self.workspace, 'predict-change', {'value': 1})
+        review = {'result': 'correct', 'help': 'none', 'kind': 'application',
+                  'interpretation': 'Copied sign.', 'next_step': 'Try a fresh case.'}
+        with self.assertRaisesRegex(ValueError, 'assistance'):
+            review_attempt(self.workspace, retry['id'], review)
+        self.assertEqual(read_attempt(self.workspace, retry['id'])['status'], 'checked')
+        review['help'] = 'worked-example'
+        review_attempt(self.workspace, retry['id'], review)
+        record_reviewed_attempt(self.root, 'alex', 'gradient-descent', retry['id'], review)
+        self.assertEqual(read_state(self.root, 'alex')['events'][0]['attempts'][0]['help'], 'worked-example')
+
+    def test_reveal_after_submission_does_not_change_original_independence(self):
+        attempt = submit_attempt(self.workspace, 'predict-change', {'value': 1})
+        reveal_solution(self.workspace, 'predict-change', attempt['id'])
+        review = {'result': 'correct', 'help': 'none', 'kind': 'application',
+                  'interpretation': 'Independent prediction.', 'next_step': 'Transfer.'}
+        review_attempt(self.workspace, attempt['id'], review)
+        record_reviewed_attempt(self.root, 'alex', 'gradient-descent', attempt['id'], review)
+        self.assertEqual(read_state(self.root, 'alex')['events'][0]['attempts'][0]['help'], 'none')
+
+    def test_hint_before_submission_requires_assistance(self):
+        request_hint(self.workspace, 'explain-gradient')
+        attempt = submit_attempt(self.workspace, 'explain-gradient', {'text': 'Assisted reasoning.'})
+        review = {'result': 'correct', 'help': 'none', 'kind': 'application',
+                  'interpretation': 'Needed hint.', 'next_step': 'Try independently.'}
+        with self.assertRaisesRegex(ValueError, 'assistance'):
+            review_attempt(self.workspace, attempt['id'], review)
+
+    def test_original_solution_is_revealed_after_exercise_changes(self):
+        attempt = submit_attempt(self.workspace, 'predict-change', {'value': 0})
+        lesson = open_lesson(json.loads((self.workspace / 'course.json').read_text()))
+        lesson['exercises'][0]['evaluation']['answer'] = -1
+        publish_lesson(self.workspace, reviewed_lesson(lesson))
+        self.assertEqual(reveal_solution(self.workspace, 'predict-change', attempt['id'])['solution'], '1')
+
+    def test_teaching_edit_keeps_old_work_in_history_without_restoring_it_as_current(self):
+        attempt = submit_attempt(self.workspace, 'predict-change', {'value': 0})
+        lesson = open_lesson(json.loads((self.workspace / 'course.json').read_text()))
+        lesson['blocks'][0]['text'] += ' Compare the change with the slope.'
+        publish_lesson(self.workspace, reviewed_lesson(lesson))
+        state = exercise_state(self.workspace, 'predict-change')
+        self.assertIsNone(state['attempt'])
+        self.assertEqual([a['id'] for a in state['history']], [attempt['id']])
+
+    def test_rubric_edits_do_not_reset_assistance_for_the_same_task(self):
+        first = submit_attempt(self.workspace, 'predict-change', {'value': 0})
+        reveal_solution(self.workspace, 'predict-change', first['id'])
+        lesson = open_lesson(json.loads((self.workspace / 'course.json').read_text()))
+        lesson['exercises'][0]['success_criteria'].append('State the comparison.')
+        publish_lesson(self.workspace, reviewed_lesson(lesson))
+        retry = submit_attempt(self.workspace, 'predict-change', {'value': 1})
+        self.assertTrue(retry['solution_seen_before_submission'])
+
+    def test_per_concept_review_does_not_copy_one_result_to_every_concept(self):
+        plan = json.loads((self.workspace / 'course.json').read_text())
+        plan['chapters'][0]['topics'][0]['concepts'].append('math.slope')
+        plan['revision'] = 2
+        plan['revision_notes'].append({'revision': 2, 'date': '2026-09-12', 'reason': 'Audit scope.'})
+        mutate_learner_state(self.root, 'alex', 'enroll', plan)
+        lesson = open_lesson(plan)
+        lesson['concepts'].append('math.slope')
+        lesson['exercises'][1]['concepts'].append('math.slope')
+        publish_lesson(self.workspace, reviewed_lesson(lesson))
+        attempt = submit_attempt(self.workspace, 'explain-gradient', {'text': 'Partial reasoning.'})
+        review = {'result': 'partial', 'help': 'none', 'kind': 'application',
+                  'interpretation': 'Only slope is sound.', 'next_step': 'Repair derivative.',
+                  'concept_results': {'math.derivative': 'incorrect', 'math.slope': 'correct'}}
+        review_attempt(self.workspace, attempt['id'], review)
+        record_reviewed_attempt(self.root, 'alex', 'gradient-descent', attempt['id'], review)
+        results = {a['concept']: a['result'] for a in read_state(self.root, 'alex')['events'][0]['attempts']}
+        self.assertEqual(results, review['concept_results'])
 
     def test_submitting_twice_preserves_both_attempts(self):
         first = submit_attempt(self.workspace, "predict-change", {"value": 1})
