@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="title desc" font-family="Arial, Helvetica, sans-serif">
 <title id="title">Star history for madhvantyagi/Gnos</title>
-<desc id="desc">Daily recorded stars for madhvantyagi/Gnos from 2026-09-23 to 2026-10-22. Starts just before the first recorded star. Latest recorded total: 343.</desc>
+<desc id="desc">Daily recorded stars for madhvantyagi/Gnos from 2026-09-23 to 2026-10-23. Starts just before the first recorded star. Latest recorded total: 343.</desc>
 <rect width="960" height="390" fill="#ffffff"/>
 <text x="70" y="38" fill="#24292f" font-size="20" font-weight="700">madhvantyagi/Gnos</text>
 <text x="70" y="62" fill="#57606a" font-size="13">Daily recorded stars · since Sep 24, 2026</text>
@@ -15,12 +15,12 @@
 <text x="58" y="157.0" text-anchor="end" fill="#57606a" font-size="12">300</text>
 <line x1="70" y1="96.0" x2="918" y2="96.0" stroke="#d8dee4" stroke-width="1"/>
 <text x="58" y="100.0" text-anchor="end" fill="#57606a" font-size="12">400</text>
-<path d="M70.0,324.0 L99.2,256.2 L128.5,197.5 L157.7,181.5 L187.0,171.8 L216.2,169.5 L245.4,167.8 L274.7,151.3 L303.9,141.0 L333.2,139.3 L362.4,138.2 L391.7,137.0 L420.9,134.8 L450.1,133.6 L479.4,133.6 L508.6,133.1 L537.9,131.9 L567.1,131.9 L596.3,131.3 L625.6,130.8 L654.8,130.8 L684.1,130.2 L713.3,129.6 L742.6,129.6 L771.8,129.1 L801.0,129.1 L830.3,129.1 L859.5,128.5 L888.8,128.5 L918.0,128.5 L918.0,324 L70.0,324 Z" fill="#2da44e" fill-opacity="0.13"/>
-<path d="M70.0,324.0 L99.2,256.2 L128.5,197.5 L157.7,181.5 L187.0,171.8 L216.2,169.5 L245.4,167.8 L274.7,151.3 L303.9,141.0 L333.2,139.3 L362.4,138.2 L391.7,137.0 L420.9,134.8 L450.1,133.6 L479.4,133.6 L508.6,133.1 L537.9,131.9 L567.1,131.9 L596.3,131.3 L625.6,130.8 L654.8,130.8 L684.1,130.2 L713.3,129.6 L742.6,129.6 L771.8,129.1 L801.0,129.1 L830.3,129.1 L859.5,128.5 L888.8,128.5 L918.0,128.5" fill="none" stroke="#1a7f37" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M70.0,324.0 L98.3,256.2 L126.5,197.5 L154.8,181.5 L183.1,171.8 L211.3,169.5 L239.6,167.8 L267.9,151.3 L296.1,141.0 L324.4,139.3 L352.7,138.2 L380.9,137.0 L409.2,134.8 L437.5,133.6 L465.7,133.6 L494.0,133.1 L522.3,131.9 L550.5,131.9 L578.8,131.3 L607.1,130.8 L635.3,130.8 L663.6,130.2 L691.9,129.6 L720.1,129.6 L748.4,129.1 L776.7,129.1 L804.9,129.1 L833.2,128.5 L861.5,128.5 L889.7,128.5 L918.0,128.5 L918.0,324 L70.0,324 Z" fill="#2da44e" fill-opacity="0.13"/>
+<path d="M70.0,324.0 L98.3,256.2 L126.5,197.5 L154.8,181.5 L183.1,171.8 L211.3,169.5 L239.6,167.8 L267.9,151.3 L296.1,141.0 L324.4,139.3 L352.7,138.2 L380.9,137.0 L409.2,134.8 L437.5,133.6 L465.7,133.6 L494.0,133.1 L522.3,131.9 L550.5,131.9 L578.8,131.3 L607.1,130.8 L635.3,130.8 L663.6,130.2 L691.9,129.6 L720.1,129.6 L748.4,129.1 L776.7,129.1 L804.9,129.1 L833.2,128.5 L861.5,128.5 L889.7,128.5 L918.0,128.5" fill="none" stroke="#1a7f37" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
 <text x="70.0" y="349" text-anchor="start" fill="#57606a" font-size="12">Sep 23</text>
-<text x="274.7" y="349" text-anchor="middle" fill="#57606a" font-size="12">Sep 30</text>
-<text x="479.4" y="349" text-anchor="middle" fill="#57606a" font-size="12">Oct 7</text>
-<text x="713.3" y="349" text-anchor="middle" fill="#57606a" font-size="12">Oct 15</text>
-<text x="918.0" y="349" text-anchor="end" fill="#57606a" font-size="12">Oct 22</text>
-<circle cx="918.0" cy="128.5" r="4" fill="#1a7f37"><title>Oct 22: 343 stars</title></circle>
+<text x="296.1" y="349" text-anchor="middle" fill="#57606a" font-size="12">Oct 1</text>
+<text x="494.0" y="349" text-anchor="middle" fill="#57606a" font-size="12">Oct 8</text>
+<text x="691.9" y="349" text-anchor="middle" fill="#57606a" font-size="12">Oct 15</text>
+<text x="918.0" y="349" text-anchor="end" fill="#57606a" font-size="12">Oct 23</text>
+<circle cx="918.0" cy="128.5" r="4" fill="#1a7f37"><title>Oct 23: 343 stars</title></circle>
 </svg>
