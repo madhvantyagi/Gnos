@@ -1,0 +1,17 @@
+# Private workspace state and credentials; shipped skills and runtimes stay visible.
+.git/
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+node_modules/
+__pycache__/
+*.py[cod]
+/learners/
+/courses/
+/output/
+/media/
+/audio_out/
+/.superpowers/
+/docs/superpowers/
