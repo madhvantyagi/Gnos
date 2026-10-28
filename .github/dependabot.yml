@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+  - package-ecosystem: pip
+    directory: "/skills/pdf"
+    schedule:
+      interval: weekly
+  - package-ecosystem: pip
+    directory: "/skills/manim-voice-animation"
+    schedule:
+      interval: weekly

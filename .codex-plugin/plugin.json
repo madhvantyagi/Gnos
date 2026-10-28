@@ -8,6 +8,7 @@
   },
   "homepage": "https://github.com/madhvantyagi/Gnos",
   "repository": "https://github.com/madhvantyagi/Gnos",
+  "license": "MIT",
   "keywords": ["education", "teaching", "learning", "diagrams", "animation", "excalidraw", "pinepaper"],
   "skills": "./skills/",
   "mcpServers": "./.mcp.json",
@@ -26,6 +27,11 @@
     ],
     "brandColor": "#2F5D50",
     "composerIcon": "./assets/icon.png",
-    "logo": "./assets/icon.png"
+    "logo": "./assets/icon.png",
+    "screenshots": [
+      "./assets/course-viewer-rl-to-grpo.png",
+      "./assets/lesson-simulation.png",
+      "./assets/lesson-video.png"
+    ]
   }
 }
